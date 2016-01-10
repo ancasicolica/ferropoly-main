@@ -14,7 +14,7 @@ function Dashboard() {
     self.data[3].value++;
     console.log(self.data[3]);
     if (self.data[3].onChange) {
-      self.data[3].onChange.map(function(fct) {
+      self.data[3].onChange.map(function (fct) {
         fct(self.data[3]);
       });
     }
@@ -40,12 +40,8 @@ Dashboard.prototype.registerUpdateHandler = function (id, handler) {
 var dashboard = new Dashboard();
 
 
-
-
-
-
-
-/* A single element
+/*
+  A single element
  */
 var DashboardElement = React.createClass({
   getInitialState: function () {
@@ -53,9 +49,9 @@ var DashboardElement = React.createClass({
     return dashboard.getElement(this.props.id);
   },
 
-  componentDidMount: function() {
-    var self= this;
-    dashboard.registerUpdateHandler(this.props.id, function(val) {
+  componentDidMount: function () {
+    var self = this;
+    dashboard.registerUpdateHandler(this.props.id, function (val) {
       self.setState(val);
     });
   },
