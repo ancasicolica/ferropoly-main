@@ -1,0 +1,8 @@
+.ds-element {
+    background-color : rgba(166, 214, 255, 0.4);
+    padding-left     : 8px;
+    padding-right    : 4px;
+    padding-top      : 4px;
+    padding-bottom   : 4px;
+    margin-bottom    : 4px;
+}

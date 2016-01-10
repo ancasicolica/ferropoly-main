@@ -1,12 +1,19 @@
 extends layout
 
 block head
+  meta(name="viewport" content="width=device-width, initial-scale=1")
   script(src='/modules/moment/min/moment.min.js')
   script(src='/modules/moment/locale/de.js')
   script(src='/modules/react/react.js')
   script(src='/modules/react/react-dom.js')
   script(src='/modules/babel/browser.min.js')
+  script(src='/modules/lodash/lodash.min.js')
   script(src='/js/checkin/index.js')
+  script(src='/js/checkin/datastore.js')
+  script(src='/js/checkin/dashboard.jsx' type='text/babel')
+
+
+
 
   link(rel='stylesheet', href='/css/checkin.css',  type='text/css')
 
