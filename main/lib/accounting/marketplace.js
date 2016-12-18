@@ -12,6 +12,7 @@ var chancelleryAccount = require('./chancelleryAccount');
 var propertyActions    = require('../../components/checkin-datastore/lib/properties/actions');
 var logger             = require('../../../common/lib/logger').getLogger('marketplace');
 var travelLog          = require('../../../common/models/travelLogModel');
+const propertyGrid     = require('../../../common/lib/propertyGrid');
 var async              = require('async');
 var moment             = require('moment');
 var EventEmitter       = require('events').EventEmitter;
@@ -193,7 +194,11 @@ Marketplace.prototype.buyProperty = function (options, callback) {
               return callback(err, {message: 'Fehler beim Grundstückkauf'});
             }
             // that's it!
-            return callback(null, {property: property, amount: info.amount});
+
+            // Updating the property grid - right place??
+            propertyGrid.updateAllAvailability(options.gameId, () => {
+              return callback(null, {property: property, amount: info.amount});
+            });
           });
         });
       }
@@ -401,7 +406,7 @@ Marketplace.prototype.payFinalRents = function (gameId, callback) {
     }
     var gp        = res.gameplay;
     var tolerance = 10; // in minutes
-    var count = 0;
+    var count     = 0;
 
     if (gp.gameParams.interestCyclesAtEndOfGame < 1) {
       // No cycles, no interests, return

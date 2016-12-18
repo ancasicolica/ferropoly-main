@@ -11,7 +11,7 @@ const gameCache   = require('./gameCache');
 const travelLog   = require('../../common/models/travelLogModel');
 const properties  = require('../../common/models/propertyModel');
 const marketplace = require('./accounting/marketplace');
-const propertyLib = require('../../common/lib/porpertyLib');
+const propertyLib = require('../../common/lib/propertyLib');
 let settings;
 
 /**
