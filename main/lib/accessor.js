@@ -7,6 +7,7 @@
 
 const gamecache = require('./gameCache');
 const gameplays = require('../../common/models/gameplayModel');
+const teams     = require('../../common/models/teamModel');
 const _         = require('lodash');
 const logger    = require('../../common/lib/logger').getLogger('lib:accessor');
 
@@ -76,9 +77,20 @@ module.exports = {
         // it's the admin and the game is in the cache, return always ok
         return callback();
       }
-      // Todo: handle player rights for future features
-      logger.debug('No access rights granted for ' + userId);
-      return callback(new Error('No access rights granted'));
+      // Check if the user belongs to the team
+      teams.getMyTeams(userId, (err, myTeams) => {
+        if (err) {
+          return callback(err);
+        }
+        if (!myTeams || myTeams.length < 1) {
+          return callback(new Error('Not in a team'));
+        }
+        if (_.find(myTeams, {gameId: gameId})) {
+          return callback();
+        }
+        logger.debug('No access rights granted for ' + userId);
+        return callback(new Error('No access rights granted'));
+      });
     });
   },
 
@@ -98,8 +110,8 @@ module.exports = {
       }
 
       if (_.find(team.data.members, function (m) {
-          return m === userId;
-        })) {
+        return m === userId;
+      })) {
         return callback();
       }
 

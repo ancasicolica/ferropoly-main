@@ -29,6 +29,8 @@ block head
     script(src='/js/checkin/propertiesctrl.js')
     script(src='/js/checkin/pricelistctrl.js')
     script(src='/js/checkin/accountctrl.js')
+    script(src='/js/checkin/exif.js')
+    script(src='/js/checkin/postboxctrl.js')
 
   link(rel='stylesheet', href='/css/checkin.css',  type='text/css')
 
@@ -43,6 +45,8 @@ block navbar-right
     a(href='#' onclick='activateView("#view-properties")') Besitz
   li
     a(href='#' onclick='activateView("#view-teamaccount")') Kontobuch
+  li
+    a(href='#' onclick='activateView("#view-postbox")') Postbox
 
   li#online
     i.fa.fa-cloud.online
@@ -64,3 +68,5 @@ block content
       include ./checkin-properties
     #view-pricelist.ng-cloak
       include ./checkin-pricelist
+    #view-postbox.ng-cloak
+      include ./checkin-postbox

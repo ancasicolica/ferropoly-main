@@ -66,8 +66,8 @@ ferropolyDb.init(settings, function (err, db) {
     return 'http: ' + moment().format();
   });
   app.use(morgan(':prefix :method :status :remote-addr :url'));
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({extended: false}));
+  app.use(bodyParser.urlencoded({extended: false, limit: '2mb'}));
+  app.use(bodyParser.json({limit: '2mb'}));
   app.use(cookieParser());
 
   // Using compression speeds up the connection (and uses much less data for mobile)
@@ -116,6 +116,7 @@ ferropolyDb.init(settings, function (err, db) {
   app.use('/test', require('./routes/test'));
   app.use('/reception', require('./routes/reception'));
   app.use('/marketplace', require('./routes/marketplace'));
+  app.use('/postbox', require('./routes/postbox'));
   app.use('/statistics', require('./routes/statistics'));
   app.use('/properties', require('./routes/properties'));
   app.use('/download', require('./routes/download'));
