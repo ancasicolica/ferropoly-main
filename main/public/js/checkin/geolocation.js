@@ -4,6 +4,7 @@
  */
 
 'use strict';
+
 function Geograph() {
   this.position            = null;
   this.clients             = [];
@@ -56,7 +57,14 @@ Geograph.prototype.localize = function () {
 };
 
 Geograph.prototype.getLastLocation = function () {
-  return this.position;
+  if (this.position) {
+    return {
+      lat     : this.position.coords.latitude,
+      lng     : this.position.coords.longitude,
+      accuracy: this.position.coords.accuracy
+    }
+  }
+  return null;
 };
 
 Geograph.prototype.onLocationChanged = function (client) {

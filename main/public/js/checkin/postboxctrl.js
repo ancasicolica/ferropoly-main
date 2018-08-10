@@ -12,17 +12,18 @@ function postboxController($scope, $http) {
   // Send file to server
   function sendFile(fileData) {
     console.log('Uploading image data');
-    var formData = new FormData();
-
-    formData.append('imageData', fileData);
-    formData.append('exif', exifinfo);
-    formData.append('authToken', ferropoly.authToken);
-
-    $.post('/postbox/uploadimage/' + ferropoly.gameplay._id + '/' + ferropoly.team.uuid, {
-      authToken: ferropoly.authToken,
-      imageData: fileData,
-      exif     : exifinfo
-    }, null, 'json').done(function (data) {
+    var location = geograph.getLastLocation();
+    $.post('/postbox/uploadimage/' + ferropoly.gameplay._id + '/' + ferropoly.team.uuid,
+      {
+        authToken           : ferropoly.authToken,
+        imageData           : fileData,
+        lat                 : _.get(location, 'lat', undefined),
+        lng                 : _.get(location, 'lng', undefined),
+        accuracy            : _.get(location, 'accuracy', undefined),
+        exifMake            : exifinfo.make,
+        exifModel           : exifinfo.model,
+        exifDateTimeOriginal: exifinfo.dateTimeOriginal
+      }, null).done(function (data) {
       console.log(data);
 
     }).fail(function (data, status) {

@@ -3,11 +3,14 @@
  * Created by kc on 9.8.18
  */
 
-const express  = require('express');
-const router   = express.Router();
-const accessor = require('../lib/accessor');
-
-
+const express   = require('express');
+const router    = express.Router();
+const accessor  = require('../lib/accessor');
+const postbox   = require('../../common/models/postboxModel');
+const users     = require('../../common/models/userModel');
+const gameCache = require('../lib/gameCache');
+const _         = require('lodash');
+const moment    = require('moment');
 /**
  * Build Houses
  */
@@ -24,14 +27,50 @@ router.post('/uploadimage/:gameId/:teamId', function (req, res) {
       return res.status(403).send({message: 'Verification Error, ' + err.message});
     }
 
-    console.log("File received: ", req.imageData);
-    // console.log('Body:', util.inspect(req.body));
-    let base64String = req.body.imageData;
-    let base64Image  = base64String.split(';base64,').pop();
+    users.getUserByMailAddress(req.session.passport.user, (err, activeUser) => {
+      if (err) {
+        return res.status(500).send({message: 'getUserByMailAddress Error, ' + err.message});
+      }
 
-    console.log(base64Image);
-    res.send({});
+      console.log("File received: ", req.imageData);
+      // console.log('Body:', util.inspect(req.body));
+      let base64String = req.body.imageData;
+      let base64Image  = base64String.split(';base64,').pop();
 
+      console.log(req.body);
+      postbox.createMessage(req.params.gameId,
+        {
+          email   : req.session.passport.user,
+          teamId  : req.params.teamId,
+          name    : _.get(activeUser, 'personalData.forename', 'Unbekannt') + ' ' + _.get(activeUser, 'personalData.surname', ''),
+          position: {
+            lat     : _.get(req, 'body.lat', 0),
+            lng     : _.get(req, 'body.lng', 0),
+            accuracy: _.get(req, 'body.accuracy', 0),
+          }
+        },
+        {
+          id: 'reception'
+        },
+        {
+          photo: {
+            image           : base64Image,
+            make            : _.get(req, 'body.exifMake', undefined),
+            model           : _.get(req, 'body.exifModel', undefined),
+            dateTimeOriginal: _.get(req, 'body.exifDateTimeOriginal', undefined)
+          }
+        },
+        err => {
+          if (err) {
+            return res.status(500).send({message: 'createMessage (Postbox) error: ' + err.message});
+
+          }
+          res.send({});
+        }
+      );
+
+
+    });
   });
 });
 module.exports = router;
