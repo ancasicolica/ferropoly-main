@@ -4,10 +4,9 @@
  */
 
 const mongoose = require('mongoose');
-var moment     = require('moment');
-var util       = require('util');
-var _          = require('lodash');
-var logger     = require('../lib/logger').getLogger('postboxModel');
+const moment     = require('moment');
+const _          = require('lodash');
+const logger     = require('../lib/logger').getLogger('postboxModel');
 
 
 /**
@@ -77,8 +76,40 @@ let createMessage = function (gameId, sender, receiver, message, callback) {
   })
 };
 
-module.exports = {
-  Model        : messageSchema,
-  createMessage: createMessage
+/**
+ * Deletes all entries for a gameplay
+ * @param gameId
+ * @param callback
+ */
+let deleteAllEntries = function (gameId, callback) {
+  logger.info('Removing all entries in the log');
+  Message.find({gameId: gameId}).remove().exec(callback);
+};
 
+/**
+ * Returns the most recent messages
+ * @param gameId
+ * @param teamId
+ * @param options
+ * @param callback
+ */
+let getMessages = function (gameId, teamId, options, callback) {
+  let limit = options.limit || 20;
+  let skip  = options.skip || 0;
+  let ts    = options.timestamp || 0;
+
+  Message.find({gameId: gameId, $or: [{'receiver.id': teamId}, {'sender.teamId': teamId}]})
+    .where('timestamp').gt(ts)
+    .skip(skip)
+    .sort({'timestamp': -1})
+    .limit(limit)
+    .lean()
+    .exec(callback);
+};
+
+module.exports = {
+  Model           : messageSchema,
+  createMessage   : createMessage,
+  deleteAllEntries: deleteAllEntries,
+  getMessages     : getMessages
 };
