@@ -12,7 +12,7 @@ const gameCache = require('../lib/gameCache');
 const _         = require('lodash');
 const moment    = require('moment');
 /**
- * Build Houses
+ * Submit an image as Message
  */
 router.post('/uploadimage/:gameId/:teamId', function (req, res) {
 
@@ -63,14 +63,68 @@ router.post('/uploadimage/:gameId/:teamId', function (req, res) {
         err => {
           if (err) {
             return res.status(500).send({message: 'createMessage (Postbox) error: ' + err.message});
-
           }
           res.send({});
         }
       );
-
-
     });
   });
 });
+
+/**
+ * get some of the messages
+ */
+router.get('/messages/:gameId/:teamId', function (req, res) {
+
+  accessor.verify(req.session.passport.user, req.params.gameId, accessor.player, function (err) {
+    if (err) {
+      return res.status(403).send({message: 'Verification Error, ' + err.message});
+    }
+
+    postbox.getMessages(req.params.gameId, req.params.teamId,
+      (err, messages) => {
+        if (err) {
+          return res.status(500).send({message: 'createMessage (Postbox) error: ' + err.message});
+        }
+        let result = [];
+        messages.forEach(m => {
+          if (m.message.photo) {
+            delete m.message.photo.image;
+            m.message.photo.url = '/postbox/images/' + req.params.gameId + '/' + req.params.teamId+ '/' + m._id + '/img.jpg';
+          }
+        });
+        res.send({messages});
+      }
+    );
+
+
+  });
+});
+
+
+/**
+ * get image
+ */
+router.get('/images/:gameId/:teamId/:imageId/img.jpg', function (req, res) {
+
+  accessor.verify(req.session.passport.user, req.params.gameId, accessor.player, function (err) {
+    if (err) {
+      return res.status(403).send({message: 'Verification Error, ' + err.message});
+    }
+
+    postbox.getMessage(req.params.gameId, req.params.imageId,
+      (err, message) => {
+        if (err) {
+          return res.status(500).send({message: 'getMessage (Postbox) error: ' + err.message});
+        }
+        let imageString = _.get(message, 'message.photo.image', 'nada');
+        res.writeHead(200, {'Content-Type': 'image/jpg' });
+        res.end(Buffer.from(imageString, 'base64'));
+      }
+    );
+
+
+  });
+});
+
 module.exports = router;
