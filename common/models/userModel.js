@@ -19,7 +19,7 @@ const _        = require('lodash');
  * The mongoose schema for an user
  */
 let userSchema = mongoose.Schema({
-  _id         : {type: String, index: true},
+  _id         : {type: String},
   id          : String,
   personalData: {
     forename: String,
@@ -297,7 +297,7 @@ function getAllUsers(callback) {
  * @param callback
  */
 function countUsers  (callback) {
-  User.count({}, function (err, nb) {
+  User.countDocuments({}, function (err, nb) {
     if (err) {
       return callback(err);
     }

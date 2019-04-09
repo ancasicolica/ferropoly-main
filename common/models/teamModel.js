@@ -12,7 +12,7 @@ const logger   = require('../lib/logger').getLogger('teamModel');
  * The mongoose schema for a property
  */
 let teamSchema = mongoose.Schema({
-  _id   : {type: String, index: true},
+  _id   : {type: String},
   gameId: String, // Gameplay this team plays with
   uuid  : {type: String, index: {unique: true}},     // UUID of this team (index)
   data  : {
@@ -168,7 +168,7 @@ function countTeams(gameId, callback) {
   if (!gameId) {
     return callback(new Error('No gameId supplied'));
   }
-  Team.count({gameId: gameId}, callback);
+  Team.countDocuments({gameId: gameId}, callback);
 };
 
 /**
