@@ -1,14 +1,15 @@
 /**
- * Check-In socket connection
- * Created by kc on 14.01.16.
+ * Socket for the checkon
  */
 
-'use strict';
+const checkinDatastore = require('../../components/checkin-datastore/')
+import $ from 'jquery'
+import io from 'socket.io-client'
 
 $('#offline').show();
 $('#online').hide();
 
-var ferropolySocket = io.connect();
+const ferropolySocket = io.connect();
 
 ferropolySocket.on('disconnect', function () {
   console.log('disconnected');
@@ -80,4 +81,4 @@ ferropolySocket.on('reconnect_failed', function () {
   console.log('socket.io reconnect_failed event');
 });
 
-
+export default ferropolySocket

@@ -1,26 +1,12 @@
-/**
- * Dashboard controller
- * Created by kc on 14.01.16.
- */
-
-'use strict';
-
-$(document).ready(function () {
-  // Make all elements the same height using jquery
-  var boxes     = $('.dashboard-tile');
-  var maxHeight = Math.max.apply(
-    Math, boxes.map(function () {
-      return $(this).height();
-    }).get());
-  boxes.height(maxHeight);
-});
+const checkinDatastore = require('../../components/checkin-datastore/')
+import ferropolySocket from './socket'
+import geograph from './geograph'
 
 /**
  * The dashboard controller
  * @param $scope
- * @param $http
  */
-function dashboardCtrl($scope, $http) {
+function dashboardCtrl($scope) {
   $scope.chancelleryAsset = 0;
   $scope.properties       = [];
   $scope.liveTicker       = [];
@@ -35,7 +21,7 @@ function dashboardCtrl($scope, $http) {
   }
 
   // Geo location, tests so far only
-  geograph.onLocationChanged(function(position) {
+  geograph.onLocationChanged(function (position) {
     $scope.position = position;
     console.log(position);
     $scope.$apply();
@@ -48,7 +34,7 @@ function dashboardCtrl($scope, $http) {
 
   // Chancellery Updates
   checkinDatastore.dataStore.subscribe('chancellery', function (data) {
-    console.log(data);
+    console.log('chancellery', data);
     $scope.chancelleryAsset = data.asset;
     addTicker('Neuer Kontostand auf dem Parkplatz: ' + data.asset.toLocaleString('de-CH'));
     $scope.$apply();
@@ -73,15 +59,16 @@ function dashboardCtrl($scope, $http) {
   });
 
   // Game info from general nature
-  ferropolySocket.on('general', function(data) {
+  ferropolySocket.on('general', function (data) {
     console.info('General info data received', data);
     addTicker(data.message);
     $scope.$apply();
   });
-
 }
 
 
-checkinApp.controller('dashboardCtrl', dashboardCtrl);
-dashboardCtrl.$inject = ['$scope', '$http'];
-
+const initDashboard = function (app) {
+  app.controller('dashboardCtrl', dashboardCtrl);
+  dashboardCtrl.$inject = ['$scope'];
+};
+export {initDashboard}

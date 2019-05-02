@@ -3,8 +3,9 @@
  * Created by kc on 23.01.16.
  */
 
-'use strict';
-
+import jQuery from 'jquery'
+import geograph from './geograph'
+import {viewHandler} from './viewHandler'
 
 /**
  * The Checkin Map controller
@@ -12,25 +13,23 @@
  * @param $http
  */
 function checkinMapController($scope, $http) {
-  var icons = {
-    train   : 'https://maps.gstatic.com/mapfiles/ms2/micons/green.png',
-    bus     : 'https://maps.gstatic.com/mapfiles/ms2/micons/yellow.png',
-    boat    : 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png',
-    cablecar: 'https://maps.gstatic.com/mapfiles/ms2/micons/purple.png',
+  const icons = {
+    train       : 'https://maps.gstatic.com/mapfiles/ms2/micons/green.png',
+    bus         : 'https://maps.gstatic.com/mapfiles/ms2/micons/yellow.png',
+    boat        : 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png',
+    cablecar    : 'https://maps.gstatic.com/mapfiles/ms2/micons/purple.png',
     teamProperty: '/images/markers/team_property.png',
-    other   : 'https://maps.gstatic.com/mapfiles/ms2/micons/pink.png'
+    other       : 'https://maps.gstatic.com/mapfiles/ms2/micons/pink.png'
   };
 
 
-  var map;
-  var positionCircle;
-  var positionMarker;
+  let map;
+  let positionCircle;
+  let positionMarker;
 
   $scope.pricelist = ferropoly.pricelist;
   $scope.markers   = [];
-
   $scope.position = {coords: {latitude: 47.352275, longitude: 7.9066919}};
-
 
   // Geolocation
   geograph.onLocationChanged(function (pos) {
@@ -73,20 +72,18 @@ function checkinMapController($scope, $http) {
       // Set icon
       if (p.gamedata && p.gamedata.owner) {
         marker.setIcon(icons.teamProperty);
-      }
-      else if (icons[p.location.accessibility]) {
+      } else if (icons[p.location.accessibility]) {
         marker.setIcon(icons[p.location.accessibility]);
-      }
-      else {
+      } else {
         marker.setIcon(icons.other);
       }
 
-      var info = '<h3>' + p.location.name + '</h3><p>Kaufpreis: ' + p.pricelist.price + '</p>';
-      info += '<p>Position in Preisliste: ' + p.pricelist.position + '</p>';
+      let info = `<h3>${p.location.name}</h3><p>Kaufpreis: ${p.pricelist.price}</p><p>Position in Preisliste: ${p.pricelist.position}</p>`;
+
       if (p.gamedata && p.gamedata.owner) {
-        info += '<p>Das Grundstück gehört Euch und hat ' + p.gamedata.buildings + ' Häuser</p>';
+        info += `<p>Das Grundstück gehört Euch und hat ${p.gamedata.buildings} Häuser</p>`;
       }
-      var infowindow = new google.maps.InfoWindow({
+      let infowindow = new google.maps.InfoWindow({
           content: info
         }
       );
@@ -136,13 +133,17 @@ function checkinMapController($scope, $http) {
   }
 
   // Register the handler when the view gets activated
-  registerViewUpdateHandler('#view-map', function () {
+  let vh = viewHandler;
+
+  vh.registerUpdateHandler('#view-map', function () {
     initializeMap();
   });
 
 
 }
 
-checkinApp.controller('checkinMapCtrl', checkinMapController);
-checkinMapController.$inject = ['$scope', '$http'];
-
+const initMap = function (app) {
+  app.controller('checkinMapCtrl', checkinMapController);
+  checkinMapController.$inject = ['$scope'];
+};
+export {initMap}

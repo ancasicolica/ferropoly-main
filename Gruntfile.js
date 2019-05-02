@@ -19,10 +19,15 @@
  *   grunt minify
  *   grunt bump-commit
  *
+ *
+ * Build Webpack:  grunt webpack:dev
+ *
  * Created by kc on 14.04.15.
  */
 'use strict';
-module.exports = function (grunt) {
+const webpackDevConfig  = require('./webpack.dev.js');
+const webpackProdConfig = require('./webpack.prod.js');
+module.exports          = function (grunt) {
 
   grunt.initConfig({
     pkg   : grunt.file.readJSON('package.json'),
@@ -213,6 +218,14 @@ module.exports = function (grunt) {
           standalone: 'checkinDatastore'
         }
       }
+    },
+
+    webpack: {
+      options: {
+        stats: !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
+      },
+      prod   : webpackProdConfig,
+      dev    : Object.assign({watch: true}, webpackDevConfig)
     }
   });
 
@@ -228,6 +241,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-bump');
+  grunt.loadNpmTasks('grunt-webpack');
   grunt.registerTask('default', ['browserify']);
   grunt.registerTask('minify', ['browserify', 'concat', 'uglify:js']);
   grunt.registerTask('v:patch', ['bump-only:patch']);
