@@ -413,7 +413,7 @@ Marketplace.prototype.payInitialAsset = function (gameId, callback) {
     let teams = _.valuesIn(res.teams);
 
     if (!self.isOpen(gp, 15)) {
-      return callback(new Error(`Marketplace "${options.gameId}" is closed`));
+      return callback(new Error(`Marketplace "${gameId}" is closed`));
     }
 
     async.each(teams, function (team, callback) {
