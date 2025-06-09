@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## v3.5.2 9.6.25
+* Bugfix in Marketplace (Variable undefined)
+
 ## v3.5.1 21.4.24
 * Auth Token Logs aktualisiert
 
