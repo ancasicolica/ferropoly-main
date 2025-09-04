@@ -40,6 +40,11 @@ function sendRandomImage(dir, res) {
     }
     let file = files[getRandomInt(0, files.length)];
     res.set('Content-Type', 'image/jpeg');
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Vary', '*');
+
     res.sendFile(path.join(__dirname, 'ressources', dir, file));
   });
 }

@@ -11,7 +11,7 @@
  */
 const mongoose   = require('mongoose');
 const crypto     = require('crypto');
-const pbkdf2     = require('pbkdf2-sha256');
+const pbkdf2     = require('pbkdf2');
 const logger     = require('../lib/logger').getLogger('userModel');
 const _          = require('lodash');
 const {v4: uuid} = require('uuid');
@@ -21,35 +21,33 @@ const accountLog = require('./accountLogModel');
  * The mongoose schema for an user
  */
 const userSchema = mongoose.Schema({
-  _id         : {type: String},
-  id          : String,
+  _id:          {type: String},
+  id:           String,
   personalData: {
     forename: String,
-    surname : String,
-    email   : String,
-    avatar  : String
+    surname:  String,
+    email:    String,
+    avatar:   String
   },
-  roles       : {
-    admin : {type: Boolean, default: false},
+  roles:        {
+    admin:  {type: Boolean, default: false},
     editor: {type: Boolean, default: true},
     player: {type: Boolean, default: true}
   },
-  login       : {
-    passwordSalt      : String,
-    passwordHash      : String,
-    verifiedEmail     : {type: Boolean, default: false},
-    verificationText  : String,
-    facebookProfileId : String, // Legacy, to be removed in 2024
-    googleProfileId   : String,
+  login:        {
+    passwordSalt:       String,
+    passwordHash:       String,
+    verifiedEmail:      {type: Boolean, default: false},
+    verificationText:   String,
+    googleProfileId:    String,
     microsoftProfileId: String,
   },
-  info        : {
+  info:         {
     registrationDate: Date,
-    lastLogin       : Date,
-    facebook        : Object,  // Legacy, to be removed in 2024
-    google          : Object,
-    microsoft       : Object,
-    agbAccepted     : {type: Number, default: 0}
+    lastLogin:        Date,
+    google:           Object,
+    microsoft:        Object,
+    agbAccepted:      {type: Number, default: 0}
   }
 }, {autoIndex: true});
 
@@ -106,10 +104,10 @@ function verifyPassword(user, enteredPassword) {
  */
 function createPasswordHash(salt, password) {
   if (!_.isString(salt) || !_.isString(password)) {
-    logger.error(new Error('Invalid params supplied', salt, password));
+    logger.error(new Error('Invalid params supplied'), salt, password);
     return 'not-a-valid-hash-' + _.random(0, 100000000);
   }
-  return pbkdf2(password, salt, 1, 64).toString('base64');
+  return pbkdf2.pbkdf2Sync(password, salt, 1, 64, 'sha256').toString('base64');
 }
 
 /**
@@ -118,15 +116,12 @@ function createPasswordHash(salt, password) {
  * @param callback
  */
 async function removeUser(emailAddress, callback) {
-  let res, err;
-  try {
-    res = await User.deleteOne({'personalData.email': emailAddress}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, res);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in removeUser is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+
+  return await User.deleteOne({'personalData.email': emailAddress}).exec();
 }
 
 /**
@@ -136,44 +131,38 @@ async function removeUser(emailAddress, callback) {
  * @param callback
  */
 async function updateUser(user, password, callback) {
-  try {
-    let doc = await User.findOne({_id: user._id}).exec();
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in updateUser is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
+  }
 
-    if (!doc) {
-      // New User OR invalid created user
-      return getUserByMailAddress(user.personalData.email, async function (err, foundUser) {
-        if (err) {
-          return callback(err);
-        }
-        if (foundUser) {
-          return callback(new Error('User with this email-address already exists, remove first!'));
-        }
-        logger.info(`New user:${user.personalData.email}`, user);
-        if (!password) {
-          return callback(new Error('Password missing'));
-        }
-        generatePasswordHash(user, password);
-        user.info.registrationDate = new Date();
-        user._id                   = user.personalData.email;
-        accountLog.addNewUserEntry(user.personalData.email, 'Email-Adresse');
-        savedUser = await user.save();
-        return callback(null, savedUser);
-      });
 
-    } else {
-      let editedUser = doc;
-      copyUser(user, editedUser);
-      // Update User
-      logger.info(`Update user: ${user.personalData.email}`, user);
-      if (password) {
-        generatePasswordHash(editedUser, password);
-      }
-      let savedUser = await editedUser.save();
-      return callback(null, savedUser);
+  let doc = await User.findOne({_id: user._id}).exec();
+
+  if (!doc) {
+    // New User OR invalid created user
+    let foundUser = await getUserByMailAddress(user.personalData.email);
+    if (foundUser) {
+      throw new Error('User with this email-address already exists, remove first!');
     }
-  } catch (ex) {
-    logger.error(ex);
-    callback(ex);
+    logger.info(`New user:${user.personalData.email}`, user);
+    if (!password) {
+      throw new Error('Password missing');
+    }
+    generatePasswordHash(user, password);
+    user.info.registrationDate = new Date();
+    user._id                   = user.personalData.email;
+    accountLog.addNewUserEntry(user.personalData.email, 'Email-Adresse');
+    return await user.save();
+  } else {
+    let editedUser = doc;
+    copyUser(user, editedUser);
+    // Update User
+    logger.info(`Update user: ${user.personalData.email}`, user);
+    if (password) {
+      generatePasswordHash(editedUser, password);
+    }
+    return await editedUser.save();
   }
 }
 
@@ -182,50 +171,31 @@ async function updateUser(user, password, callback) {
  * @param emailAddress
  * @param callback
  */
-function getUserByMailAddress(emailAddress, callback) {
-
-  User
+async function getUserByMailAddress(emailAddress, callback) {
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getUserByMailAddress is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
+  }
+  const foundUser = await User
     .findOne({'personalData.email': emailAddress})
     .exec()
-    .then(foundUser => {
-      if (!foundUser) {
-        return callback();
-      }
 
-      // Verify if this user already has an ID or not. If not, upgrade to new model
-      if (!_.isString(foundUser._id) || foundUser._id !== foundUser.personalData.email) {
-        const id      = foundUser._id;
-        const newUser = new User();
-        copyUser(foundUser, newUser);
-        newUser._id = emailAddress;
-        newUser.save()
-               .then(() => {
-                 User
-                   .findByIdAndRemove(id)
-                   .exec()
-                   .then(() => {
-                     logger.info(`Updated user with email ${newUser.personalData.email}`, newUser);
-                     callback(null, newUser);
-                   })
-                   .catch(callback);
-               })
-               .catch(callback);
-      } else {
-        callback(null, foundUser);
-      }
-    })
-    .catch(callback);
-}
+  if (!foundUser) {
+    return undefined;
+  }
 
-async function getUserByMailAddressB(emailAddress) {
-  return new Promise(resolve => {
-    getUserByMailAddress(emailAddress, (err, user) => {
-      if (err) {
-        throw new Error(err);
-      }
-      resolve(user);
-    });
-  });
+  // Verify if this user already has an ID or not. If not, upgrade to new model
+  if (!_.isString(foundUser._id) || foundUser._id !== foundUser.personalData.email) {
+    const id      = foundUser._id;
+    const newUser = new User();
+    copyUser(foundUser, newUser);
+    newUser._id = emailAddress;
+    await newUser.save();
+    await User
+      .findByIdAndRemove(id)
+      .exec();
+  }
+  return foundUser;
 }
 
 /**
@@ -234,15 +204,11 @@ async function getUserByMailAddressB(emailAddress) {
  * @param callback , providing the complete user information when found
  */
 async function getUser(id, callback) {
-  let doc, err;
-  try {
-    doc = await User.findOne({'_id': id}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, doc);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getUser is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  return await User.findOne({'_id': id}).exec();
 }
 
 
@@ -252,15 +218,11 @@ async function getUser(id, callback) {
  * @param callback
  */
 async function getGoogleUser(profileId, callback) {
-  let err, doc;
-  try {
-    doc = await User.findOne({'login.googleProfileId': profileId}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, doc);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getGoogleUser is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  return await User.findOne({'login.googleProfileId': profileId}).exec();
 }
 
 /**
@@ -269,15 +231,11 @@ async function getGoogleUser(profileId, callback) {
  * @param callback
  */
 async function getMicrosoftUser(profileId, callback) {
-  let err, doc;
-  try {
-    doc = await User.findOne({'login.microsoftProfileId': profileId}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, doc);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getMicrosoftUser is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  return await User.findOne({'login.microsoftProfileId': profileId}).exec();
 }
 
 /**
@@ -285,15 +243,11 @@ async function getMicrosoftUser(profileId, callback) {
  * @param callback
  */
 async function getAllUsers(callback) {
-  let docs, err;
-  try {
-    docs = await User.find({}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, docs);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getAllUsers is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  return await User.find({}).exec();
 }
 
 /**
@@ -301,15 +255,11 @@ async function getAllUsers(callback) {
  * @param callback
  */
 async function countUsers(callback) {
-  let err, nb;
-  try {
-    nb = await User.countDocuments({}).exec();
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, nb);
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in countUsers is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  return await User.countDocuments({}).exec();
 }
 
 
@@ -332,10 +282,7 @@ function findOrCreateGoogleUser(profile, callback) {
     }
 
     // Try to get the user
-    getGoogleUser(profile.id, function (err, user) {
-      if (err) {
-        return callback(err);
-      }
+    getGoogleUser(profile.id).then(async function (user) {
       if (!user) {
         // The user is not here, try to find him with the email-address
         let emailAddress = '';
@@ -378,10 +325,7 @@ function findOrCreateGoogleUser(profile, callback) {
         }
 
         if (emailAddress) {
-          getUserByMailAddress(emailAddress, async function (err, user) {
-            if (err) {
-              return callback(err);
-            }
+          getUserByMailAddress(emailAddress).then(async user => {
             if (user) {
               // Ok, we know this user. Update profile for google access
               user.info.google           = profile;
@@ -400,7 +344,10 @@ function findOrCreateGoogleUser(profile, callback) {
 
             // We do not know this user. Add him/her to the list.
             saveNewGoogleUser();
-          });
+          })
+            .catch(err => {
+              callback(err);
+            });
           return;
         }
         // No email address (somehow an annonymous google user). Add as new User
@@ -410,9 +357,11 @@ function findOrCreateGoogleUser(profile, callback) {
       // User found, update
       user.info.google         = profile;
       user.personalData.avatar = _.isArray(profile.photos) ? profile.photos[0].value : undefined;
-      updateUser(user, null, callback);
-    });
-  } catch (ex) {
+      const u                  = await updateUser(user, null);
+      return callback(null, u);
+    }).catch(callback);
+  }
+  catch (ex) {
     logger.error(ex);
     callback(ex);
   }
@@ -438,10 +387,7 @@ function findOrCreateMicrosoftUser(profile, callback) {
     }
 
     // Try to get the user
-    getMicrosoftUser(profile.id, function (err, user) {
-      if (err) {
-        return callback(err);
-      }
+    getMicrosoftUser(profile.id).then( async function ( user) {
       if (!user) {
         // The user is not here, try to find him with the email-address
         let emailAddress = '';
@@ -484,10 +430,7 @@ function findOrCreateMicrosoftUser(profile, callback) {
         }
 
         if (emailAddress) {
-          getUserByMailAddress(emailAddress, async function (err, user) {
-            if (err) {
-              return callback(err);
-            }
+          getUserByMailAddress(emailAddress).then(async user => {
             if (user) {
               // Ok, we know this user. Update profile for microsoft access
               user.info.microsoft           = profile;
@@ -506,7 +449,7 @@ function findOrCreateMicrosoftUser(profile, callback) {
 
             // We do not know this user. Add him/her to the list.
             saveNewMicrosoftUser();
-          });
+          }).catch(callback);
           return;
         }
         // No email address (somehow an annonymous google user). Add as new User
@@ -516,9 +459,11 @@ function findOrCreateMicrosoftUser(profile, callback) {
       // User found, update
       user.info.microsoft      = profile;
       user.personalData.avatar = _.isArray(profile.photos) ? profile.photos[0].value : undefined;
-      updateUser(user, null, callback);
-    });
-  } catch (ex) {
+      const u                  = await updateUser(user, null);
+      return callback(null, u);
+    }).catch(callback);
+  }
+  catch (ex) {
     logger.error(ex);
     callback(ex);
   }
@@ -528,15 +473,14 @@ function findOrCreateMicrosoftUser(profile, callback) {
 module.exports = {
   Model: User,
 
-  updateUser               : updateUser,
-  generatePasswordHash     : generatePasswordHash,
-  verifyPassword           : verifyPassword,
-  getUserByMailAddress     : getUserByMailAddress,
-  getUserByMailAddressB    : getUserByMailAddressB,
-  removeUser               : removeUser,
-  getAllUsers              : getAllUsers,
-  getUser                  : getUser,
-  countUsers               : countUsers,
-  findOrCreateGoogleUser   : findOrCreateGoogleUser,
+  updateUser:                updateUser,
+  generatePasswordHash:      generatePasswordHash,
+  verifyPassword:            verifyPassword,
+  getUserByMailAddress:      getUserByMailAddress,
+  removeUser:                removeUser,
+  getAllUsers:               getAllUsers,
+  getUser:                   getUser,
+  countUsers:                countUsers,
+  findOrCreateGoogleUser:    findOrCreateGoogleUser,
   findOrCreateMicrosoftUser: findOrCreateMicrosoftUser,
 };

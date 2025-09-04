@@ -19,24 +19,26 @@ let ferroSocket;
  * @param amount
  * @param callback
  */
-function payInterest(teamId, gameId, amount, callback) {
-  if (!teamId || !gameId || !_.isNumber(amount)) {
-    callback(new Error('Parameter error in payInterest'));
-    return;
+async function payInterest(teamId, gameId, amount, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in payInterest');
+    return callback(new Error('no callback'));
   }
+  if (!teamId || !gameId || !_.isNumber(amount)) {
+    throw new Error('Parameter error in payInterest');
+  }
+
   let entry                = new teamAccountTransaction.Model();
   entry.gameId             = gameId;
   entry.teamId             = teamId;
   entry.transaction.amount = amount;
   entry.transaction.origin = {category: 'bank'};
   entry.transaction.info   = 'Startgeld';
-  teamAccountTransaction.book(entry).then(() => {
-    callback();
-    if (ferroSocket) {
-      ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
-      ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
-    }
-  }).catch(callback);
+  await teamAccountTransaction.book(entry);
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
+    ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
+  }
 }
 
 /**
@@ -51,14 +53,17 @@ function payInterest(teamId, gameId, amount, callback) {
  * @param callback
  * @returns {*}
  */
-function chargeToBankOrChancellery(options, callback) {
+async function chargeToBankOrChancellery(options, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in chargeToBankOrChancellery');
+    return callback(new Error('no callback'));
+  }
   if (!options.teamId || !options.gameId || !_.isNumber(options.amount)) {
-    callback(new Error('Parameter error in chargeToBank'));
-    return;
+    throw new Error('Parameter error in chargeToBank');
   }
 
   if (options.amount === 0) {
-    return callback(new Error('Value must not be 0'));
+    throw new Error('Value must not be 0');
   }
 
   // Amount has to be negative, not concerning of the parameter value!
@@ -77,13 +82,13 @@ function chargeToBankOrChancellery(options, callback) {
     entry.transaction.parts = options.info.parts;
   }
 
-  teamAccountTransaction.book(entry).then(() => {
-    if (ferroSocket) {
-      ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
-      ferroSocket.emitToTeam(options.gameId, options.teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
-    }
-    callback(null, {amount: chargedAmount});
-  }).catch(callback);
+  await teamAccountTransaction.book(entry);
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
+    ferroSocket.emitToTeam(options.gameId, options.teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
+  }
+  return {amount: chargedAmount};
+
 }
 
 /**
@@ -95,9 +100,13 @@ function chargeToBankOrChancellery(options, callback) {
  *  - info     optional text to be supplied with the transaction or object
  * @param callback
  */
-function chargeToBank(options, callback) {
+async function chargeToBank(options, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in chargeToBank');
+    return callback(new Error('no callback'));
+  }
   options.category = 'bank';
-  chargeToBankOrChancellery(options, callback);
+  return await chargeToBankOrChancellery(options);
 }
 
 /**
@@ -109,9 +118,13 @@ function chargeToBank(options, callback) {
  *  - info     optional text to be supplied with the transaction or object
  * @param callback
  */
-function chargeToChancellery(options, callback) {
+async function chargeToChancellery(options, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in chargeToChancellery');
+    return callback(new Error('no callback'));
+  }
   options.category = 'chancellery';
-  chargeToBankOrChancellery(options, callback);
+  return await chargeToBankOrChancellery(options);
 }
 
 /**
@@ -124,39 +137,36 @@ function chargeToChancellery(options, callback) {
  * @param callback
  * @returns {*}
  */
-function receiveFromBankOrChancellery(teamId, gameId, amount, info, category, callback) {
-  try {
-    if (!teamId || !gameId || !_.isNumber(amount)) {
-      callback(new Error('Parameter error in chargeToBank'));
-      return;
-    }
+async function receiveFromBankOrChancellery(teamId, gameId, amount, info, category, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in receiveFromBankOrChancellery');
+    return callback(new Error('no callback'));
+  }
 
-    if (amount === 0) {
-      return callback(new Error('Value must not be 0'));
-    }
+  if (!teamId || !gameId || !_.isNumber(amount)) {
+    throw new Error('Parameter error in chargeToBank');
+  }
 
-    let entry                = new teamAccountTransaction.Model();
-    entry.gameId             = gameId;
-    entry.teamId             = teamId;
-    entry.transaction.amount = Math.abs(amount);
-    entry.transaction.origin = {category: category};
-    if (_.isString(info)) {
-      entry.transaction.info = info;
-    } else if (_.isObject(info)) {
-      entry.transaction.info  = info.info;
-      entry.transaction.parts = info.parts;
-    }
+  if (amount === 0) {
+    throw new Error('Value must not be 0');
+  }
 
-    teamAccountTransaction.book(entry).then(() => {
-      if (ferroSocket) {
-        ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
-        ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
-      }
-      callback();
-    }).catch(callback);
-  } catch (e) {
-    logger.error(`${gameId}: Bug in receiveFromBankOrChancellery`, e);
-    callback(e);
+  let entry                = new teamAccountTransaction.Model();
+  entry.gameId             = gameId;
+  entry.teamId             = teamId;
+  entry.transaction.amount = Math.abs(amount);
+  entry.transaction.origin = {category: category};
+  if (_.isString(info)) {
+    entry.transaction.info = info;
+  } else if (_.isObject(info)) {
+    entry.transaction.info  = info.info;
+    entry.transaction.parts = info.parts;
+  }
+
+  await teamAccountTransaction.book(entry)
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
+    ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
   }
 }
 
@@ -168,10 +178,12 @@ function receiveFromBankOrChancellery(teamId, gameId, amount, info, category, ca
  * @param info     optional text to be supplied with the transaction or object
  * @param callback
  */
-function receiveFromBank(teamId, gameId, amount, info, callback) {
-  receiveFromBankOrChancellery(teamId, gameId, amount, info, 'bank', function (err) {
-    callback(err);
-  });
+async function receiveFromBank(teamId, gameId, amount, info, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in receiveFromBank');
+    return callback(new Error('no callback'));
+  }
+  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'bank');
 }
 
 /**
@@ -182,10 +194,12 @@ function receiveFromBank(teamId, gameId, amount, info, callback) {
  * @param info     optional text to be supplied with the transaction or object
  * @param callback
  */
-function receiveFromChancellery(teamId, gameId, amount, info, callback) {
-  receiveFromBankOrChancellery(teamId, gameId, amount, info, 'chancellery', function (err) {
-    callback(err);
-  });
+async function receiveFromChancellery(teamId, gameId, amount, info, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in receiveFromChancellery');
+    return callback(new Error('no callback'));
+  }
+  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'chancellery');
 }
 
 /**
@@ -193,14 +207,17 @@ function receiveFromChancellery(teamId, gameId, amount, info, callback) {
  * @param options
  * @param callback
  */
-function chargeToAnotherTeam(options, callback) {
+async function chargeToAnotherTeam(options, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in chargeToAnotherTeam');
+    return callback(new Error('no callback'));
+  }
   if (!options.debitorTeamId || !options.creditorTeamId || !options.info || !options.gameId || !_.isNumber(options.amount)) {
-    callback(new Error('Parameter error in chargeToAnotherTeam'));
-    return;
+    throw new Error('Parameter error in chargeToAnotherTeam');
   }
 
   if (options.amount === 0) {
-    return callback(new Error('Value must not be 0'));
+    throw new Error('Value must not be 0');
   }
 
   // Amount has to be positive for us, not concerning of the parameter value!
@@ -212,7 +229,7 @@ function chargeToAnotherTeam(options, callback) {
   chargingEntry.user               = options.user;
   chargingEntry.transaction.amount = chargedAmount * (-1);
   chargingEntry.transaction.origin = {
-    uuid    : options.creditorTeamId,
+    uuid:     options.creditorTeamId,
     category: 'team'
   };
   chargingEntry.transaction.info   = options.info;
@@ -225,15 +242,14 @@ function chargeToAnotherTeam(options, callback) {
   receivingEntry.transaction.origin = {uuid: options.debitorTeamId, category: 'team'};
   receivingEntry.transaction.info   = options.info;
 
-  teamAccountTransaction.bookTransfer(chargingEntry, receivingEntry).then(() => {
-    if (ferroSocket) {
-      ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: chargingEntry});
-      ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: receivingEntry});
-      ferroSocket.emitToTeam(options.gameId, chargingEntry.teamId, 'checkinStore', teamAccountActions.addTransaction(chargingEntry));
-      ferroSocket.emitToTeam(options.gameId, receivingEntry.teamId, 'checkinStore', teamAccountActions.addTransaction(receivingEntry));
-    }
-    callback(null, {amount: options.amount});
-  }).catch(callback);
+  await teamAccountTransaction.bookTransfer(chargingEntry, receivingEntry)
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: chargingEntry});
+    ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: receivingEntry});
+    ferroSocket.emitToTeam(options.gameId, chargingEntry.teamId, 'checkinStore', teamAccountActions.addTransaction(chargingEntry));
+    ferroSocket.emitToTeam(options.gameId, receivingEntry.teamId, 'checkinStore', teamAccountActions.addTransaction(receivingEntry));
+  }
+  return {amount: options.amount};
 }
 
 /**
@@ -242,10 +258,13 @@ function chargeToAnotherTeam(options, callback) {
  * @param teamId
  * @param callback
  */
-function getBalance(gameId, teamId, callback) {
-  teamAccountTransaction.getBalance(gameId, teamId).then(value => {
-    callback(null, {asset: value.asset, count: value.count});
-  }).catch(callback);
+async function getBalance(gameId, teamId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getBalance');
+    return callback(new Error('no callback'));
+  }
+  const value = await teamAccountTransaction.getBalance(gameId, teamId);
+  return {asset: value.asset, count: value.count};
 }
 
 /**
@@ -255,21 +274,20 @@ function getBalance(gameId, teamId, callback) {
  * @param rate  rate of interest, a percentage between 0 and 100
  * @param callback
  */
-function negativeBalanceHandling(gameId, teamId, rate, callback) {
-  getBalance(gameId, teamId, function (err, info) {
-    if (err) {
-      return callback(err);
-    }
-    if (info.asset < 0) {
-      let interest = Math.floor(Math.abs(info.asset * rate / 100));
-      logger.info(`${gameId}: Negative balance, pay interest ${interest} from ${info.asset}`, {gameId, teamId});
-      // Do not book here! The teamAccount does not have a connection to the chancellery, it's the
-      // chancellerys job to book, we just make the calculation here.
-      callback(null, {amount: interest});
-    } else {
-      callback();
-    }
-  });
+async function negativeBalanceHandling(gameId, teamId, rate, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in negativeBalanceHandling');
+    return callback(new Error('no callback'));
+  }
+  const info = await getBalance(gameId, teamId);
+
+  if (info.asset < 0) {
+    let interest = Math.floor(Math.abs(info.asset * rate / 100));
+    logger.info(`${gameId}: Negative balance, pay interest ${interest} from ${info.asset}`, {gameId, teamId});
+    // Do not book here! The teamAccount does not have a connection to the chancellery; it's the
+    // chancellerys job to book, we just make the calculation here.
+    return {amount: interest};
+  }
 }
 
 /**
@@ -277,22 +295,26 @@ function negativeBalanceHandling(gameId, teamId, rate, callback) {
  * @param gameId
  * @param callback
  */
-function getRankingList(gameId, callback) {
-  teamAccountTransaction.getRankingList(gameId).then(data => {
-    let sorted = _.sortBy(_.values(data), function (n) {
-      return n.asset * (-1);
-    });
-    for (let i = 0; i < sorted.length; i++) {
-      sorted[i].teamId = sorted[i]._id;
-      if (sorted[i - 1] && (sorted[i - 1].asset === sorted[i].asset)) {
-        // Same asset, same rank
-        sorted[i].rank = sorted[i - 1].rank;
-      } else {
-        sorted[i].rank = i + 1;
-      }
+async function getRankingList(gameId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getRankingList');
+    return callback(new Error('no callback'));
+  }
+  const data = await teamAccountTransaction.getRankingList(gameId);
+
+  let sorted = _.sortBy(_.values(data), function (n) {
+    return n.asset * (-1);
+  });
+  for (let i = 0; i < sorted.length; i++) {
+    sorted[i].teamId = sorted[i]._id;
+    if (sorted[i - 1] && (sorted[i - 1].asset === sorted[i].asset)) {
+      // Same asset, same rank
+      sorted[i].rank = sorted[i - 1].rank;
+    } else {
+      sorted[i].rank = i + 1;
     }
-    callback(null, sorted);
-  }).catch(callback);
+  }
+  return sorted;
 }
 
 /**
@@ -307,7 +329,11 @@ function getRankingList(gameId, callback) {
  * @param p2  Timestamp for end (moment, optional)
  * @param p3  Callback
  */
-function getAccountStatement(gameId, teamId, p1, p2, p3) {
+async function getAccountStatement(gameId, teamId, p1, p2, p3) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
+    return callback(new Error('no callback'));
+  }
   let tsStart  = p1;
   let tsEnd    = p2;
   let callback = p3;
@@ -324,23 +350,21 @@ function getAccountStatement(gameId, teamId, p1, p2, p3) {
     tsEnd = moment();
   }
 
-  teamAccountTransaction.getEntries(gameId, teamId, tsStart, tsEnd).then(data => {
-    callback(null, data);
-  }).catch(callback);
+  return await teamAccountTransaction.getEntries(gameId, teamId, tsStart, tsEnd);
 }
 
 
 module.exports = {
-  payInterest            : payInterest,
-  chargeToBank           : chargeToBank,
-  chargeToChancellery    : chargeToChancellery,
-  receiveFromBank        : receiveFromBank,
-  receiveFromChancellery : receiveFromChancellery,
-  chargeToAnotherTeam    : chargeToAnotherTeam,
-  getBalance             : getBalance,
+  payInterest:             payInterest,
+  chargeToBank:            chargeToBank,
+  chargeToChancellery:     chargeToChancellery,
+  receiveFromBank:         receiveFromBank,
+  receiveFromChancellery:  receiveFromChancellery,
+  chargeToAnotherTeam:     chargeToAnotherTeam,
+  getBalance:              getBalance,
   negativeBalanceHandling: negativeBalanceHandling,
-  getAccountStatement    : getAccountStatement,
-  getRankingList         : getRankingList,
+  getAccountStatement:     getAccountStatement,
+  getRankingList:          getRankingList,
 
   init: function () {
     ferroSocket = require('../ferroSocket').get();
@@ -358,7 +382,11 @@ module.exports = {
 
         getAccountStatement(data.gameId, data.teamId, function (err, transactions) {
           ferroSocket.emitToTeam(data.gameId, data.teamId, 'checkinStore', teamAccountActions.setTransactions(transactions));
-          logger.debug(`${data.gameId}: TeamAccount Socket connected`, {info, gameId: data.gameId, teamId: data.teamId});
+          logger.debug(`${data.gameId}: TeamAccount Socket connected`, {
+            info,
+            gameId: data.gameId,
+            teamId: data.teamId
+          });
         });
       });
     });

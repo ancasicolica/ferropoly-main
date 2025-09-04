@@ -25,94 +25,81 @@ let jackpotFull              = {};
  * @param info
  * @param callback
  */
-function bookChancelleryEvent(gameplay, team, info, callback) {
+async function bookChancelleryEvent(gameplay, team, info, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in bookChancelleryEvent');
+    return callback(new Error('no callback'));
+  }
+
   if (!gameplay || !team || !info) {
-    return callback(new Error('invalid params in bookChancelleryEvent'));
+    throw new Error('invalid params in bookChancelleryEvent');
   }
 
   /**
    * The internal callbackhandler, sending the new balance to all teams of a game
    * @param err
    */
-  function bookCallback(err) {
+  async function bookCallback() {
     if (!ferroSocket) {
       // No socket, just return
-      return callback(err);
+      return;
     }
 
-    chancelleryTransaction.getBalance(gameplay.internal.gameId).then(info => {
-      if (!err) {
-        if (info.balance > gameplay.gameParams.chancellery.maxJackpotSize) {
-          logger.info(`${_.get(gameplay, 'internal.gameId', 'n/a')}: Jackpot is too large, increased chance for winning!`, {gameId: _.get(gameplay, 'internal.gameId', 'n/a')});
-          jackpotFull[gameplay.internal.gameId] = true;
-        } else {
-          jackpotFull[gameplay.internal.gameId] = false;
-        }
-        if (ferroSocket) {
-          ferroSocket.emitToGame(gameplay.internal.gameId, 'checkinStore', chancelleryActions.setAsset(info.balance));
-          ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-chancelleryAccount', {balance: info.balance});
-        }
-      }
-      callback();
-    });
+    const info = await chancelleryTransaction.getBalance(gameplay.internal.gameId);
+
+    if (info.balance > gameplay.gameParams.chancellery.maxJackpotSize) {
+      logger.info(`${_.get(gameplay, 'internal.gameId', 'n/a')}: Jackpot is too large, increased chance for winning!`, {gameId: _.get(gameplay, 'internal.gameId', 'n/a')});
+      jackpotFull[gameplay.internal.gameId] = true;
+    } else {
+      jackpotFull[gameplay.internal.gameId] = false;
+    }
+    if (ferroSocket) {
+      ferroSocket.emitToGame(gameplay.internal.gameId, 'checkinStore', chancelleryActions.setAsset(info.balance));
+      ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-chancelleryAccount', {balance: info.balance});
+    }
   }
 
   if (info.amount > 0) {
     // Positive amount: only bank is involved EXCEPT it is the jackpot
     if (info.jackpot) {
-      return teamAccount.receiveFromChancellery(team.uuid, gameplay.internal.gameId, info.amount, info.infoText, function (err) {
-        if (err) {
-          return callback(err);
-        }
-        let entry         = new chancelleryTransaction.Model();
-        entry.gameId      = gameplay.internal.gameId;
-        entry.transaction = {
-          origin: {
-            uuid: team.uuid
-          },
-          amount: Math.abs(info.amount) * (-1),
-          info  : info.infoText
-        };
+      await teamAccount.receiveFromChancellery(team.uuid, gameplay.internal.gameId, info.amount, info.infoText);
 
-        chancelleryTransaction
-          .book(entry)
-          .then(() => {
-            bookCallback();
-          })
-          .catch(bookCallback);
-      });
-    } else {
-      return teamAccount.receiveFromBank(team.uuid, gameplay.internal.gameId, info.amount, info.infoText, function (err) {
-        return bookCallback(err);
-      });
-    }
-  } else {
-    // Negative amount: team is charged, amount goes to chancellery
-    return teamAccount.chargeToChancellery({
-      teamId: team.uuid,
-      gameId: gameplay.internal.gameId,
-      amount: info.amount,
-      info  : info.infoText
-    }, function (err) {
-      if (err) {
-        return callback(err);
-      }
       let entry         = new chancelleryTransaction.Model();
       entry.gameId      = gameplay.internal.gameId;
       entry.transaction = {
         origin: {
           uuid: team.uuid
         },
-        amount: Math.abs(info.amount),
-        info  : info.infoText
+        amount: Math.abs(info.amount) * (-1),
+        info:   info.infoText
       };
-
-      chancelleryTransaction
-        .book(entry)
-        .then(() => {
-          bookCallback();
-        }).catch(bookCallback);
+      await chancelleryTransaction.book(entry);
+      return bookCallback();
+    } else {
+      await teamAccount.receiveFromBank(team.uuid, gameplay.internal.gameId, info.amount, info.infoText);
+      return bookCallback();
+    }
+  } else {
+    // Negative amount: team is charged, amount goes to chancellery
+    await teamAccount.chargeToChancellery({
+      teamId: team.uuid,
+      gameId: gameplay.internal.gameId,
+      amount: info.amount,
+      info:   info.infoText
     });
+
+    let entry         = new chancelleryTransaction.Model();
+    entry.gameId      = gameplay.internal.gameId;
+    entry.transaction = {
+      origin: {
+        uuid: team.uuid
+      },
+      amount: Math.abs(info.amount),
+      info:   info.infoText
+    };
+
+    await chancelleryTransaction.book(entry);
+    return bookCallback();
   }
 }
 
@@ -122,9 +109,14 @@ function bookChancelleryEvent(gameplay, team, info, callback) {
  * @param team
  * @param callback
  */
-function playChancellery(gameplay, team, callback) {
+async function playChancellery(gameplay, team, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in playChancellery');
+    return callback(new Error('no callback'));
+  }
+
   if (!gameplay || !team) {
-    return callback(new Error('invalid params in playChancellery'));
+    throw new Error('invalid params in playChancellery');
   }
   let min         = gameplay.gameParams.chancellery.minLottery || 1000;
   let max         = gameplay.gameParams.chancellery.maxLottery || 5000;
@@ -136,32 +128,24 @@ function playChancellery(gameplay, team, callback) {
   if (actionRand > (gameplay.gameParams.chancellery.probabilityWin + gameplay.gameParams.chancellery.probabilityLoose)) {
     retVal.infoText = 'Parkplatzgewinn';
     retVal.jackpot  = true;
-    getBalance(gameplay.internal.gameId, function (err, info) {
-      if (err) {
-        return callback(err);
+    const info      = await getBalance(gameplay.internal.gameId);
+
+    if (info.balance === 0) {
+      // Parkplatz is empty, we have to play another round!
+      return await playChancellery(gameplay, team);
+    }
+    retVal.amount = info.balance;
+    await bookChancelleryEvent(gameplay, team, retVal);
+
+    await gameLog.addEntry({
+      gameId:    gameplay.internal.gameId,
+      category:  gameLog.CAT_CHANCELLERY,
+      saveTitle: `"${_.get(team, 'data.name', 'unbekannt')}" gewinnen den Parkplatz: ${info.balance} Fr.`,
+      options:   {
+        teamId: team.uuid
       }
-      if (info.balance === 0) {
-        // Parkplatz is empty, we have to play another round!
-        return playChancellery(gameplay, team, callback);
-      }
-      retVal.amount = info.balance;
-      bookChancelleryEvent(gameplay, team, retVal, function (err) {
-        if (err) {
-          return callback(err, retVal);
-        }
-        return gameLog.addEntry({
-            gameId   : gameplay.internal.gameId,
-            category : gameLog.CAT_CHANCELLERY,
-            saveTitle: `"${_.get(team, 'data.name', 'unbekannt')}" gewinnen den Parkplatz: ${info.balance} Fr.`,
-            options  : {
-              teamId: team.uuid
-            }
-          },
-          function (err) {
-            return callback(err, retVal);
-          });
-      });
     });
+    return retVal;
   } else {
     if (actionRand < gameplay.gameParams.chancellery.probabilityLoose) {
       retVal.amount *= (-1);
@@ -169,22 +153,25 @@ function playChancellery(gameplay, team, callback) {
     } else {
       retVal.infoText += 'Gewinn';
     }
-    bookChancelleryEvent(gameplay, team, retVal, function (err) {
-      return callback(err, retVal);
-    });
+    await bookChancelleryEvent(gameplay, team, retVal);
+    return retVal;
   }
 }
 
-// Gambling: the team sets a value and wins it or looses it. Winning it is taken from bank,
-// loosing it goes to the chancellery
-function gamble(gameplay, team, amount, callback) {
+// Gambling: the team sets a value and wins it or loses it. Winning it is taken from the bank,
+//  losing it goes to the chancellery
+async function gamble(gameplay, team, amount, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in gamble');
+    return callback(new Error('no callback'));
+  }
+
   let retVal = {
-    amount  : amount,
+    amount:   amount,
     infoText: 'Chance/Kanzlei (Gambling)'
   };
-  bookChancelleryEvent(gameplay, team, retVal, function (err) {
-    return callback(err, retVal);
-  });
+  await bookChancelleryEvent(gameplay, team, retVal);
+  return retVal;
 }
 
 /**
@@ -195,14 +182,18 @@ function gamble(gameplay, team, amount, callback) {
  * @param text
  * @param callback
  */
-function payToChancellery(gameplay, team, amount, text, callback) {
+async function payToChancellery(gameplay, team, amount, text, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in payToChancellery');
+    return callback(new Error('no callback'));
+  }
+
   let retVal = {
-    amount  : Math.abs(amount) * (-1),
+    amount:   Math.abs(amount) * (-1),
     infoText: text
   };
-  bookChancelleryEvent(gameplay, team, retVal, function (err) {
-    return callback(err, retVal);
-  });
+  await bookChancelleryEvent(gameplay, team, retVal);
+  return retVal;
 }
 
 /**
@@ -210,13 +201,18 @@ function payToChancellery(gameplay, team, amount, text, callback) {
  * @param gameId
  * @param callback callback
  */
-function getBalance(gameId, callback) {
-  chancelleryTransaction.getBalance(gameId).then(info => {
-    if (!info || !info.balance) {
-      return callback(null, {balance: 0});
-    }
-    callback(null, {balance: info.balance});
-  }).catch(callback);
+async function getBalance(gameId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getBalance');
+    return callback(new Error('no callback'));
+  }
+
+  const info = await chancelleryTransaction.getBalance(gameId);
+
+  if (!info || !info.balance) {
+    return {balance: 0};
+  }
+  return {balance: info.balance};
 }
 
 /**
@@ -224,22 +220,25 @@ function getBalance(gameId, callback) {
  * @param gameId
  * @param callback
  */
-function getAccountStatement(gameId, callback) {
-  if (!gameId) {
-    return callback(new Error('no gameId supplied'));
+async function getAccountStatement(gameId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
+    return callback(new Error('no callback'));
   }
-  chancelleryTransaction.getEntries(gameId, undefined, moment()).then(data => {
-    callback(null, data);
-  }).catch(callback);
+
+  if (!gameId) {
+    throw new Error('no gameId supplied');
+  }
+  return await chancelleryTransaction.getEntries(gameId, undefined, moment());
 }
 
 
 module.exports = {
-  playChancellery    : playChancellery,
+  playChancellery:     playChancellery,
   getAccountStatement: getAccountStatement,
-  getBalance         : getBalance,
-  gamble             : gamble,
-  payToChancellery   : payToChancellery,
+  getBalance:          getBalance,
+  gamble:              gamble,
+  payToChancellery:    payToChancellery,
 
 
   init: function () {
@@ -248,24 +247,21 @@ module.exports = {
     if (!ferroSocket) {
       return;
     }
-    ferroSocket.on('player-connected', function (data) {
+    ferroSocket.on('player-connected', async function (data) {
       if (!ferroSocket) {
         return;
       }
 
-      getBalance(data.gameId, function (err, info) {
-        if (err) {
-          logger.error(`${data.gameId}: Error in chancelleryAccount.init`, err);
-          return;
-        }
-        ferroSocket.emitToTeam(data.gameId, data.teamId, 'checkinStore', chancelleryActions.setAsset(info.balance));
+      const info = await getBalance(data.gameId);
 
-        logger.debug(`${data.gameId}: ChancelleryAccount Socket connected`, {
-          info,
-          gameId: data.gameId,
-          teamId: data.teamId
-        });
+      ferroSocket.emitToTeam(data.gameId, data.teamId, 'checkinStore', chancelleryActions.setAsset(info.balance));
+
+      logger.debug(`${data.gameId}: ChancelleryAccount Socket connected`, {
+        info,
+        gameId: data.gameId,
+        teamId: data.teamId
       });
     });
+
   }
 };

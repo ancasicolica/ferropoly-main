@@ -25,14 +25,14 @@ const CAT_CHANCELLERY = 2; // chancellery actions
  * The mongoose schema for a log entry
  */
 const gameLogSchema   = mongoose.Schema({
-  _id      : String,
-  gameId   : String,
-  teamId   : String, // Set only if relevant, otherwise undefined
-  title    : String, // Title of the entry, as short and informative as possible
+  _id:       String,
+  gameId:    String,
+  teamId:    String, // Set only if relevant, otherwise undefined
+  title:     String, // Title of the entry, as short and informative as possible
   saveTitle: String, // Title save to be displayed to users (nor revealing any positions)
-  message  : String, // This is the more detailed message (if any)
-  category : {type: Number, default: CAT_GENERAL},
-  files    : {type: Array, default: []}, // this is an array with objects for pics
+  message:   String, // This is the more detailed message (if any)
+  category:  {type: Number, default: CAT_GENERAL},
+  files:     {type: Array, default: []}, // this is an array with objects for pics
   timestamp: {type: Date, default: Date.now}
 });
 
@@ -49,15 +49,14 @@ let GameLog = mongoose.model('GameLog', gameLogSchema);
  * @param p2 was category
  * @param p3 was title
  * @param p4 was options
- * @param p5 was callback
+ * @param p5 was callback (not used anymore!!)
  * @returns {*}
  */
 //let addEntry = function (gameId, category, title, options, callback) {
 async function addEntry(p1, p2, p3, p4, p5) {
   let result;
-  let err;
   let callback;
-  try {
+
     let gameId    = p1;
     let category  = p2;
     let title     = p3;
@@ -65,7 +64,7 @@ async function addEntry(p1, p2, p3, p4, p5) {
     let options   = p4;
     callback      = p5;
 
-    if (_.isFunction(p2) && _.isObject((p1))) {
+    if (_.isObject((p1))) {
       // New API with object as param 1 and callback as param 2
       gameId    = _.get(p1, 'gameId', null);
       category  = _.get(p1, 'category', CAT_GENERAL);
@@ -75,14 +74,17 @@ async function addEntry(p1, p2, p3, p4, p5) {
       callback  = p2;
     }
 
+    if (_.isFunction(callback)) {
+      logger.error('>>>>> No more callbacks in addEntry');
+      return callback(new Error('no more callbacks'));
+    }
+
     if (!gameId) {
-      err = new Error('gameId in addEntry must be set');
-      return;
+      throw new Error('gameId in addEntry must be set');
     }
 
     if (!_.isString(gameId) || !_.isString(title)) {
-      err = new Error('all params in createEntry must be strings');
-      return;
+      throw new Error('all params in createEntry must be strings');
     }
 
     let logEntry       = new GameLog();
@@ -95,13 +97,9 @@ async function addEntry(p1, p2, p3, p4, p5) {
     logEntry.files     = []; // Not used yet
     logEntry._id       = gameId + '-' + moment().format('YYMMDD-hhmmss:SSS') + '-' + _.random(100000, 999999);
     result             = await logEntry.save();
+    return result;
 
-  } catch (ex) {
-    logger.error(ex);
-    err = ex;
-  } finally {
-    callback(err, result);
-  }
+
 }
 
 /**
@@ -125,11 +123,15 @@ async function deleteAllEntries(gameId) {
  * @param callback
  * @returns {*}
  */
-function getLogEntries(gameId, teamId, tsStart, tsEnd, callback) {
-
-  if (!gameId) {
-    return callback(new Error('No gameId supplied'));
+async function getLogEntries(gameId, teamId, tsStart, tsEnd, callback) {
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in gameLogModel:getLogEntries is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
   }
+  if (!gameId) {
+    throw new Error('No gameId supplied');
+  }
+
   if (!tsStart) {
     tsStart = moment('2015-01-01');
   }
@@ -137,33 +139,20 @@ function getLogEntries(gameId, teamId, tsStart, tsEnd, callback) {
     tsEnd = moment();
   }
   if (teamId) {
-    GameLog
+    return await GameLog
       .find({gameId: gameId})
       .where('teamId').equals(teamId)
       .where('timestamp').gte(tsStart.toDate()).lte(tsEnd.toDate())
       .sort('timestamp')
       .lean()
-      .exec()
-      .then(res => {
-        return callback(null, res);
-      })
-      .catch(err => {
-        return callback(err);
-      })
-    return callback(null, res);
+      .exec();
   } else {
-    GameLog
+    return await GameLog
       .find({gameId: gameId})
       .where('timestamp').gte(tsStart.toDate()).lte(tsEnd.toDate())
       .sort('timestamp')
       .lean()
-      .exec()
-      .then(res => {
-        return callback(null, res);
-      })
-      .catch(err => {
-        return callback(err);
-      })
+      .exec();
   }
 }
 
@@ -174,19 +163,23 @@ function getLogEntries(gameId, teamId, tsStart, tsEnd, callback) {
  * @param teamId
  * @param callback
  */
-function getAllLogEntries(gameId, teamId, callback) {
-  getLogEntries(gameId, teamId, undefined, undefined, callback);
+async function getAllLogEntries(gameId, teamId, callback) {
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in gameLogModel:getAllLogEntries is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
+  }
+  return await getLogEntries(gameId, teamId, undefined, undefined);
 }
 
 
 module.exports = {
-  Model           : GameLog,
-  addEntry        : addEntry,
+  Model:            GameLog,
+  addEntry:         addEntry,
   deleteAllEntries: deleteAllEntries,
-  getLogEntries   : getLogEntries,
+  getLogEntries:    getLogEntries,
   getAllLogEntries: getAllLogEntries,
   // Constants
-  CAT_GENERAL    : CAT_GENERAL,
+  CAT_GENERAL:     CAT_GENERAL,
   CAT_CHANCELLERY: CAT_CHANCELLERY,
-  CAT_PROPERTY   : CAT_PROPERTY
+  CAT_PROPERTY:    CAT_PROPERTY
 };

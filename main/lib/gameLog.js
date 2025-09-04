@@ -16,30 +16,35 @@ module.exports = {
     ferroSocket = socket;
   },
 
-  addEntry: function (gameMessage, callback) {
+  addEntry: async function (gameMessage, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in addEntry');
+      return callback(new Error('no callback'));
+    }
+    try {
+      const entry = await gameLogModel.addEntry(gameMessage);
 
-    gameLogModel.addEntry(gameMessage, (err, entry) => {
-      if (err) {
-        logger.error(err);
-      }
       if (ferroSocket) {
         let message = {
-          title    : entry.title,
+          title:     entry.title,
           saveTitle: entry.saveTitle,
-          message  : entry.message,
-          category : entry.category,
+          message:   entry.message,
+          category:  entry.category,
           timestamp: entry.timestamp,
-          id       : entry._id
+          id:        entry._id
         }
         ferroSocket.emitGameLogMessageToGame(_.get(gameMessage, 'gameId', 'none'), message);
       }
-      if (callback) {
-        return callback(err);
-      }
-    })
+    }
+    catch (ex) {
+      logger.error('Exception in addEntry', ex);
+    }
+
+
+
   },
 
-  CAT_GENERAL    : gameLogModel.CAT_GENERAL,
+  CAT_GENERAL:     gameLogModel.CAT_GENERAL,
   CAT_CHANCELLERY: gameLogModel.CAT_CHANCELLERY,
-  CAT_PROPERTY   : gameLogModel.CAT_PROPERTY
+  CAT_PROPERTY:    gameLogModel.CAT_PROPERTY
 }

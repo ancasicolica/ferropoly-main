@@ -1,0 +1,59 @@
+/**
+ * Creates and deletes the game structure for a unit test game
+ * Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
+ * Created: 04.09.2025
+ **/
+
+const gameplayModel = require('../../common/models/gameplayModel');
+const teamModel = require('../../common/models/teamModel');
+const propertyModel = require('../../common/models/propertyModel');
+const schedulerEventModel = require('../../common/models/schedulerEventModel');
+const picBucketModel = require('../../common/models/picBucketModel');
+const travelLogModel = require('../../common/models/travelLogModel');
+const gameLogModel = require('../../common/models/gameLogModel');
+const rulesModel = require('../../common/models/rulesModel');
+const chancelleryTransaction = require('../../common/models/accounting/chancelleryTransaction');
+const propertyAccountTransaction = require('../../common/models/accounting/propertyTransaction');
+const teamAccountTransaction = require('../../common/models/accounting/teamAccountTransaction');
+const {DateTime}                   = require('luxon');
+
+
+const createGame    = async function (gameId = 'unit-test') {
+
+  const exists = gameplayModel.checkIfGameIdExists(gameId);
+  if (exists) {
+    console.log(`Data with gameId = ${gameId} exists, deleting!`);
+    await cleanUpGame(gameId);
+  }
+
+  console.log(`CREATING new gameplay ${gameId}`);
+  const gp = await gameplayModel.createGameplay({map: 'sbb', ownerEmail: 'demo@ferropoly.ch', name: gameId, gameId: gameId ,
+  gameDate: DateTime.now().toJSDate(),
+  });
+
+  const team1 = await teamModel.createTeam({data: {name: 'Team 1'}}, gameId);
+  const team2 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
+  const team3 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
+
+
+  return {gp, teams: [team1, team2, team3]};
+}
+
+const cleanUpGame = async function (gameId = 'unit-test') {
+  await gameplayModel.removeGameplay({internal: {gameId: gameId}});
+  await teamModel.deleteAllTeams(gameId);
+  await propertyModel.removeAllPropertiesFromGameplay(gameId);
+  await propertyAccountTransaction.dumpAccounts(gameId);
+  await teamAccountTransaction.dumpAccounts(gameId)
+  await chancelleryTransaction.dumpChancelleryData(gameId);
+  await schedulerEventModel.dumpEvents(gameId);
+  await picBucketModel.deletePicBucket(gameId);
+  await travelLogModel.deleteAllEntries(gameId);
+  await gameLogModel.deleteAllEntries(gameId);
+  await rulesModel.deleteRules(gameId);
+}
+
+module.exports = {
+  createGame,
+  cleanUpGame
+}

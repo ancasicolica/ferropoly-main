@@ -20,11 +20,7 @@ module.exports    = function(req, callback) {
   let tsStart     = query.start ? moment(query.start) : undefined;
   let tsEnd       = query.end ? moment(query.end) : undefined;
 
-  teamAccount.getAccountStatement(req.params.gameId, req.params.teamId, tsStart, tsEnd, function (err, data) {
-    if (err) {
-      return callback(err);
-    }
-
+  teamAccount.getAccountStatement(req.params.gameId, req.params.teamId, tsStart, tsEnd).then( data => {
     for (let i = 0; i < data.length; i++) {
 
       if (!(tsStart || tsEnd)) {
@@ -40,5 +36,6 @@ module.exports    = function(req, callback) {
       data[i] = _.omit(data[i], ['gameId', '__v']);
     }
     callback(null, {accountData: data});
-  });
+  })
+    .catch(callback);
 }
