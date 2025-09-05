@@ -330,10 +330,7 @@ async function getRankingList(gameId, callback) {
  * @param p3  Callback
  */
 async function getAccountStatement(gameId, teamId, p1, p2, p3) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
-    return callback(new Error('no callback'));
-  }
+
   let tsStart  = p1;
   let tsEnd    = p2;
   let callback = p3;
@@ -348,6 +345,11 @@ async function getAccountStatement(gameId, teamId, p1, p2, p3) {
   }
   if (!tsEnd) {
     tsEnd = moment();
+  }
+
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
+    return callback(new Error('no callback'));
   }
 
   return await teamAccountTransaction.getEntries(gameId, teamId, tsStart, tsEnd);

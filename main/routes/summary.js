@@ -86,7 +86,7 @@ router.get('/:gameId/static', function (req, res) {
           props[i] = _.omit(props[i], ['_id', '__v', 'gameId']);
         }
         // Now we continue with the ranking list
-        teamAccount.getRankingList(req.params.gameId, function (err, ranking) {
+        teamAccount.getRankingList(req.params.gameId, async function (err, ranking) {
           if (err) {
             return res.status(500).send({message: err.message});
           }
@@ -94,53 +94,50 @@ router.get('/:gameId/static', function (req, res) {
             ranking[i] = _.omit(ranking[i], ['_id', '__v', 'gameId']);
           }
           // of course we want to add all account statements of all teams too
-          collectAccountStatement(req, (err, accountStatement) => {
+          accountStatement = await collectAccountStatement(req);
+          // now we get all travel log entries
+          travelLog.getAllLogEntries(req.params.gameId, undefined, function (err, travelLog) {
             if (err) {
               return res.status(500).send({message: err.message});
             }
-            // now we get all travel log entries
-            travelLog.getAllLogEntries(req.params.gameId, undefined, function (err, travelLog) {
+            for (let i = 0; i < travelLog.length; i++) {
+              travelLog[i] = _.omit(travelLog[i], ['_id', '__v', 'gameId']);
+            }
+            // and the chancellery shall also not to be forgotten
+            chancellery.getAccountStatement(req.params.gameId, function (err, chancellery) {
               if (err) {
-                return res.status(500).send({message: err.message});
+                return res.status(500).send({message: 'Chancellery getAccountStatement error: ' + err.message});
               }
-              for (let i = 0; i < travelLog.length; i++) {
-                travelLog[i] = _.omit(travelLog[i], ['_id', '__v', 'gameId']);
+              let balance = 0;
+              for (let i = 0; i < chancellery.length; i++) {
+                chancellery[i]         = _.omit(chancellery[i], ['_id', '__v', 'gameId']);
+                balance += _.get(chancellery[i], 'transaction.amount', -1);
+                chancellery[i].balance = balance;
               }
-              // and the chancellery shall also not to be forgotten
-              chancellery.getAccountStatement(req.params.gameId, function (err, chancellery) {
+
+              picBucket.list(gameId, {uploaded: true}, (err, picBucket) => {
                 if (err) {
-                  return res.status(500).send({message: 'Chancellery getAccountStatement error: ' + err.message});
-                }
-                let balance = 0;
-                for (let i = 0; i < chancellery.length; i++) {
-                  chancellery[i]         = _.omit(chancellery[i], ['_id', '__v', 'gameId']);
-                  balance += _.get(chancellery[i], 'transaction.amount', -1);
-                  chancellery[i].balance = balance;
+                  return res.status(500).send({message: err.message});
                 }
 
-                picBucket.list(gameId, {uploaded: true}, (err, picBucket) => {
-                  if (err) {
-                    return res.status(500).send({message: err.message});
-                  }
-
-                  res.send({
-                    gameplay     : gp,
-                    teams        : _.values(teams),
-                    currentGameId: gameId,
-                    mapApiKey    : settings.maps.apiKey,
-                    properties   : props,
-                    ranking,
-                    accountStatement,
-                    travelLog,
-                    chancellery,
-                    picBucket
-                  });
+                res.send({
+                  gameplay:      gp,
+                  teams:         _.values(teams),
+                  currentGameId: gameId,
+                  mapApiKey:     settings.maps.apiKey,
+                  properties:    props,
+                  ranking,
+                  accountStatement,
+                  travelLog,
+                  chancellery,
+                  picBucket
                 });
               });
             });
           });
         });
-      });
+        });
+
     });
   });
 });
