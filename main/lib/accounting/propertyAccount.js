@@ -23,13 +23,18 @@ const propertyActions     = require('../../../components/checkin-datastore/lib/p
 let ferroSocket;
 
 /**
- * Buy a property. The property must be free, otherwise this function rises an error.
+ * Buy a property. The property must be free. The function returns an object with the information when successful,
+ * if the property is not available, null is returned
  * @param gameplay
  * @param property is the property itself, not the ID
- * @param team the team buying
+ * @param team the team is buying
  * @param callback
  */
-function buyProperty(gameplay, property, team, callback) {
+async function buyProperty(gameplay, property, team, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in buyProperty');
+    return callback(new Error('no callback'));
+  }
 
   if (!(!property.gamedata || !property.gamedata.owner || property.gamedata.owner === '')) {
     // This property already belongs to someone, we do not accept it
@@ -37,50 +42,44 @@ function buyProperty(gameplay, property, team, callback) {
       gameplay: _.get(gameplay, 'internal.gameId'),
       property
     });
-    return callback(new Error('Property not free'));
+    return null;
   }
 
   // Set the data
   property.gamedata = {
-    owner    : team.uuid,
-    boughtTs : new Date(),
+    owner:     team.uuid,
+    boughtTs:  new Date(),
     buildings: 0
   };
-  propWrap.updateProperty(property, function (err) {
-    if (err) {
-      // not updating the property should cause an untouched property. Try again later
-      return callback(err);
-    }
+  await propWrap.updateProperty(property)
 
-    let retVal = {
-      amount: property.pricelist.price
-    };
+  let retVal = {
+    amount: property.pricelist.price
+  };
 
-    let pt         = new propertyTransaction.Model();
-    pt.gameId      = gameplay.internal.gameId;
-    pt.propertyId  = property.uuid;
-    pt.transaction = {
-      origin: {
-        uuid    : team.uuid,
-        category: 'team'
-      },
-      amount: (-1) * retVal.amount, // buy is negative earning on the property
-      info  : 'Kauf'
-    };
+  let pt         = new propertyTransaction.Model();
+  pt.gameId      = gameplay.internal.gameId;
+  pt.propertyId  = property.uuid;
+  pt.transaction = {
+    origin: {
+      uuid:     team.uuid,
+      category: 'team'
+    },
+    amount: (-1) * retVal.amount, // buy is negative earning on the property
+    info:   'Kauf'
+  };
 
-    propertyTransaction.book(pt).then(() => {
-      if (ferroSocket) {
-        ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-propertyAccount', {
-          cmd        : 'propertyBought',
-          property   : property,
-          transaction: pt
-        });
+  await propertyTransaction.book(pt);
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-propertyAccount', {
+      cmd:         'propertyBought',
+      property:    property,
+      transaction: pt
+    });
 
-        ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'checkinStore', propertyActions.updateProperty(property));
-      }
-      callback(null, retVal);
-    }).catch(callback);
-  });
+    ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'checkinStore', propertyActions.updateProperty(property));
+  }
+  return retVal;
 }
 
 /**
@@ -92,41 +91,45 @@ function buyProperty(gameplay, property, team, callback) {
  * @param teamId
  * @param callback
  */
-function chargeRent(gp, property, teamId, callback) {
-  getPropertyValue(gp, property, function (err, val) {
-    if (err) {
-      return callback(err);
-    }
-    let options = {
-      gameId        : gp.internal.gameId,
-      amount        : val.amount,
-      info          : 'Miete ' + property.location.name,
-      debitorTeamId : teamId,
-      creditorTeamId: property.gamedata.owner
-    };
+async function chargeRent(gp, property, teamId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in chargeRent');
+    return callback(new Error('no callback'));
+  }
 
-    // Charge value to the other team
-    teamAccount.chargeToAnotherTeam(options, function (err, info) {
-      if (err) {
-        return callback(err);
-      }
-      // Add entry for property (income)
-      let pt         = new propertyTransaction.Model();
-      pt.gameId      = options.gameId;
-      pt.propertyId  = property.uuid;
-      pt.transaction = {
-        origin: {
-          category: 'team'
-        },
-        amount: info.amount,
-        info  : 'Miete'
-      };
+  if (property.gamedata?.owner === teamId) {
+    logger.info(`${gp.internal.gameId}: Team already owns ${property.location.name}`);
+    return {property: property, owner: property.gamedata.owner, amount: 0};
+  }
 
-      propertyTransaction.book(pt).then(() => {
-        return callback(null, {property: property, owner: property.gamedata.owner, amount: info.amount});
-      }).catch(callback);
-    });
-  });
+  const val = await getPropertyValue(gp, property);
+
+  let options = {
+    gameId:         gp.internal.gameId,
+    amount:         val.amount,
+    info:           'Miete ' + property.location.name,
+    debitorTeamId:  teamId,
+    creditorTeamId: property.gamedata.owner
+  };
+
+  // Charge value to the other team
+  const info = await teamAccount.chargeToAnotherTeam(options);
+
+  // Add entry for property (income)
+  let pt         = new propertyTransaction.Model();
+  pt.gameId      = options.gameId;
+  pt.propertyId  = property.uuid;
+  pt.transaction = {
+    origin: {
+      category: 'team'
+    },
+    amount: info.amount,
+    info:   'Miete'
+  };
+
+  await propertyTransaction.book(pt);
+
+  return {property: property, owner: property.gamedata.owner, amount: info.amount};
 }
 
 /**
@@ -138,6 +141,10 @@ function chargeRent(gp, property, teamId, callback) {
  * @param callback
  */
 function resetProperty(gameId, property, reason, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in resetProperty');
+    return callback(new Error('no callback'));
+  }
   getBalance(gameId, property.uuid, function (err, info) {
     if (err) {
       logger.error(`${gameId}: Error from getBalance`, err);
@@ -161,7 +168,7 @@ function resetProperty(gameId, property, reason, callback) {
           category: 'bank'
         },
         amount: (-1) * info.balance,
-        info  : 'Manuell zurückgesetzt: ' + reason
+        info:   'Manuell zurückgesetzt: ' + reason
       };
 
       propertyTransaction.book(pt).then(() => {
@@ -180,6 +187,10 @@ function resetProperty(gameId, property, reason, callback) {
  * @returns {*}
  */
 function buyBuilding(gameplay, property, team, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in buyBuilding');
+    return callback(new Error('no callback'));
+  }
   if (property.gamedata.owner !== team.uuid) {
     return callback(new Error('this is not the owner'));
   }
@@ -198,9 +209,9 @@ function buyBuilding(gameplay, property, team, callback) {
       return callback(err);
     }
     let retVal = {
-      amount      : Math.abs(getBuildingPrice(property)) * (-1),
-      buildingNb  : property.gamedata.buildings,
-      property    : property.uuid,
+      amount:       Math.abs(getBuildingPrice(property)) * (-1),
+      buildingNb:   property.gamedata.buildings,
+      property:     property.uuid,
       propertyName: property.location.name
     };
 
@@ -214,14 +225,14 @@ function buyBuilding(gameplay, property, team, callback) {
         type: 'team'
       },
       amount: retVal.amount, // building buildings is negative earning on the property
-      info  : 'Hausbau'
+      info:   'Hausbau'
     };
 
     propertyTransaction.book(pt).then(() => {
       if (ferroSocket) {
         ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-propertyAccount', {
-          cmd        : 'buildingBuilt',
-          property   : property,
+          cmd:         'buildingBuilt',
+          property:    property,
           transaction: pt
         });
 
@@ -241,7 +252,10 @@ function buyBuilding(gameplay, property, team, callback) {
  * @param callback
  */
 function payInterest(gameplay, register, callback) {
-
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in payInterest');
+    return callback(new Error('no callback'));
+  }
   if (register.length === 0) {
     // nothing to pay
     logger.debug(`${_.get(gameplay, 'internal.gameId')}: nothing to pay`, {gameId: _.get(gameplay, 'internal.gameId')});
@@ -259,7 +273,7 @@ function payInterest(gameplay, register, callback) {
           type: 'bank'
         },
         amount: Math.abs(prop.amount), // interest is positive earning on the property
-        info  : 'Zinsen ' + prop.propertyName
+        info:   'Zinsen ' + prop.propertyName
       };
 
       propertyTransaction.book(pt).then(() => {
@@ -278,15 +292,19 @@ function payInterest(gameplay, register, callback) {
  * @param callback
  */
 function getRentRegister(gameplay, team, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getRentRegister');
+    return callback(new Error('no callback'));
+  }
   propWrap.getTeamProperties(gameplay.internal.gameId, team.uuid, function (err, properties) {
     if (err) {
       return callback(err);
     }
 
     let info = {
-      register   : [],
+      register:    [],
       totalAmount: 0,
-      teamId     : team.uuid
+      teamId:      team.uuid
     };
 
     async.each(properties,
@@ -320,6 +338,10 @@ function getRentRegister(gameplay, team, callback) {
  * @param p3
  */
 function getAccountStatement(gameId, propertyId, p1, p2, p3) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
+    return callback(new Error('no callback'));
+  }
   let tsStart  = p1;
   let tsEnd    = p2;
   let callback = p3;
@@ -349,6 +371,10 @@ function getAccountStatement(gameId, propertyId, p1, p2, p3) {
  * @param p2 callback
  */
 function getBalance(gameId, propertyId, p1, p2) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getBalance');
+    return callback(new Error('no callback'));
+  }
   let callback = p2;
   let ts       = p1;
   if (_.isFunction(p1)) {
@@ -373,61 +399,62 @@ function getBalance(gameId, propertyId, p1, p2) {
  * @param callback
  * @returns {*}
  */
-function getPropertyValue(gameplay, property, callback) {
-  propWrap.getPropertiesOfGroup(property.gameId, property.pricelist.propertyGroup, function (err, properties) {
-    if (err) {
-      return callback(err);
+async function getPropertyValue(gameplay, property, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getPropertyValue');
+    return callback(new Error('no callback'));
+  }
+  const properties = await propWrap.getPropertiesOfGroup(property.gameId, property.pricelist.propertyGroup);
+  let sameGroup    = 0;
+  for (let i = 0; i < properties.length; i++) {
+    if (properties[i].gamedata.owner === property.gamedata.owner) {
+      sameGroup++;
     }
-    let sameGroup = 0;
-    for (let i = 0; i < properties.length; i++) {
-      if (properties[i].gamedata.owner === property.gamedata.owner) {
-        sameGroup++;
-      }
-    }
+  }
 
-    let retVal = {
-      propertyName: property.location.name,
-      property    : property.uuid
-    };
+  let retVal = {
+    propertyName: property.location.name,
+    property:     property.uuid
+  };
 
-    let factor = 1;
-    if ((properties.length > 1) && (sameGroup === properties.length)) {
-      // all properties in a group belong the same team, pay more!
-      logger.info(`${_.get(gameplay, 'internal.gameId')}: Properties in same group, paying more!`, {gameplay: _.get(gameplay, 'internal.gameId')});
-      factor                      = gameplay.gameParams.rentFactors.allPropertiesOfGroup || 2;
-      retVal.allPropertiesOfGroup = true;
-    }
+  let factor = 1;
+  if ((properties.length > 1) && (sameGroup === properties.length)) {
+    // all properties in a group belong the same team, pay more!
+    logger.info(`${_.get(gameplay, 'internal.gameId')}: Properties in same group, paying more!`, {gameplay: _.get(gameplay, 'internal.gameId')});
+    factor                      = gameplay.gameParams.rentFactors.allPropertiesOfGroup || 2;
+    retVal.allPropertiesOfGroup = true;
+  }
 
-    let rent       = 0;
-    let buildingNb = property.gamedata.buildings || 0;
+  let rent       = 0;
+  let buildingNb = property.gamedata.buildings || 0;
 
-    switch (buildingNb) {
-      case 0:
-        rent = property.pricelist.rents.noHouse;
-        break;
-      case 1:
-        rent = property.pricelist.rents.oneHouse;
-        break;
-      case 2:
-        rent = property.pricelist.rents.twoHouses;
-        break;
-      case 3:
-        rent = property.pricelist.rents.threeHouses;
-        break;
-      case 4:
-        rent = property.pricelist.rents.fourHouses;
-        break;
-      case 5:
-        rent = property.pricelist.rents.hotel;
-        break;
-      default:
-        return callback(new Error('invalid building nb'));
-    }
+  switch (buildingNb) {
+    case 0:
+      rent = property.pricelist.rents.noHouse;
+      break;
+    case 1:
+      rent = property.pricelist.rents.oneHouse;
+      break;
+    case 2:
+      rent = property.pricelist.rents.twoHouses;
+      break;
+    case 3:
+      rent = property.pricelist.rents.threeHouses;
+      break;
+    case 4:
+      rent = property.pricelist.rents.fourHouses;
+      break;
+    case 5:
+      rent = property.pricelist.rents.hotel;
+      break;
+    default:
+      throw new Error('invalid building nb');
+  }
 
-    retVal.amount = rent * factor;
-    retVal.uuid   = property.uuid;
-    callback(null, retVal);
-  });
+  retVal.amount = rent * factor;
+  retVal.uuid   = property.uuid;
+  return retVal;
+
 }
 
 /**
@@ -446,6 +473,10 @@ function getBuildingPrice(property) {
  * @param callback
  */
 function getPropertyProfitability(gameId, propertyId, callback) {
+  if (callback) {
+    logger.info('>>>>>>>>  No more callbacks in getPropertyProfitability');
+    return callback(new Error('no callback'));
+  }
   propertyTransaction.getSummary(gameId, propertyId).then(data => {
     callback(null, data);
   }).catch(callback);
@@ -462,8 +493,8 @@ let socketCommandHandler = function (req) {
       logger.error(new Error('OBSOLETE, replace socket.io getAccountStatement by GET request'));
       getAccountStatement(req.gameId, req.propertyId, req.start, req.end, function (err, data) {
         let resp = {
-          err : err,
-          cmd : 'accountStatement',
+          err:  err,
+          cmd:  'accountStatement',
           data: data
         };
         req.response('propertyAccount', resp);
@@ -473,17 +504,17 @@ let socketCommandHandler = function (req) {
 
 
 module.exports = {
-  getBuildingPrice        : getBuildingPrice,
-  getPropertyValue        : getPropertyValue,
-  getRentRegister         : getRentRegister,
-  payInterest             : payInterest,
-  buyProperty             : buyProperty,
-  buyBuilding             : buyBuilding,
-  getBalance              : getBalance,
-  resetProperty           : resetProperty,
+  getBuildingPrice:         getBuildingPrice,
+  getPropertyValue:         getPropertyValue,
+  getRentRegister:          getRentRegister,
+  payInterest:              payInterest,
+  buyProperty:              buyProperty,
+  buyBuilding:              buyBuilding,
+  getBalance:               getBalance,
+  resetProperty:            resetProperty,
   getPropertyProfitability: getPropertyProfitability,
-  getAccountStatement     : getAccountStatement,
-  chargeRent              : chargeRent,
+  getAccountStatement:      getAccountStatement,
+  chargeRent:               chargeRent,
 
   init: function () {
     ferroSocket = require('../ferroSocket').get();

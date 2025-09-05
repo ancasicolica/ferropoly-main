@@ -1,0 +1,1360 @@
+[{
+  "_id": "unit-test-meilen-autoquai-46292807",
+  "location": {
+    "name": "Meilen Autoquai",
+    "uuid": "4c3df1d8-d4ae-4f32-c8a3-6b3333d7d97e",
+    "position": {
+      "lat": "47.267975",
+      "lng": "8.638475999999969"
+    },
+    "accessibility": "boat"
+  },
+  "gamedata": {
+    "buildingEnabled": false
+  },
+  "pricelist": {
+    "priceRange": 2,
+    "positionInPriceRange": -1,
+    "position": 14,
+    "propertyGroup": 8,
+    "price": 2000,
+    "pricePerHouse": 1000,
+    "rents": {
+      "noHouse": 400,
+      "oneHouse": 1600,
+      "twoHouses": 5000,
+      "threeHouses": 7000,
+      "fourHouses": 8000,
+      "hotel": 10000
+    }
+  },
+  "gameId": "unit-test",
+  "uuid": "341cd2bf-ec73-47c0-b7f3-8bd23464d457",
+  "__v": 0
+},
+  {
+    "_id": "unit-test-rolle-11871727",
+    "location": {
+      "name": "Rolle",
+      "uuid": "8e123762-c231-48d5-a0df-0ac4fb937611",
+      "position": {
+        "lat": "46.462736",
+        "lng": "6.336408000000006"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 34,
+      "propertyGroup": 18,
+      "price": 3500,
+      "pricePerHouse": 1750,
+      "rents": {
+        "noHouse": 700,
+        "oneHouse": 2800,
+        "twoHouses": 8750,
+        "threeHouses": 12250,
+        "fourHouses": 14000,
+        "hotel": 17500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "2c577c08-3696-4fb8-a4e7-1038c86c20be",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-ribellasca-82375475",
+    "location": {
+      "name": "Ribellasca",
+      "uuid": "f78b2bd2-324e-487e-bcc6-991dba62fd1a",
+      "position": {
+        "lat": "46.154177",
+        "lng": "8.60155199999997"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 0,
+      "propertyGroup": 1,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "4488adcb-e721-4a09-80de-a79f226be093",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-frauenfeld-32458054",
+    "location": {
+      "name": "Frauenfeld",
+      "uuid": "99d53bbc-9ff4-48af-8e6e-a2bd5bd752cf",
+      "position": {
+        "lat": "47.558437",
+        "lng": "8.896644000000038"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 28,
+      "propertyGroup": 15,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "c6d257e7-2432-44a6-9b86-56393a1d8d45",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-genolier-87487499",
+    "location": {
+      "name": "Genolier",
+      "uuid": "e458a2e6-9c93-4f32-ba1f-d7fc002f9732",
+      "position": {
+        "lat": "46.436232",
+        "lng": "6.214574999999968"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 35,
+      "propertyGroup": 18,
+      "price": 4000,
+      "pricePerHouse": 2000,
+      "rents": {
+        "noHouse": 800,
+        "oneHouse": 3200,
+        "twoHouses": 10000,
+        "threeHouses": 14000,
+        "fourHouses": 16000,
+        "hotel": 20000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "2ac83605-dd23-409d-ab8a-949a36a9ab02",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-pampigny-severy-53742372",
+    "location": {
+      "name": "Pampigny-Sévery",
+      "uuid": "fb91f343-6daf-4c9f-d66f-d3c32b2cb102",
+      "position": {
+        "lat": "46.576972",
+        "lng": "6.432172000000037"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 1,
+      "propertyGroup": 1,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "c8e3c0a6-9db8-4296-b26c-bdee18f4eb65",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-rodersdorf-12815229",
+    "location": {
+      "name": "Rodersdorf",
+      "uuid": "fe35dd02-63db-457e-cf94-fd468f0ce9e8",
+      "position": {
+        "lat": "47.481",
+        "lng": "7.459054000000037"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 7,
+      "propertyGroup": 4,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "1e4eb53c-0d93-4471-9aa6-32baac06b4bb",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-oberdorf-so-54186544",
+    "location": {
+      "name": "Oberdorf SO",
+      "uuid": "be9bfd87-5be6-4a22-998a-c99f8bbe81f4",
+      "position": {
+        "lat": "47.235984",
+        "lng": "7.493762999999944"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 2,
+      "propertyGroup": 2,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "660d24b6-afe2-4ddd-8452-ca261b0fdd8c",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-flueli-ranft-dorf-16869705",
+    "location": {
+      "name": "Flüeli-Ranft, Dorf",
+      "uuid": "489c02d4-2502-4bf7-ccb1-18ac29cb7737",
+      "position": {
+        "lat": "46.871657",
+        "lng": "8.269330999999966"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 29,
+      "propertyGroup": 15,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "94acbd2a-7048-40e8-8d4a-834abaef703a",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-lutschental-46245905",
+    "location": {
+      "name": "Lütschental",
+      "uuid": "f07a070c-f8eb-4a5f-cfe3-e5b64a71910d",
+      "position": {
+        "lat": "46.637102",
+        "lng": "7.948989999999981"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 3,
+      "propertyGroup": 2,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "604a5728-ab0d-4468-aa50-73b1e303febf",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-blonay-54950989",
+    "location": {
+      "name": "Blonay",
+      "uuid": "a79edd68-f89c-4c0c-8188-b88b1ccc7938",
+      "position": {
+        "lat": "46.465691",
+        "lng": "6.895950999999968"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 15,
+      "propertyGroup": 8,
+      "price": 2000,
+      "pricePerHouse": 1000,
+      "rents": {
+        "noHouse": 400,
+        "oneHouse": 1600,
+        "twoHouses": 5000,
+        "threeHouses": 7000,
+        "fourHouses": 8000,
+        "hotel": 10000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "c9f50fe3-23d4-43d5-9a92-f492d29d7f59",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-kehrsiten-burgenstock-12325845",
+    "location": {
+      "name": "Kehrsiten-Bürgenstock",
+      "uuid": "9e54948b-a1c6-4584-efd2-e291da9bea9f",
+      "position": {
+        "lat": "47.003065",
+        "lng": "8.382321000000047"
+      },
+      "accessibility": "boat"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 21,
+      "propertyGroup": 11,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "11fae1ba-46e9-4192-8b4b-2fc747329d7a",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-andelfingen-46390649",
+    "location": {
+      "name": "Andelfingen",
+      "uuid": "bfc1b481-b9c3-40a2-a686-27940e7ca0cb",
+      "position": {
+        "lat": "47.59354607616092",
+        "lng": "8.677825927734375"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 30,
+      "propertyGroup": 16,
+      "price": 3500,
+      "pricePerHouse": 1750,
+      "rents": {
+        "noHouse": 700,
+        "oneHouse": 2800,
+        "twoHouses": 8750,
+        "threeHouses": 12250,
+        "fourHouses": 14000,
+        "hotel": 17500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "ff142851-c934-4e20-90ef-59ed2740f911",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-birmensdorf-35163755",
+    "location": {
+      "name": "Birmensdorf",
+      "uuid": "07d67714-b132-4e54-96f7-f6fdb9cd0a79",
+      "position": {
+        "lat": "47.357432",
+        "lng": "8.437543000000005"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 31,
+      "propertyGroup": 16,
+      "price": 3500,
+      "pricePerHouse": 1750,
+      "rents": {
+        "noHouse": 700,
+        "oneHouse": 2800,
+        "twoHouses": 8750,
+        "threeHouses": 12250,
+        "fourHouses": 14000,
+        "hotel": 17500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "086d5d6b-f48c-46b5-9502-7781ebaadf2b",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-la-punt-chamues-ch-25930190",
+    "location": {
+      "name": "La Punt-Chamues-ch",
+      "uuid": "97944c0c-4000-4e1d-d1ca-b18b736a5efe",
+      "position": {
+        "lat": "46.57867",
+        "lng": "9.923336000000063"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 16,
+      "propertyGroup": 9,
+      "price": 2000,
+      "pricePerHouse": 1000,
+      "rents": {
+        "noHouse": 400,
+        "oneHouse": 1600,
+        "twoHouses": 5000,
+        "threeHouses": 7000,
+        "fourHouses": 8000,
+        "hotel": 10000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "209186f0-03e4-43df-a2bd-fa215fec176c",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-ftan-cumun-41075085",
+    "location": {
+      "name": "Ftan, cumün",
+      "uuid": "49b4837c-d140-4637-f2b7-eec274d78f53",
+      "position": {
+        "lat": "46.792901",
+        "lng": "10.247045999999955"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 36,
+      "propertyGroup": 19,
+      "price": 4000,
+      "pricePerHouse": 2000,
+      "rents": {
+        "noHouse": 800,
+        "oneHouse": 3200,
+        "twoHouses": 10000,
+        "threeHouses": 14000,
+        "fourHouses": 16000,
+        "hotel": 20000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "92d746ad-2d71-402f-b3c5-a6322cc4637f",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-intragna-58049027",
+    "location": {
+      "name": "Intragna",
+      "uuid": "32049a16-d93d-4536-c779-0b9beee088b9",
+      "position": {
+        "lat": "46.177665",
+        "lng": "8.702269000000001"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 22,
+      "propertyGroup": 12,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "fb8b67e0-1d01-42da-ab81-91d8b9a1d199",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-orsieres-24069587",
+    "location": {
+      "name": "Orsières",
+      "uuid": "1aac350e-31d1-49a7-df24-7e26d844c4c7",
+      "position": {
+        "lat": "46.027737",
+        "lng": "7.1438080000000355"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 17,
+      "propertyGroup": 9,
+      "price": 2000,
+      "pricePerHouse": 1000,
+      "rents": {
+        "noHouse": 400,
+        "oneHouse": 1600,
+        "twoHouses": 5000,
+        "threeHouses": 7000,
+        "fourHouses": 8000,
+        "hotel": 10000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "db260478-2a34-4482-a448-42d739d8b1b7",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-le-locle-88600597",
+    "location": {
+      "name": "Le Locle",
+      "uuid": "958fc4ba-39ee-4631-9e3d-693daebc7683",
+      "position": {
+        "lat": "47.057855",
+        "lng": "6.746153000000049"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 8,
+      "propertyGroup": 5,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "05735e47-4445-4894-9499-db73dbd400a7",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-bulle-36108907",
+    "location": {
+      "name": "Bulle",
+      "uuid": "392d61be-1453-4187-b2dc-d3d91d931613",
+      "position": {
+        "lat": "46.618189",
+        "lng": "7.05503699999997"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 32,
+      "propertyGroup": 17,
+      "price": 3500,
+      "pricePerHouse": 1750,
+      "rents": {
+        "noHouse": 700,
+        "oneHouse": 2800,
+        "twoHouses": 8750,
+        "threeHouses": 12250,
+        "fourHouses": 14000,
+        "hotel": 17500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "319ef33d-5b97-4974-9217-b57f2e2970e6",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-montana-poste-60718718",
+    "location": {
+      "name": "Montana, poste",
+      "uuid": "bd3599d4-d994-46aa-fce3-0ca71366f06f",
+      "position": {
+        "lat": "46.312681",
+        "lng": "7.486481000000026"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 23,
+      "propertyGroup": 12,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "85ebf60f-f8da-49c7-8e9b-aa618ace3ada",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-leysin-village-81540733",
+    "location": {
+      "name": "Leysin-Village",
+      "uuid": "9fa89868-fde3-448e-abb8-04c347e8f40b",
+      "position": {
+        "lat": "46.339261",
+        "lng": "7.00605900000005"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 18,
+      "propertyGroup": 10,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "15845ef0-2fe1-4f82-9b65-9eea02646429",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-morschwil-10535866",
+    "location": {
+      "name": "Mörschwil",
+      "uuid": "b8e8612d-7f25-4979-a3ec-729b43ce9e73",
+      "position": {
+        "lat": "47.47479389999999",
+        "lng": "9.414470099999999"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 9,
+      "propertyGroup": 5,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "6933303a-33c2-4c43-9e1a-72bc4772ed05",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-nebikon-46995194",
+    "location": {
+      "name": "Nebikon",
+      "uuid": "79b6acaf-8f89-4ef2-ef96-f5fcca24da89",
+      "position": {
+        "lat": "47.1923202",
+        "lng": "7.977445100000003"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 10,
+      "propertyGroup": 6,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "f8e91c11-6a78-4807-8d47-551ffed0c427",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-l-isle-48776846",
+    "location": {
+      "name": "L'Isle",
+      "uuid": "9e91b84c-11f0-4043-b4e5-0cc1451fb9a3",
+      "position": {
+        "lat": "46.61727",
+        "lng": "6.411179"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 19,
+      "propertyGroup": 10,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "6b79178b-c359-4c42-ac93-f8b4b313e2f0",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-bernex-place-42664425",
+    "location": {
+      "name": "Bernex, Place",
+      "uuid": "ca0428c0-70ca-4174-b19d-a0718eb7b2d4",
+      "position": {
+        "lat": "46.1767404",
+        "lng": "6.075844099999999"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 24,
+      "propertyGroup": 13,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "b62c6859-414f-4f3b-a895-56f80f9421fa",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-morges-lac-27711305",
+    "location": {
+      "name": "Morges (lac)",
+      "uuid": "d40d05ab-759b-42a3-c01c-939dea855f97",
+      "position": {
+        "lat": "46.508385",
+        "lng": "6.500498999999999"
+      },
+      "accessibility": "boat"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 11,
+      "propertyGroup": 6,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "90df870d-90c3-4ed9-9046-6bc5a88f6bbc",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-pre-petitjean-93167827",
+    "location": {
+      "name": "Pré Petitjean",
+      "uuid": "ba9b2b91-eabf-4026-cbe3-d6e1064ef509",
+      "position": {
+        "lat": "47.277054",
+        "lng": "7.058432000000001"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 12,
+      "propertyGroup": 7,
+      "price": 2000,
+      "pricePerHouse": 1000,
+      "rents": {
+        "noHouse": 400,
+        "oneHouse": 1600,
+        "twoHouses": 5000,
+        "threeHouses": 7000,
+        "fourHouses": 8000,
+        "hotel": 10000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "b6a5d1d3-e043-4688-935d-fc4dafc131f1",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-biberist-rbs-39316132",
+    "location": {
+      "name": "Biberist RBS",
+      "uuid": "bf04daa0-a721-47cd-9e51-c72c33b82d02",
+      "position": {
+        "lat": "47.1835393",
+        "lng": "7.555618699999997"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 4,
+      "positionInPriceRange": -1,
+      "position": 33,
+      "propertyGroup": 17,
+      "price": 3500,
+      "pricePerHouse": 1750,
+      "rents": {
+        "noHouse": 700,
+        "oneHouse": 2800,
+        "twoHouses": 8750,
+        "threeHouses": 12250,
+        "fourHouses": 14000,
+        "hotel": 17500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "3207ae8c-4c0b-4a88-83d8-554b0d1539a6",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-reichenbach-im-kandertal-63715380",
+    "location": {
+      "name": "Reichenbach im Kandertal",
+      "uuid": "629d3356-06ef-484e-f121-f4e1195a5f18",
+      "position": {
+        "lat": "46.6251116",
+        "lng": "7.690056100000001"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 37,
+      "propertyGroup": 19,
+      "price": 4000,
+      "pricePerHouse": 2000,
+      "rents": {
+        "noHouse": 800,
+        "oneHouse": 3200,
+        "twoHouses": 10000,
+        "threeHouses": 14000,
+        "fourHouses": 16000,
+        "hotel": 20000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "ef158b62-e89a-4993-8a18-c61d60b832bc",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-aesch-bl-54331144",
+    "location": {
+      "name": "Aesch BL",
+      "uuid": "a0e36b2b-a74c-4f93-b3fb-cffd849794b5",
+      "position": {
+        "lat": "47.46774",
+        "lng": "7.603068999999999"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 25,
+      "propertyGroup": 13,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "c6ebfbce-1c97-4487-b390-96120072c076",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-luthern-dorf-77025803",
+    "location": {
+      "name": "Luthern, Dorf",
+      "uuid": "0c6862a1-cd2d-47a5-9367-8aa5401bcb07",
+      "position": {
+        "lat": "47.06023700000001",
+        "lng": "7.916406"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 1,
+      "positionInPriceRange": -1,
+      "position": 13,
+      "propertyGroup": 7,
+      "price": 2000,
+      "pricePerHouse": 1000,
+      "rents": {
+        "noHouse": 400,
+        "oneHouse": 1600,
+        "twoHouses": 5000,
+        "threeHouses": 7000,
+        "fourHouses": 8000,
+        "hotel": 10000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "183ef451-a218-4790-8cc4-f9dd3c2ceb2f",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-hasliberg-reuti-14832623",
+    "location": {
+      "name": "Hasliberg Reuti",
+      "uuid": "c4806a1b-814f-4548-a4ec-b350d634b6e5",
+      "position": {
+        "lat": "46.732887",
+        "lng": "8.2092"
+      },
+      "accessibility": "cablecar"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 26,
+      "propertyGroup": 14,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "6ed65afd-c103-4c69-8265-14fb00d0f57a",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-les-plans-sur-bex-village-29201816",
+    "location": {
+      "name": "Les Plans-sur-Bex, village",
+      "uuid": "f2e2df92-45b6-401b-aa4a-639e5886c28b",
+      "position": {
+        "lat": "46.256908",
+        "lng": "7.092982"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 3,
+      "positionInPriceRange": -1,
+      "position": 27,
+      "propertyGroup": 14,
+      "price": 3000,
+      "pricePerHouse": 1500,
+      "rents": {
+        "noHouse": 600,
+        "oneHouse": 2400,
+        "twoHouses": 7500,
+        "threeHouses": 10500,
+        "fourHouses": 12000,
+        "hotel": 15000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "7de3077a-b011-428c-b1f7-1c027ca7ccfd",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-montpreveyres-village-47541370",
+    "location": {
+      "name": "Montpreveyres, village",
+      "uuid": "643a63ca-6159-43d4-c5d6-f7fa86e247f0",
+      "position": {
+        "lat": "46.582306",
+        "lng": "6.740877"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 4,
+      "propertyGroup": 3,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "d1e97e56-33dd-41fb-9e44-9cc711de9fff",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-pfaffnau-post-24419929",
+    "location": {
+      "name": "Pfaffnau, Post",
+      "uuid": "f20ef353-cabf-467c-8b1a-c9791b403098",
+      "position": {
+        "lat": "47.22706599999999",
+        "lng": "7.896676"
+      },
+      "accessibility": "bus"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 5,
+      "propertyGroup": 3,
+      "price": 1000,
+      "pricePerHouse": 500,
+      "rents": {
+        "noHouse": 200,
+        "oneHouse": 800,
+        "twoHouses": 2500,
+        "threeHouses": 3500,
+        "fourHouses": 4000,
+        "hotel": 5000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "8591c732-0e6a-4500-b9d8-f3db323ca68a",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-hemmenhofen-see-d-12372775",
+    "location": {
+      "name": "Hemmenhofen (See) (D)",
+      "uuid": "cf09fa1a-0563-473f-f978-90ff431a1295",
+      "position": {
+        "lat": "47.671989",
+        "lng": "8.968942"
+      },
+      "accessibility": "boat"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 38,
+      "propertyGroup": 20,
+      "price": 4000,
+      "pricePerHouse": 2000,
+      "rents": {
+        "noHouse": 800,
+        "oneHouse": 3200,
+        "twoHouses": 10000,
+        "threeHouses": 14000,
+        "fourHouses": 16000,
+        "hotel": 20000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "44a36bd9-a658-4e21-aae1-3bc7c854007b",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-mammern-u-rh-42260155",
+    "location": {
+      "name": "Mammern URh",
+      "uuid": "d243a3f9-06c4-46c9-d0b2-b2b3d4974573",
+      "position": {
+        "lat": "47.648288",
+        "lng": "8.916734"
+      },
+      "accessibility": "boat"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 5,
+      "positionInPriceRange": -1,
+      "position": 39,
+      "propertyGroup": 20,
+      "price": 4000,
+      "pricePerHouse": 2000,
+      "rents": {
+        "noHouse": 800,
+        "oneHouse": 3200,
+        "twoHouses": 10000,
+        "threeHouses": 14000,
+        "fourHouses": 16000,
+        "hotel": 20000
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "c6f0533d-d07e-4766-be9e-2a41a1507a15",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-vernier-94286579",
+    "location": {
+      "name": "Vernier",
+      "uuid": "77a2e5be-5294-4ea7-84be-1416a42b522f",
+      "position": {
+        "lat": "46.220711",
+        "lng": "6.093893"
+      },
+      "accessibility": "train"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 2,
+      "positionInPriceRange": -1,
+      "position": 20,
+      "propertyGroup": 11,
+      "price": 2500,
+      "pricePerHouse": 1250,
+      "rents": {
+        "noHouse": 500,
+        "oneHouse": 2000,
+        "twoHouses": 6250,
+        "threeHouses": 8750,
+        "fourHouses": 10000,
+        "hotel": 12500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "3e571627-22de-4254-8f42-9289350b7be7",
+    "__v": 0
+  },
+  {
+    "_id": "unit-test-ristis-88650726",
+    "location": {
+      "name": "Ristis",
+      "uuid": "2df978e4-cc9f-4ce2-b9ab-d63e6e459f4c",
+      "position": {
+        "lat": "46.832092",
+        "lng": "8.407351000000002"
+      },
+      "accessibility": "cablecar"
+    },
+    "gamedata": {
+      "buildingEnabled": false
+    },
+    "pricelist": {
+      "priceRange": 0,
+      "positionInPriceRange": -1,
+      "position": 6,
+      "propertyGroup": 4,
+      "price": 1500,
+      "pricePerHouse": 750,
+      "rents": {
+        "noHouse": 300,
+        "oneHouse": 1200,
+        "twoHouses": 3750,
+        "threeHouses": 5250,
+        "fourHouses": 6000,
+        "hotel": 7500
+      }
+    },
+    "gameId": "unit-test",
+    "uuid": "e74973b4-f573-4684-ae8f-b5010093e8b6",
+    "__v": 0
+  }]

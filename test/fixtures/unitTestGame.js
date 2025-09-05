@@ -15,6 +15,7 @@ const rulesModel = require('../../common/models/rulesModel');
 const chancelleryTransaction = require('../../common/models/accounting/chancelleryTransaction');
 const propertyAccountTransaction = require('../../common/models/accounting/propertyTransaction');
 const teamAccountTransaction = require('../../common/models/accounting/teamAccountTransaction');
+const unitTestProperties = require('./properties.json');
 const {DateTime}                   = require('luxon');
 
 
@@ -35,8 +36,14 @@ const createGame    = async function (gameId = 'unit-test') {
   const team2 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
   const team3 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
 
+  const properties = [];
+  for(let prop of unitTestProperties) {
+    properties.push(await propertyModel.addPropertyForUnitTest(gameId, prop));
+  }
+  properties.sort((a,b) => { return a.pricelist.position < b.pricelist.position ?  -1 :  0})
 
-  return {gp, teams: [team1, team2, team3]};
+
+  return {gp, teams: [team1, team2, team3], properties};
 }
 
 const cleanUpGame = async function (gameId = 'unit-test') {

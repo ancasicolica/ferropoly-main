@@ -263,6 +263,13 @@ async function getBalance(gameId, teamId, callback) {
     logger.info('>>>>>>>>  No more callbacks in getBalance');
     return callback(new Error('no callback'));
   }
+  if (typeof(gameId) !== "string") {
+    throw new Error('gameId must be a string');
+  }
+  if (typeof(teamId) !== "string") {
+    throw new Error('teamId must be a string');
+  }
+
   const value = await teamAccountTransaction.getBalance(gameId, teamId);
   return {asset: value.asset, count: value.count};
 }

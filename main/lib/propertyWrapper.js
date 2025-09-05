@@ -15,10 +15,12 @@ module.exports = {
    * @param propertyId
    * @param callback
    */
-  getProperty: function (gameId, propertyId, callback) {
-    pm.getPropertyById(gameId, propertyId, function (err, prop) {
-      callback(err, prop);
-    });
+  getProperty: async function (gameId, propertyId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in getProperty');
+      return callback(new Error('no callback'));
+    }
+    return await pm.getPropertyById(gameId, propertyId);
   },
   /**
    * Get the properties of a team
@@ -26,14 +28,12 @@ module.exports = {
    * @param teamId
    * @param callback
    */
-  getTeamProperties: function (gameId, teamId, callback) {
-    pm.getPropertiesForTeam(gameId, teamId, function (err, properties) {
-      if (err) {
-        logger.error(err);
-        return callback(err);
-      }
-      callback(null, properties);
-    });
+  getTeamProperties: async function (gameId, teamId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in getTeamProperties');
+      return callback(new Error('no callback'));
+    }
+    return await pm.getPropertiesForTeam(gameId, teamId);
   },
 
   /**
@@ -41,8 +41,12 @@ module.exports = {
    * @param gameId
    * @param callback
    */
-  getAllProperties: function (gameId, callback) {
-    pm.getPropertiesForGameplay(gameId, {lean: true}, callback);
+  getAllProperties: async function (gameId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in getAllProperties');
+      return callback(new Error('no callback'));
+    }
+    return await pm.getPropertiesForGameplay(gameId, {lean: true});
   },
 
   /**
@@ -51,20 +55,24 @@ module.exports = {
    * @param groupId
    * @param callback
    */
-  getPropertiesOfGroup: function (gameId, groupId, callback) {
-    pm.getPropertiesForGameplay(gameId, {'propertyGroup': groupId}, function (err, properties) {
-      return callback(err, properties);
-    });
+  getPropertiesOfGroup: async function (gameId, groupId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in getPropertiesOfGroup');
+      return callback(new Error('no callback'));
+    }
+    return await pm.getPropertiesForGameplay(gameId, {'propertyGroup': groupId});
   },
   /**
    * Update the property
    * @param property
    * @param callback
    */
-  updateProperty: function (property, callback) {
-    pm.updateProperty(property.gameId, property, function (err) {
-      callback(err);
-    });
+  updateProperty: async function (property, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in updateProperty');
+      return callback(new Error('no callback'));
+    }
+    return await pm.updateProperty(property.gameId, property)
   },
 
   /**
@@ -72,10 +80,12 @@ module.exports = {
    * @param gameId
    * @param callback
    */
-  allowBuilding: function (gameId, callback) {
-    pm.allowBuilding(gameId, function (err, nbAffected) {
-      callback(err, nbAffected);
-    });
+  allowBuilding: async function (gameId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in allowBuilding');
+      return callback(new Error('no callback'));
+    }
+    return await pm.allowBuilding(gameId);
   },
 
   init: function () {
