@@ -32,9 +32,12 @@ const createGame    = async function (gameId = 'unit-test') {
   gameDate: DateTime.now().toJSDate(),
   });
 
+  const team0 = await teamModel.createTeam({data: {name: 'Team 0'}}, gameId);
   const team1 = await teamModel.createTeam({data: {name: 'Team 1'}}, gameId);
   const team2 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
   const team3 = await teamModel.createTeam({data: {name: 'Team 3'}}, gameId);
+  const team4 = await teamModel.createTeam({data: {name: 'Team 4'}}, gameId);
+  const team5 = await teamModel.createTeam({data: {name: 'Team 5'}}, gameId);
 
   const properties = [];
   for(let prop of unitTestProperties) {
@@ -43,7 +46,7 @@ const createGame    = async function (gameId = 'unit-test') {
   properties.sort((a,b) => { return a.pricelist.position < b.pricelist.position ?  -1 :  0})
 
 
-  return {gp, teams: [team1, team2, team3], properties};
+  return {gp, teams: [team0, team1, team2, team3, team4, team5], properties};
 }
 
 const cleanUpGame = async function (gameId = 'unit-test') {

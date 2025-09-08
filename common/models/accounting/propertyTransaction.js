@@ -63,8 +63,8 @@ async function dumpAccounts(gameId) {
  */
 async function getEntries(gameId, propertyId, tsStart, tsEnd) {
 
-  if (!gameId || !propertyId) {
-    throw new Error('parameter error');
+  if (!gameId) {
+    throw new Error('parameter error, gameId must be supplied');
   }
 
   if (!tsStart) {
