@@ -11,58 +11,58 @@
 const teamModel = require('../../common/models/teamModel');
 const gpModel   = require('../../common/models/gameplayModel');
 const logger    = require('../../common/lib/logger').getLogger('gameCache');
-const moment    = require('moment');
-const _         = require('lodash');
+const {DateTime, Interval} = require('luxon');
 
-let gameCache = {};
+let gameCache = new Map();
 
 module.exports = {
-  getGameData: function (gameId, callback) {
-    if (gameCache[gameId]) {
-      if (!gameCache[gameId].gameplay || !gameCache[gameId].teams) {
-        logger.warn(`${gameId}: Missing important info getGameData`, {gameId});
-        return callback(new Error('cached game corrupt: ' + gameId));
-      }
-      return callback(null, gameCache[gameId]);
+  getGameData: async function (gameId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>>> No more callbacks in getGameData');
+      return callback(new Error('no more callbacks'));
     }
-    // not in cache
-    gpModel.getGameplay(gameId, null, function (err, gp) {
-      logger.info(`${gameId}: GP-Query`, {gameId});
-      if (err) {
-        logger.error(`${gameId}: getGameData, getting gameplay failed`, err);
-        return callback(err);
+
+    if (gameCache.has(gameId)) {
+      const gp = gameCache.get(gameId);
+      if (!gp.gameplay || !gp.teams) {
+        logger.warn(`${gameId}: Missing important info getGameData`, {gameId});
+        throw new Error('cached game corrupt: ' + gameId);
       }
+      return gp;
+    }
 
-      let result = {gameplay: gp};
+    // not in cache
+    const gp = await gpModel.getGameplay(gameId, null);
+    logger.info(`${gameId}: GP-Query`, {gameId});
 
-      teamModel.getTeams(gameId, function (err, teams) {
-        if (err) {
-          logger.error(`${gameId}: getGameData, getting teams failed`, err);
-          return callback(err);
-        }
-        // Add all teams to the result
-        result.teams = {};
-        for (var i = 0; i < teams.length; i++) {
-          delete teams[i]._id;
-          delete teams[i].gameId;
-          delete teams[i].__v;
-          result.teams[teams[i].uuid] = teams[i];
-        }
+    let result = {gameplay: gp};
 
-        // check if we have to add it to cache or not
-        if (moment().isBetween(gp.scheduling.gameStartTs, gp.scheduling.gameEndTs)) {
-          logger.info(`${gameId}: GP added to cache`, {gameId});
-          gameCache[gameId] = result;
-        }
+    const teams = await teamModel.getTeams(gameId);
 
-        if (!result || !result.gameplay || !result.teams) {
-          logger.info(`${gameId}: Missing important info in gameplay`, {gameId, result});
-          return callback(new Error('new game in cache is corrupt: ' + gameId));
-        }
+    // Add all teams to the result
+    result.teams = {};
+    for (let i = 0; i < teams.length; i++) {
+      delete teams[i]._id;
+      delete teams[i].gameId;
+      delete teams[i].__v;
+      result.teams[teams[i].uuid] = teams[i];
+    }
 
-        return callback(null, result);
-      });
-    });
+    // check if we have to add it to cache or not
+    const start = DateTime.now().set({hours:0, minutes: 0});
+    const end = DateTime.now().set({hours:23, minutes: 59});
+    const gamedate = DateTime.fromJSDate(new Date(gp.scheduling.gameDate));
+    if (Interval.fromDateTimes(start, end).contains(gamedate)) {
+      logger.info(`${gameId}: GP added to cache`, {gameId});
+      gameCache.set(gameId, result);
+    }
+
+    if (!result || !result.gameplay || !result.teams) {
+      logger.info(`${gameId}: Missing important info in gameplay`, {gameId, result});
+      throw new Error('new game in cache is corrupt: ' + gameId);
+    }
+
+    return result;
   },
 
   /**
@@ -73,62 +73,58 @@ module.exports = {
    * Add this job to a cron job
    * @param callback
    */
-  refreshCache: function (callback) {
+  refreshCache: async function (callback) {
+    if (callback) {
+      logger.info('>>>>>>>>>> No more callbacks in refreshCache');
+      return callback(new Error('no more callbacks'));
+    }
     logger.info('Refreshing gameCache');
-    gpModel.getAllGameplays(function (err, gameplays) {
+    const gameplays = await gpModel.getAllGameplays();
 
-      gameCache = {};
+      gameCache = new Map();
 
-      if (err) {
-        callback(err);
-        return;
-      }
       if (!gameplays || gameplays.length === 0) {
         callback(null);
         return;
       }
-      let gameplaysInCache = 0;
+
       logger.info('Nb Gameplays found: ' + gameplays.length);
-      for (let i = 0; i < gameplays.length; i++) {
-        if (moment().isSame(moment(gameplays[i].scheduling.gameDate), 'day')) { // Todo: game is today!!
-          logger.info(`${gameplays[i].internal.gameId}: added to cache`);
-          gameCache[gameplays[i].internal.gameId] = {gameplay: gameplays[i], teams: {}};
-          gameplaysInCache++;
-        }
-        else {
-          logger.info(`${gameplays[i].internal.gameId}: not added to cache`);
+      for (let gameplay of gameplays) {
+        const gameDate = DateTime.fromJSDate(new Date(gameplay.scheduling.gameDate));
+        // Check if gameDate is today (same calendar day)
+        if (DateTime.now().hasSame(gameDate, 'day')) {
+          logger.info(`${gameplay.internal.gameId}: added to cache`);
+          gameCache.set(gameplay.internal.gameId , {gameplay: gameplay, teams: new Map()});
+        } else {
+          logger.info(`${gameplay.internal.gameId}: not added to cache`);
         }
       }
 
-      if (gameplaysInCache === 0) {
+      if (gameCache.size === 0) {
         logger.info('No gameplays added to cache, it remains empty');
-        return callback();
+        return;
       }
 
-      let gpHandled = 0;
-      let teamError = null;
-      _.forOwn(gameCache, function (cacheEntry) {
+
+      for (let cacheEntry of gameCache.values()) {
         let gp = cacheEntry.gameplay;
-        // logger.info('GP value:', gp);
+       // logger.info('GP value:', gp);
         if (!gp.internal) {
           logger.error('gp.internal not defined', gp);
           return;
         }
-        teamModel.getTeams(gp.internal.gameId, function (err, teams) {
-          if (err) {
-            teamError = err;
+        const teams = await teamModel.getTeams(gp.internal.gameId);
+
+        if (teams && teams.length > 0) {
+          for(let team of teams) {
+            cacheEntry.teams.set(team.uuid, team);
           }
-          if (teams && teams.length > 0) {
-            for (let t = 0; t < teams.length; t++) {
-              gameCache[gp.internal.gameId].teams[teams[t].uuid] = teams[t];
-            }
-          }
-          gpHandled++;
-          if (gpHandled === gameplaysInCache) {
-            return callback(teamError);
-          }
-        });
-      });
-    });
+        }
+      }
+
+      logger.info(`Games in cache: ${gameCache.size}`, gameCache.keys());
+  },
+  getCache: function() {
+    return gameCache;
   }
 };
