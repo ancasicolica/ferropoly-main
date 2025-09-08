@@ -12,8 +12,8 @@ const chancelleryTransaction = require('../../../common/models/accounting/chance
 const gameLog                = require('../gameLog');
 const teamAccount            = require('./teamAccount');
 const _                      = require('lodash');
-const moment                 = require('moment');
 const chancelleryActions     = require('../../../components/checkin-datastore/lib/chancellery/actions');
+const {DateTime}             = require('luxon');
 const logger                 = require('../../../common/lib/logger').getLogger('chancelleryAccount');
 let ferroSocket;
 let jackpotFull              = {};
@@ -37,7 +37,6 @@ async function bookChancelleryEvent(gameplay, team, info, callback) {
 
   /**
    * The internal callbackhandler, sending the new balance to all teams of a game
-   * @param err
    */
   async function bookCallback() {
     if (!ferroSocket) {
@@ -229,7 +228,7 @@ async function getAccountStatement(gameId, callback) {
   if (!gameId) {
     throw new Error('no gameId supplied');
   }
-  return await chancelleryTransaction.getEntries(gameId, undefined, moment());
+  return await chancelleryTransaction.getEntries(gameId, undefined, DateTime.now());
 }
 
 

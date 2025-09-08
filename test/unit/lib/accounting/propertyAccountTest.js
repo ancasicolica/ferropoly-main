@@ -23,7 +23,7 @@ describe('Testing the propertyAccount', () => {
   })
 
   after(async () => {
-    //await unitTestGame.cleanUpGame(gameId);
+    await unitTestGame.cleanUpGame(gameId);
     await db.close();
   })
 

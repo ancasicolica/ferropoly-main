@@ -6,9 +6,9 @@
 
 const _                      = require('lodash');
 const teamAccountTransaction = require('./../../../common/models/accounting/teamAccountTransaction');
-const moment                 = require('moment');
 const logger                 = require('../../../common/lib/logger').getLogger('accounting:teamAccount');
 const teamAccountActions     = require('../../../components/checkin-datastore/lib/teamAccount/actions');
+const {DateTime} = require('luxon');
 
 let ferroSocket;
 
@@ -24,7 +24,8 @@ async function payInterest(teamId, gameId, amount, callback) {
     logger.info('>>>>>>>>  No more callbacks in payInterest');
     return callback(new Error('no callback'));
   }
-  if (!teamId || !gameId || !_.isNumber(amount)) {
+  if (!_.isString(teamId) || !_.isString(gameId) || !_.isNumber(amount)) {
+    logger.info('Bullshit params in payInterest', {teamId, gameId, amount});
     throw new Error('Parameter error in payInterest');
   }
 
@@ -143,8 +144,9 @@ async function receiveFromBankOrChancellery(teamId, gameId, amount, info, catego
     return callback(new Error('no callback'));
   }
 
-  if (!teamId || !gameId || !_.isNumber(amount)) {
-    throw new Error('Parameter error in chargeToBank');
+  if (!_.isString(teamId) || !_.isString(gameId) || !_.isNumber(amount)) {
+    logger.info('Bullshit params in receiveFromBankOrChancellery', {teamId: teamId, gameId: gameId, amount: amount});
+    throw new Error('Parameter error in receiveFromBankOrChancellery');
   }
 
   if (amount === 0) {
@@ -168,6 +170,7 @@ async function receiveFromBankOrChancellery(teamId, gameId, amount, info, catego
     ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
     ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
   }
+  return {amount }
 }
 
 /**
@@ -212,12 +215,14 @@ async function chargeToAnotherTeam(options, callback) {
     logger.info('>>>>>>>>  No more callbacks in chargeToAnotherTeam');
     return callback(new Error('no callback'));
   }
-  if (!options.debitorTeamId || !options.creditorTeamId || !options.info || !options.gameId || !_.isNumber(options.amount)) {
+  if (!_.isString(options.debitorTeamId) || !_.isString(options.creditorTeamId) || !_.isString(options.info) || !_.isString(options.gameId) || !_.isNumber(options.amount)) {
+    logger.info('Bullshit params in chargeToAnotherTeam', options);
     throw new Error('Parameter error in chargeToAnotherTeam');
   }
 
   if (options.amount === 0) {
-    throw new Error('Value must not be 0');
+    // not considered as error anymore, just no bookings done!
+    return {amount: 0};
   }
 
   // Amount has to be positive for us, not concerning of the parameter value!
@@ -263,10 +268,10 @@ async function getBalance(gameId, teamId, callback) {
     logger.info('>>>>>>>>  No more callbacks in getBalance');
     return callback(new Error('no callback'));
   }
-  if (typeof(gameId) !== "string") {
+  if (typeof (gameId) !== 'string') {
     throw new Error('gameId must be a string');
   }
-  if (typeof(teamId) !== "string") {
+  if (typeof (teamId) !== 'string') {
     throw new Error('teamId must be a string');
   }
 
@@ -295,6 +300,7 @@ async function negativeBalanceHandling(gameId, teamId, rate, callback) {
     // chancellerys job to book, we just make the calculation here.
     return {amount: interest};
   }
+  return {amount: 0};
 }
 
 /**
@@ -344,19 +350,26 @@ async function getAccountStatement(gameId, teamId, p1, p2, p3) {
   if (_.isFunction(p1)) {
     callback = p1;
     tsStart  = undefined;
-    tsEnd    = moment();
+    tsEnd    = DateTime.now().toJSDate();
   } else if (_.isFunction(p2)) {
     callback = p2;
     tsStart  = p2;
-    tsEnd    = moment();
+    tsEnd    = DateTime.now().toJSDate();
   }
   if (!tsEnd) {
-    tsEnd = moment();
+    tsEnd = DateTime.now().toJSDate();
   }
 
   if (callback) {
     logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
     return callback(new Error('no callback'));
+  }
+
+  if(!_.isString(gameId)) {
+    throw new Error('gameId must be a String');
+  }
+  if(!_.isString(teamId)) {
+    throw new Error('teamId must be a String');
   }
 
   return await teamAccountTransaction.getEntries(gameId, teamId, tsStart, tsEnd);
