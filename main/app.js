@@ -52,15 +52,12 @@ logger.info(`Google Cloud Logging: ${settings.logger.google.enabled}`)
 const app = express();
 
 /**
- * Initialize DB connection, has to be only once for all models
+ * Initialize DB connection has to be only once for all models
  */
-ferropolyDb.init(settings, function (err) {
-  if (err) {
-    logger.error('Failed to init ferropolyDb', err);
-    return;
-  }
+async function initMain() {
+  await ferropolyDb.init(settings)
 
-  let server = require('http').Server(app);
+  const server = require('http').Server(app);
 
   // view engine setup
   app.set('views', path.join(__dirname, 'views'));
@@ -90,17 +87,17 @@ ferropolyDb.init(settings, function (err) {
   passport.deserializeUser(authStrategy.deserializeUser);
   // required for passport: configuration
   app.use(session({
-    secret           : 'ferropolyIsAGameWithAVeryLargePlayground',
-    resave           : false,
+    secret:            'ferropolyIsAGameWithAVeryLargePlayground',
+    resave:            false,
     saveUninitialized: false,
-    cookie           : {
+    cookie:            {
       secure: 'auto'
     },
-    genid            : function () {
+    genid:             function () {
       return 'S_' + moment().format('YYMMDD-HHmmss-') + uuid();
     },
-    store            : MongoStore.create({mongoUrl: settings.locationDbSettings.mongoDbUrl, ttl: 2 * 24 * 60 * 60}),
-    name             : 'ferropoly-spiel'
+    store:             MongoStore.create({mongoUrl: settings.locationDbSettings.mongoDbUrl, ttl: 2 * 24 * 60 * 60}),
+    name:              'ferropoly-spiel'
   }));
   app.use(passport.initialize());
   app.use(passport.session()); // persistent login sessions
@@ -162,8 +159,8 @@ ferropolyDb.init(settings, function (err) {
 
     res.render('error/404', {
       message: 'Nicht gefunden',
-      url    : req.url,
-      error  : {status: 404}
+      url:     req.url,
+      error:   {status: 404}
     });
   });
 
@@ -174,7 +171,7 @@ ferropolyDb.init(settings, function (err) {
       res.status(err.status || 500);
       res.render('error', {
         message: err.message,
-        error  : err
+        error:   err
       });
     });
   }
@@ -185,7 +182,7 @@ ferropolyDb.init(settings, function (err) {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
-      error  : {}
+      error:   {}
     });
   });
 
@@ -197,4 +194,8 @@ ferropolyDb.init(settings, function (err) {
 
     logger.info('Ferropoly Main server listening on port ' + app.get('port'));
   });
+}
+
+initMain().catch(err=> {
+  console.error('Serious problem in initMain', err);
 });
