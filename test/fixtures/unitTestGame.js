@@ -19,7 +19,7 @@ const unitTestProperties = require('./properties.json');
 const {DateTime}                   = require('luxon');
 
 
-const createGame    = async function (gameId = 'unit-test') {
+const createGame    = async function (gameId = 'unit-test', options = {}) {
 
   const exists = gameplayModel.checkIfGameIdExists(gameId);
   if (exists) {
@@ -29,7 +29,7 @@ const createGame    = async function (gameId = 'unit-test') {
 
   console.log(`CREATING new gameplay ${gameId}`);
   const gp = await gameplayModel.createGameplay({map: 'sbb', ownerEmail: 'demo@ferropoly.ch', name: gameId, gameId: gameId ,
-  gameDate: DateTime.now().toJSDate(),
+  gameDate: options.gameDate || DateTime.now().toJSDate(),
   });
 
   const team0 = await teamModel.createTeam({data: {name: 'Team 0'}}, gameId);

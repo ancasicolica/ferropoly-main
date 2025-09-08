@@ -23,14 +23,8 @@ let jackpotFull              = {};
  * @param gameplay
  * @param team
  * @param info
- * @param callback
  */
-async function bookChancelleryEvent(gameplay, team, info, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in bookChancelleryEvent');
-    return callback(new Error('no callback'));
-  }
-
+async function bookChancelleryEvent(gameplay, team, info) {
   if (!gameplay || !team || !info) {
     throw new Error('invalid params in bookChancelleryEvent');
   }
