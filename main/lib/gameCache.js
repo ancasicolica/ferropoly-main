@@ -40,12 +40,12 @@ module.exports = {
     const teams = await teamModel.getTeams(gameId);
 
     // Add all teams to the result
-    result.teams = {};
-    for (let i = 0; i < teams.length; i++) {
-      delete teams[i]._id;
-      delete teams[i].gameId;
-      delete teams[i].__v;
-      result.teams[teams[i].uuid] = teams[i];
+    result.teams = new Map();
+    for (let team of teams ) {
+      delete team._id;
+      delete team.gameId;
+      delete team.__v;
+      result.teams.set(team.uuid, team);
     }
 
     // check if we have to add it to cache or not

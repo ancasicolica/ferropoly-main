@@ -12,7 +12,7 @@ const {DateTime}         = require('luxon');
 const gameId             = 'unit-test-team-account';
 let gameData;
 
-describe('Testing the propertyAccount', () => {
+describe('Testing the teamAccount', () => {
 
   before(async () => {
     await db.init(settings);

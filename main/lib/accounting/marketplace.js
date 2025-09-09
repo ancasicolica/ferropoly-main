@@ -47,67 +47,71 @@ class Marketplace extends EventEmitter {
       /**
        * This is the 'interest' event launched by the gameScheduler
        */
-      this.scheduler.on('interest', function (event) {
-        marketLog(event.gameId, 'Marketplace: onInterest');
-        self.payRents({gameId: event.gameId}, function (err) {
-          if (err) {
-            marketLog(event.gameId, 'ERROR, interests not paid! Message: ' + err.message);
-            event.callback(err);
-            return;
-          }
+      this.scheduler.on('interest', async function (event) {
+        try {
+          marketLog(event.gameId, 'Marketplace: onInterest');
+          await self.payRents({gameId: event.gameId});
           marketLog(event.gameId, 'Timed interests paid');
           event.callback(null, event);
-        });
+        }
+        catch (err) {
+          event.callback(err);
+        }
       });
       /**
        * This is the 'prestart' event launched by the gameScheduler. Game is going to start soon, refresh cache
        * Pay start capital
        */
-      this.scheduler.on('prestart', function (event) {
-        marketLog(event.gameId, 'Marketplace: onPrestart');
-        gameCache.refreshCache(function (err) {
-          marketLog(event.gameId, 'Cache refreshed', err);
-          self.payInitialAsset(event.gameId, function (err) {
-            if (err) {
-              marketLog(event.gameId, 'ERROR, initial assets not paid! Message: ' + err.message);
-              event.callback(err);
-              return;
-            }
-            marketLog(event.gameId, 'Initial assets paid');
-            event.callback(null, event);
-          });
-        });
+      this.scheduler.on('prestart', async function (event) {
+        try {
+          marketLog(event.gameId, 'Marketplace: onPrestart');
+          await gameCache.refreshCache()
+          marketLog(event.gameId, 'Cache refreshed');
+          await self.payInitialAsset(event.gameId);
+          marketLog(event.gameId, 'Initial assets paid');
+          event.callback(null, event);
+        }
+        catch (err) {
+          event.callback(err);
+        }
       });
+
       /**
        * This is the 'start' event launched by the gameScheduler. Nothing is done currently.
        */
-      this.scheduler.on('start', function (event) {
-        marketLog(event.gameId, 'Marketplace: onStart');
-        gameLog.addEntry({
-          gameId:    event.gameId,
-          category:  gameLog.CAT_GENERAL,
-          saveTitle: 'Spielstart'
-        }, event.callback(null, event));
+      this.scheduler.on('start', async function (event) {
+        try {
+          marketLog(event.gameId, 'Marketplace: onStart');
+          await gameLog.addEntry({
+            gameId:    event.gameId,
+            category:  gameLog.CAT_GENERAL,
+            saveTitle: 'Spielstart'
+          });
+          event.callback(null, event);
+        }
+        catch (err) {
+          event.callback(err);
+        }
       });
       /**
        * This is the 'end' event launched by the gameScheduler. Pay the final rents & interests
        */
-      this.scheduler.on('end', function (event) {
-        marketLog(event.gameId, 'Marketplace: onEnd');
-        self.payFinalRents(event.gameId, function (err) {
-          if (err) {
-            marketLog(event.gameId, 'ERROR, final interests not paid! Message: ' + err.message);
-            event.callback(err);
-            return;
-          }
+      this.scheduler.on('end', async function (event) {
+        try {
+          marketLog(event.gameId, 'Marketplace: onEnd');
+          await self.payFinalRents(event.gameId);
           marketLog(event.gameId, 'Timed interests paid');
           marketLog(event.gameId, 'Marketplace: onStart');
-          gameLog.addEntry({
+          await gameLog.addEntry({
             gameId:    event.gameId,
             category:  gameLog.CAT_GENERAL,
             saveTitle: 'Spielende'
-          }, event.callback(null, event));
-        });
+          })
+          event.callback(null, event);
+        }
+        catch (err) {
+          event.callback(err);
+        }
       });
     }
   }
@@ -134,7 +138,8 @@ class Marketplace extends EventEmitter {
       return false;
     }
     return true;
-  };
+  }
+  ;
 
   /**
    * Buy a property or at least try to
@@ -153,7 +158,7 @@ class Marketplace extends EventEmitter {
       callback(new Error('no callback'));
     }
 
-    if (!options.gameId || !options.teamId || !options.propertyId) {
+    if (!_.isString(options.gameId) || !_.isString(options.teamId) || !_.isString(options.propertyId)) {
       logger.info('Rather stupid options for buyProperty', options);
       throw new Error('At least gameId, teamId and property Id must be supplied');
     }
@@ -163,8 +168,10 @@ class Marketplace extends EventEmitter {
     const property = await propWrap.getProperty(options.gameId, options.propertyId);
     const logEntry = await travelLog.addPropertyEntry(options.gameId, options.teamId, property);
 
-    ferroSocket.emitToAdmins(options.gameId, 'player-position', logEntry);
-    ferroSocket.emitToTeam(options.gameId, options.teamId, 'player-position', logEntry);
+    if (ferroSocket) {
+      ferroSocket.emitToAdmins(options.gameId, 'player-position', logEntry);
+      ferroSocket.emitToTeam(options.gameId, options.teamId, 'player-position', logEntry);
+    }
 
     if (!property) {
       throw new Error('No property for this location', {message: 'Dieses Ort kann nicht gekauft werden'});
@@ -173,7 +180,7 @@ class Marketplace extends EventEmitter {
     const gameData = await gameCache.getGameData(options.gameId);
 
     let gp   = gameData.gameplay;
-    let team = gameData.teams[options.teamId];
+    let team = gameData.teams.get(options.teamId);
 
     if (!gp || !team) {
       throw new Error('Gameplay error or team invalid');
@@ -224,7 +231,8 @@ class Marketplace extends EventEmitter {
       });
       return info;
     }
-  };
+  }
+  ;
 
   /**
    * Build houses for all porperties of a team
@@ -250,7 +258,7 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId);
 
     let gp   = res.gameplay;
-    let team = res.teams[teamId];
+    let team = res.teams.get(teamId);
 
     if (!gp || !team) {
       throw new Error('Gameplay error or team invalid');
@@ -260,7 +268,7 @@ class Marketplace extends EventEmitter {
       throw new Error(`Marketplace "${gameId}" is closed, can't build houses.`);
     }
 
-    let log     = [];
+    let log = [];
 
     for (const property in properties) {
       const info = await propertyAccount.buyBuilding(gp, property, team);
@@ -283,7 +291,8 @@ class Marketplace extends EventEmitter {
       info:   {info: 'Hausbau', parts: log}
     });
     return {amount: totalAmount, log: log}
-  };
+  }
+  ;
 
 
   /**
@@ -315,7 +324,7 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId);
 
     let gp   = res.gameplay;
-    let team = res.teams[teamId];
+    let team = res.teams.get(teamId);
 
     if (!gp || !team) {
       throw new Error('Gameplay error or team invalid');
@@ -334,7 +343,8 @@ class Marketplace extends EventEmitter {
       info:   {info: 'Hausbau ' + property.location.name}
     })
     return {amount: info.amount};
-  };
+  }
+  ;
 
   /**
    * Pays the initial assets of a game. This is usually done before the market opens
@@ -350,16 +360,15 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId)
 
     let gp    = res.gameplay;
-    let teams = _.valuesIn(res.teams);
+    let teams = res.teams.values();
 
     if (!self.isOpen(gp, 15)) {
-      return callback(new Error(`Marketplace "${gameId}" is closed`));
+      throw new Error(`Marketplace "${gameId}" is closed`);
     }
 
     for (const team of teams) {
       await teamAccount.receiveFromBank(team.uuid, gameId, gp.gameParams.startCapital, 'Startkapital');
     }
-
   };
 
   /**
@@ -391,7 +400,8 @@ class Marketplace extends EventEmitter {
     for (let i = 0; i < gp.gameParams.interestCyclesAtEndOfGame; i++) {
       await self.payRents({gameId: gameId, tolerance: tolerance});
     }
-  };
+  }
+  ;
 
   /**
    * Pay Interest (this is the fix value) for all teams.
@@ -416,7 +426,7 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId)
 
     let gp    = res.gameplay;
-    let teams = _.valuesIn(res.teams);
+    let teams = res.teams.values();
 
     if (!self.isOpen(gp, tolerance)) {
       throw new Error(`Marketplace "${gameId}" is closed, can't pay interests.`);
@@ -425,7 +435,7 @@ class Marketplace extends EventEmitter {
     for (const team of teams) {
       await teamAccount.payInterest(team.uuid, gameId, gp.gameParams.interest);
     }
-  };
+  }
 
   /**
    * Checks for a negative asset and pays to the chancellery if so
@@ -449,7 +459,7 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId);
 
     let gp    = res.gameplay;
-    let teams = _.valuesIn(res.teams);
+    let teams = res.teams.values();
 
     if (!self.isOpen(gp, tolerance)) {
       throw new Error(`Marketplace "${gameId}" is closed so there are no negative assets.`);
@@ -463,7 +473,8 @@ class Marketplace extends EventEmitter {
         return;
       }
     }
-  };
+  }
+  ;
 
   /**
    * Pays the rents (each hour) for a team
@@ -495,7 +506,8 @@ class Marketplace extends EventEmitter {
         parts: info.register
       });
     }
-  };
+  }
+  ;
 
   /**
    * Pays the rents (interests and rents) for all teams, also releasing the buildingEnabled lock for the next round
@@ -522,7 +534,7 @@ class Marketplace extends EventEmitter {
     const res = await gameCache.getGameData(gameId);
 
     let gp    = res.gameplay;
-    let teams = _.valuesIn(res.teams);
+    let teams = res.teams.values();
 
     if (!gp) {
       throw new Error('Gameplay with id ' + gameId + ' not found (payRents)');
@@ -552,7 +564,8 @@ class Marketplace extends EventEmitter {
       // Inform clients that the can build again
       ferroSocket.emitToGame(gameId, 'general', {message: 'Die Mieten wurden ausbezahlt'});
     }
-  };
+  }
+  ;
 
   /**
    * Chancellery, every time a team calls (be sure that they are on the line,
@@ -576,14 +589,15 @@ class Marketplace extends EventEmitter {
 
     const res = await gameCache.getGameData(gameId);
     let gp    = res.gameplay;
-    let team  = res.teams[teamId];
+    let team  = res.teams.get(teamId);
 
     if (!self.isOpen(gp)) {
       return callback(new Error(`Marketplace "${gameId}" is closed, no more chancellery.`));
     }
 
     return await chancelleryAccount.playChancellery(gp, team);
-  };
+  }
+  ;
 
   /**
    * Chancellery Game: either you win or you loose. Usually only loosing money
@@ -607,14 +621,15 @@ class Marketplace extends EventEmitter {
 
     const res = await gameCache.getGameData(gameId);
     let gp    = res.gameplay;
-    let team  = res.teams[teamId];
+    let team  = res.teams.get(teamId);
 
     if (!self.isOpen(gp)) {
       return callback(new Error(`Marketplace "${gameId}" is closed, gambling is over.`));
     }
 
     return chancelleryAccount.gamble(gp, team, amount);
-  };
+  }
+  ;
 
 
   /**
@@ -647,7 +662,8 @@ class Marketplace extends EventEmitter {
         info:   'Manuelle Lastschrift: ' + reason
       })
     }
-  };
+  }
+  ;
 
   /**
    * Resets a property: removes the owner and buildings. Use only, if you have bought a property by mistake
@@ -672,7 +688,8 @@ class Marketplace extends EventEmitter {
     const prop = await propWrap.getProperty(gameId, propertyId);
     await propertyAccount.resetProperty(gameId, prop, reason);
 
-  };
+  }
+  ;
 }
 
 module.exports = {

@@ -28,9 +28,14 @@ const createGame    = async function (gameId = 'unit-test', options = {}) {
   }
 
   console.log(`CREATING new gameplay ${gameId}`);
-  const gp = await gameplayModel.createGameplay({map: 'sbb', ownerEmail: 'demo@ferropoly.ch', name: gameId, gameId: gameId ,
+  const gp = await gameplayModel.createGameplay({
+    map: 'sbb', ownerEmail: 'demo@ferropoly.ch', name: gameId, gameId: gameId ,
   gameDate: options.gameDate || DateTime.now().toJSDate(),
+    gameStart: options.gameStart || '03:00',
+    gameEnd: options.gameEnd || '23:00'
   });
+  await gameplayModel.saveNewPriceListRevision(gp);
+  await gameplayModel.finalize(gameId, 'demo@ferropoly.ch');
 
   const team0 = await teamModel.createTeam({data: {name: 'Team 0'}}, gameId);
   const team1 = await teamModel.createTeam({data: {name: 'Team 1'}}, gameId);
