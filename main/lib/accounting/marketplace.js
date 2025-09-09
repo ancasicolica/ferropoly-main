@@ -270,9 +270,11 @@ class Marketplace extends EventEmitter {
 
     let log = [];
 
-    for (const property in properties) {
+    for (const property of properties) {
       const info = await propertyAccount.buyBuilding(gp, property, team);
-      log.push(info);
+      if (info.success) {
+        log.push(info);
+      }
     }
 
     let totalAmount = 0;
@@ -556,7 +558,7 @@ class Marketplace extends EventEmitter {
     }
     marketLog(gameId, 'Building allowed again for ' + nbAffected.toString() + ' buildings');
 
-    for (const team in teams) {
+    for (const team of teams) {
       await self.payRentsForTeam(gp, team, tolerance);
     }
 
