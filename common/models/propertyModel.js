@@ -280,9 +280,14 @@ async function getPropertyById(gameId, propertyId, callback) {
  *
  * @param gameId
  * @param options
+ * @param callback
  * @returns {Query}
  */
-async function getPropertiesForGameplay(gameId, options) {
+async function getPropertiesForGameplay(gameId, options, callback) {
+  if (callback) {
+    logger.error('>>>>>>>>>>>>>>>>>>>>>> Callback in getPropertiesForGameplay is not supported anymore!!!!!!!!!!!!!!!!!!!!!!!!!');
+    return callback('NOT SUPPORTED ANYMORE!');
+  }
 
   if (!gameId) {
     throw new Error('No gameId supplied');
