@@ -599,7 +599,6 @@ class Marketplace extends EventEmitter {
 
     return await chancelleryAccount.playChancellery(gp, team);
   }
-  ;
 
   /**
    * Chancellery Game: either you win or you loose. Usually only loosing money
@@ -689,9 +688,7 @@ class Marketplace extends EventEmitter {
 
     const prop = await propWrap.getProperty(gameId, propertyId);
     await propertyAccount.resetProperty(gameId, prop, reason);
-
   }
-  ;
 }
 
 module.exports = {

@@ -38,6 +38,13 @@ describe('Testing the marketplace', () => {
     await db.close();
   })
 
+  describe('Getting the market place', ()=> {
+    it('should return the same marketplace instance', async () => {
+      const mp2 = marketplace.getMarketplace();
+      expect(mp).to.be(mp2);
+    })
+  })
+
   describe('Preparing a game', () => {
 
     it('should be no money on the accounts before the game', async () => {
@@ -366,6 +373,69 @@ describe('Testing the marketplace', () => {
       const prop = await propWrap.getProperty(gameId, gameData.properties[0].uuid);
       console.log(prop);
       expect(prop.gamedata.owner).to.be(gameData.teams[0].uuid);
+    })
+  })
+
+  describe('Chancellery', ()=> {
+    it('should pay or get the money by random', async ()=> {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result = await mp.chancellery(gameId, gameData.teams[5].uuid);
+      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset + result.amount).to.be(assetAfter.asset);
+    })
+    it('should pay gambling money', async ()=> {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, 3333);
+      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset + 3333).to.be(assetAfter.asset);
+    })
+    it('should loose gambling money', async ()=> {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, -2222);
+      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset - 2222).to.be(assetAfter.asset);
+    })
+  })
+
+  describe('Manipulating Team accounts', ()=> {
+    it ('should be possible to add some money', async () => {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      const result      = await mp.manipulateTeamAccount(gameId, gameData.teams[4].uuid, 3000, 'Korrektur');
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset + 3000).to.be(assetAfter.asset);
+    })
+    it ('should be possible to reduce some money', async () => {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      const result      = await mp.manipulateTeamAccount(gameId, gameData.teams[4].uuid, -1200, 'Korrektur');
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset - 1200).to.be(assetAfter.asset);
+    })
+  })
+
+  describe('Reset a prperty over the market place', ()=> {
+    it('should be possible to buy a property', async () => {
+      const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      const result      = await mp.buyProperty({gameId, teamId: gameData.teams[4].uuid, propertyId:gameData.properties[22].uuid});
+      console.log(result, assetBefore);
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.asset - 2500).to.be(assetAfter.asset);
+    })
+    it ('should be possible to reset a property', async () => {
+      const assetBefore = await propertyAccount.getBalance(gameId, gameData.properties[22].uuid);
+      const result      = await mp.resetProperty(gameId, gameData.properties[22].uuid, 'unit test');
+      const assetAfter  = await propertyAccount.getBalance(gameId, gameData.properties[22].uuid);
+      console.log(result, assetBefore, assetAfter);
+      expect(assetBefore.balance +2500).to.be(assetAfter.balance);
+
+      const prop = await propWrap.getProperty(gameId, gameData.properties[22].uuid);
+      console.log(prop);
+      expect(prop.gamedata.owner).to.be(undefined);
     })
   })
 
