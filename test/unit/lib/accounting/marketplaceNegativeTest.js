@@ -10,10 +10,8 @@ const db                 = require('../../../../common/lib/ferropolyDb');
 const settings           = require('../../../../main/settings');
 const unitTestGame       = require('../../../fixtures/unitTestGame');
 const TestEmitter        = require('../../../fixtures/testEmitter');
-const gameCache          = require('../../../../main/lib/gameCache');
 const marketplace        = require('../../../../main/lib/accounting/marketplace');
 const {DateTime}         = require('luxon');
-const chancelleryAccount = require('../../../../main/lib/accounting/chancelleryAccount');
 const teamAccount        = require('../../../../main/lib/accounting/teamAccount');
 
 const testEmitter = new TestEmitter();
