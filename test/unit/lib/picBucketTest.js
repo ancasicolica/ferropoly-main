@@ -6,6 +6,8 @@ const expect      = require('expect.js');
 const path        = require("path");
 const _           = require('lodash');
 const ferropolyDb = require('../../../common/lib/ferropolyDb');
+const settings    = require('../../../main/settings');
+
 let picBucket     = undefined;
 describe('PicBucket Tests Initialisation', () => {
 
@@ -56,8 +58,12 @@ describe('PicBucket Tests Initialisation', () => {
 });
 
 describe('PicBucket operation', () => {
-  before(done => {
-    ferropolyDb.init(require('../../../main/settings.js'), done);
+  before(async () => {
+    await ferropolyDb.init(settings);
+  })
+
+  after(async () => {
+    await ferropolyDb.close();
   })
 
   let info     = undefined;

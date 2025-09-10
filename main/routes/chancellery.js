@@ -63,25 +63,21 @@ router.post('/play/:gameId/:teamId', function (req, res) {
   if (!req.params.gameId || !req.params.teamId) {
     return res.status(400).send({message: 'No gameId or teamId supplied'});
   }
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    }
-    gameCache.getGameData(req.params.gameId, function (err, data) {
-      if (err) {
-        logger.error(err);
-        return res.status(500).send({message: 'getGameData error: ' + err.message});
-      }
+  accessor.verify(user, req.params.gameId, accessor.admin).catch(err => {
+    return res.status(403).send({message: `Access right error: ${err.message}`});
+  }).then(async () => {
+    try {
+      const data = await gameCache.getGameData(req.params.gameId);
+
       let gp   = data.gameplay;
       let team = data.teams[req.params.teamId];
 
-      chancellery.playChancellery(gp, team, function (err, data) {
-        if (err) {
-          return res.status(500).send({message: 'playChancellery error: ' + err.message});
-        }
-        res.send({result: data});
-      });
-    });
+      const chRes = await chancellery.playChancellery(gp, team);
+      res.send({result: chRes});
+    }
+    catch (ex) {
+      return res.status(500).send({message: 'playChancellery error: ' + ex.message});
+    }
   });
 });
 
