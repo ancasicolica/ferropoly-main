@@ -87,7 +87,7 @@ describe('Game Cache Tests', () => {
     })
 
     it('should throw an error if the game does not exist',  (done)=> {
-      gameCache.getGameData('any-id').then(gameData => {
+      gameCache.getGameData('any-id').then(() => {
         done( new Error('should not be possible to get game data'));
       }).catch(err=> {
         console.log(err);

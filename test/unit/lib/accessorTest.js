@@ -4,7 +4,6 @@
  * Created: 10.09.2025
  **/
 
-const expect        = require('expect.js');
 const db            = require('../../../common/lib/ferropolyDb');
 const gameplayModel = require('../../../common/models/gameplayModel');
 const settings      = require('../../../main/settings');
