@@ -85,5 +85,14 @@ describe('Game Cache Tests', () => {
       const cache = gameCache.getCache();
       expect(cache.get(gameId5)).not.to.be(undefined);
     })
+
+    it('should throw an error if the game does not exist',  (done)=> {
+      gameCache.getGameData('any-id').then(gameData => {
+        done( new Error('should not be possible to get game data'));
+      }).catch(err=> {
+        console.log(err);
+        done();
+      })
+    })
   })
 })

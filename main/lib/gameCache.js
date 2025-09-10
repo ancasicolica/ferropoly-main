@@ -8,9 +8,9 @@
  */
 
 
-const teamModel = require('../../common/models/teamModel');
-const gpModel   = require('../../common/models/gameplayModel');
-const logger    = require('../../common/lib/logger').getLogger('gameCache');
+const teamModel            = require('../../common/models/teamModel');
+const gpModel              = require('../../common/models/gameplayModel');
+const logger               = require('../../common/lib/logger').getLogger('gameCache');
 const {DateTime, Interval} = require('luxon');
 
 let gameCache = new Map();
@@ -33,6 +33,11 @@ module.exports = {
 
     // not in cache
     const gp = await gpModel.getGameplay(gameId, null);
+    if (!gp) {
+      logger.info(`${gameId}: not found`);
+      throw new Error(`Game with id ${gameId} not found`);
+    }
+
     logger.info(`${gameId}: GP-Query`, {gameId});
 
     let result = {gameplay: gp};
@@ -41,7 +46,7 @@ module.exports = {
 
     // Add all teams to the result
     result.teams = new Map();
-    for (let team of teams ) {
+    for (let team of teams) {
       delete team._id;
       delete team.gameId;
       delete team.__v;
@@ -49,8 +54,8 @@ module.exports = {
     }
 
     // check if we have to add it to cache or not
-    const start = DateTime.now().set({hours:0, minutes: 0});
-    const end = DateTime.now().set({hours:23, minutes: 59});
+    const start    = DateTime.now().set({hours: 0, minutes: 0});
+    const end      = DateTime.now().set({hours: 23, minutes: 59});
     const gamedate = DateTime.fromJSDate(new Date(gp.scheduling.gameDate));
     if (Interval.fromDateTimes(start, end).contains(gamedate)) {
       logger.info(`${gameId}: GP added to cache`, {gameId});
@@ -81,50 +86,50 @@ module.exports = {
     logger.info('Refreshing gameCache');
     const gameplays = await gpModel.getAllGameplays();
 
-      gameCache = new Map();
+    gameCache = new Map();
 
-      if (!gameplays || gameplays.length === 0) {
-        callback(null);
+    if (!gameplays || gameplays.length === 0) {
+      callback(null);
+      return;
+    }
+
+    logger.info('Nb Gameplays found: ' + gameplays.length);
+    for (let gameplay of gameplays) {
+      const gameDate = DateTime.fromJSDate(new Date(gameplay.scheduling.gameDate));
+      // Check if gameDate is today (same calendar day)
+      if (DateTime.now().hasSame(gameDate, 'day')) {
+        logger.info(`${gameplay.internal.gameId}: added to cache`);
+        gameCache.set(gameplay.internal.gameId, {gameplay: gameplay, teams: new Map()});
+      } else {
+        logger.info(`${gameplay.internal.gameId}: not added to cache`);
+      }
+    }
+
+    if (gameCache.size === 0) {
+      logger.info('No gameplays added to cache, it remains empty');
+      return;
+    }
+
+
+    for (let cacheEntry of gameCache.values()) {
+      let gp = cacheEntry.gameplay;
+      // logger.info('GP value:', gp);
+      if (!gp.internal) {
+        logger.error('gp.internal not defined', gp);
         return;
       }
+      const teams = await teamModel.getTeams(gp.internal.gameId);
 
-      logger.info('Nb Gameplays found: ' + gameplays.length);
-      for (let gameplay of gameplays) {
-        const gameDate = DateTime.fromJSDate(new Date(gameplay.scheduling.gameDate));
-        // Check if gameDate is today (same calendar day)
-        if (DateTime.now().hasSame(gameDate, 'day')) {
-          logger.info(`${gameplay.internal.gameId}: added to cache`);
-          gameCache.set(gameplay.internal.gameId , {gameplay: gameplay, teams: new Map()});
-        } else {
-          logger.info(`${gameplay.internal.gameId}: not added to cache`);
+      if (teams && teams.length > 0) {
+        for (let team of teams) {
+          cacheEntry.teams.set(team.uuid, team);
         }
       }
+    }
 
-      if (gameCache.size === 0) {
-        logger.info('No gameplays added to cache, it remains empty');
-        return;
-      }
-
-
-      for (let cacheEntry of gameCache.values()) {
-        let gp = cacheEntry.gameplay;
-       // logger.info('GP value:', gp);
-        if (!gp.internal) {
-          logger.error('gp.internal not defined', gp);
-          return;
-        }
-        const teams = await teamModel.getTeams(gp.internal.gameId);
-
-        if (teams && teams.length > 0) {
-          for(let team of teams) {
-            cacheEntry.teams.set(team.uuid, team);
-          }
-        }
-      }
-
-      logger.info(`Games in cache: ${gameCache.size}`, gameCache.keys());
+    logger.info(`Games in cache: ${gameCache.size}`, gameCache.keys());
   },
-  getCache: function() {
+  getCache:     function () {
     return gameCache;
   }
 };

@@ -5,10 +5,9 @@
  * Created by kc on 10.07.15.
  */
 
-const gamecache  = require('./gameCache');
-const gameplays  = require('../../common/models/gameplayModel');
-const _          = require('lodash');
-const logger     = require('../../common/lib/logger').getLogger('lib:accessor');
+const gamecache = require('./gameCache');
+const _         = require('lodash');
+const logger    = require('../../common/lib/logger').getLogger('lib:accessor');
 
 const PLAYER = 1;
 const ADMIN  = 2;
@@ -34,7 +33,7 @@ function userHasAdminRights(email, gameplay) {
 module.exports = {
 
   player: PLAYER,
-  admin : ADMIN,
+  admin:  ADMIN,
   /**
    * Checks the rights: has a user the required minimal rights level?
    *
@@ -47,75 +46,69 @@ module.exports = {
    * @param minLevel minimal level required for accessing the page
    * @param callback
    */
+  verify: async function (userId, gameId, minLevel, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in verify');
+      return callback(new Error('no callback'));
+    }
 
-  verify: function (userId, gameId, minLevel, callback) {
-    gamecache.getGameData(gameId, function (err, gc) {
-      if (err) {
-        return callback(err);
-      }
+    const gc = await gamecache.getGameData(gameId);
+    if (userHasAdminRights(userId, gc.gameplay)) {
+      // it's the admin and the game is in the cache, return always ok
+      return {hasAdminRights: true};
+    }
 
-      if (!gc) {
-        // either the gameId does not exist or it needs to be refreshed. Try to get it directly
-        gameplays.getGameplay(gameId, userId, function (err, gp) {
-          if (err) {
-            return callback(err);
-          }
-          if (!gp) {
-            return callback(new Error('no such gameplay'));
-          }
-          // The gameplay is here, refresh cache
-          gamecache.refreshCache(function () {
-            if (userHasAdminRights(userId, gc.gameplay)) {
-              return callback(null, {hasAdminRights: true});
-            }
-            logger.debug('No access rights granted for ' + userId);
-            return callback(new Error('No access rights granted'));
-          });
-        });
-      } else if (userHasAdminRights(userId, gc.gameplay)) {
-        // it's the admin and the game is in the cache, return always ok
-        return callback(null, {hasAdminRights: true});
-      }
+    // If the game is over, the game data gets public
+    if (_.get(gc, 'gameplay.internal.gameDataPublic', false)) {
+      return {userHasAdminRights: false};
+    }
 
-      // If the game is over, the game data gets public
-      if (_.get(gc, 'gameplay.internal.gameDataPublic', false)) {
-        return callback(null, {userHasAdminRights: false});
-      }
-
-      // Todo: handle player rights for future features
-      logger.debug('No access rights granted for ' + userId);
-      return callback(new Error('No access rights granted'));
-    });
+    // Todo: handle player rights for future features
+    logger.debug('No access rights granted for ' + userId);
+    throw new Error('No access rights granted');
   },
 
-  verifyPlayer: function (userId, gameId, teamId, callback) {
-    gamecache.getGameData(gameId, function (err, gc) {
-      if (err) {
-        return callback(err);
-      }
+  /**
+   * Verifies whether a player has access rights to the specified game and team.
+   *
+   * Checks if the player is the team leader, a member of the team,
+   * or has administrative rights within the game's context.
+   *
+   * @param {string} userId - The ID of the user to verify.
+   * @param {string} gameId - The ID of the game.
+   * @param {string} teamId - The ID of the team.
+   * @param {Function} callback - A callback function to handle additional logic.
+   * @returns {Promise<Object>} Resolves to an empty object if access is granted.
+   * @throws {Error} Throws an error if the teamId is invalid or if access is denied to the user.
+   */
+  verifyPlayer: async function (userId, gameId, teamId, callback) {
+    if (callback) {
+      logger.info('>>>>>>>>  No more callbacks in verifyPlayer');
+      return callback(new Error('no callback'));
+    }
+    const gc = await gamecache.getGameData(gameId);
 
-      let team = gc.teams[teamId];
-      if (!team) {
-        return callback(new Error(`Unknown teamId "${teamId}", not allowed`));
-      }
+    let team = gc.teams.get(teamId);
+    if (!team) {
+      throw new Error(`Unknown teamId "${teamId}", not allowed`);
+    }
 
-      if (team.data.teamLeader.email === userId) {
-        return callback();
-      }
+    if (team.data.teamLeader.email === userId) {
+      return {};
+    }
 
-      if (_.find(team.data.members, function (m) {
-        return m === userId;
-      })) {
-        return callback();
-      }
+    if (_.find(team.data.members, function (m) {
+      return m === userId;
+    })) {
+      return {};
+    }
 
-      if (userHasAdminRights(userId, gc.gameplay)) {
-        // Admin is also ok
-        return callback();
-      }
+    if (userHasAdminRights(userId, gc.gameplay)) {
+      // Admin is also ok
+      return {};
+    }
 
-      logger.debug('No user access rights granted for ' + userId);
-      return callback(new Error('No access rights granted'));
-    });
+    logger.debug('No user access rights granted for ' + userId);
+    throw new Error('No access rights granted');
   }
 };
