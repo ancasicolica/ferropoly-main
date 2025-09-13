@@ -21,17 +21,15 @@ router.get('/balance/:gameId', function (req, res) {
   if (!req.params.gameId) {
     return res.status(400).send({message: 'No gameId supplied'});
   }
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    }
-    chancellery.getBalance(req.params.gameId, function (err, data) {
-      if (err) {
-        return res.status(500).send({message: 'DB read error: ' + err.message});
-      }
-      res.send({data: data});
+  accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
+    chancellery.getBalance(req.params.gameId).then(data => {
+      res.send({balance: data});
+    }).catch(err => {
+      return res.status(500).send({message: 'getBalance error: ' + err.message});
     });
-  });
+  }).catch(err => {
+    return res.status(403).send({message: 'Access right error: ' + err.message});
+  })
 });
 
 /**
@@ -42,16 +40,16 @@ router.get('/account/statement/:gameId', function (req, res) {
   if (!req.params.gameId) {
     return res.status(400).send({message: 'No gameId supplied'});
   }
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    }
-    chancellery.getAccountStatement(req.params.gameId, function (err, data) {
-      if (err) {
-        return res.status(500).send({message: 'getAccountStatement error: ' + err.message});
-      }
-      res.send({entries: data});
-    });
+  accessor.verify(user, req.params.gameId, accessor.admin)
+    .then(() => {
+      chancellery.getAccountStatement(req.params.gameId)
+        .then(data => {
+          res.send({entries: data});
+        }).catch(err => {
+        res.status(500).send({message: 'getAccountStatement error: ' + err.message});
+      });
+    }).catch(err => {
+    res.status(403).send({message: 'Access right error: ' + err.message});
   });
 });
 
@@ -96,34 +94,32 @@ router.post('/gamble/:gameId/:teamId', function (req, res) {
     return res.status(400).send({message: 'No gameId, teamId or amount supplied'});
   }
 
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(500).send({message: err.message});
-    }
-    let amount = parseInt(req.body.amount);
-    if (!_.isNumber(amount)) {
-      return res.status(500).send({message: 'amount is not a number'});
-    }
-    gameCache.getGameData(req.params.gameId, function (err, data) {
-      if (err) {
-        logger.error(err);
-        return res.status(500).send({message: err.message});
-      }
-      let gp   = data.gameplay;
-      let team = data.teams[req.params.teamId];
-
-      let marketplace = marketplaceApi.getMarketplace();
-      if (!marketplace.isOpen(gp)) {
-        return res.status(500).send({message: 'Marketplace is closed!'});
-      }
-
-      chancellery.gamble(gp, team, amount, function (err, data) {
-        if (err) {
-          return res.status(500).send({message: err.message});
+  accessor.verify(user, req.params.gameId, accessor.admin)
+    .then(async () => {
+      try {
+        let amount = parseInt(req.body.amount);
+        if (!_.isNumber(amount)) {
+          return res.status(500).send({message: 'amount is not a number'});
         }
-        res.send({result: data});
-      });
+        const data = await gameCache.getGameData(req.params.gameId);
+        let gp     = data.gameplay;
+        let team   = data.teams[req.params.teamId];
+
+        let marketplace = marketplaceApi.getMarketplace();
+        if (!marketplace.isOpen(gp)) {
+          return res.status(500).send({message: 'Marketplace is closed!'});
+        }
+
+        const retVal = await chancellery.gamble(gp, team, amount)
+        res.send({result: retVal});
+      }
+      catch (ex) {
+        return res.status(500).send({message: 'gamble error: ' + ex.message});
+      }
+    })
+    .catch(err => {
+      logger.info(`Access right error ${user} in ${req.params.gameId}`);
+      return res.status(403).send({message: `Access right error: ${err.message}`});
     });
-  });
 });
 module.exports = router;
