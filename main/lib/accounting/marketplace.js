@@ -630,8 +630,6 @@ class Marketplace extends EventEmitter {
 
     return chancelleryAccount.gamble(gp, team, amount);
   }
-  ;
-
 
   /**
    * A very exceptional case, but might be needed: increasing or decreasing

@@ -51,7 +51,7 @@ module.exports = function (settings) {
   settings.logger = {
     debugLevel: 'debug',
     google: {
-      enabled: true,
+      enabled: false,
       projectId: 'crack-lamp-784',
       logName: 'main_local',
       keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS
