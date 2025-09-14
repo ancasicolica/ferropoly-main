@@ -32,7 +32,8 @@ const createGame = async function (gameId = 'unit-test', options = {}) {
     map:       'sbb', ownerEmail: 'demo@ferropoly.ch', name: gameId, gameId: gameId,
     gameDate:  options.gameDate || DateTime.now().toJSDate(),
     gameStart: options.gameStart || '03:00',
-    gameEnd:   options.gameEnd || '23:00'
+    gameEnd:   options.gameEnd || '23:00',
+
   });
   await gameplayModel.saveNewPriceListRevision(gp);
   await gameplayModel.finalize(gameId, 'demo@ferropoly.ch');
@@ -40,7 +41,7 @@ const createGame = async function (gameId = 'unit-test', options = {}) {
   const team0 = await teamModel.createTeam({
     data: {
       name:       'Team 0',
-      members:    ['team0.member@ferropoly.ch'],
+      members:    ['team10@ferropoly.ch'],
       teamLeader: {email: 'team0@ferropoly.ch'}
     }
   }, gameId);
