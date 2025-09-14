@@ -84,7 +84,7 @@ describe('Testing the accessor', () => {
       })
     })
     it('should be possible for a team member to access the game', (done) => {
-      accessor.verifyPlayer('team0.member@ferropoly.ch', gameId, gameData.teams[0].uuid).then(() => {
+      accessor.verifyPlayer('team10@ferropoly.ch', gameId, gameData.teams[0].uuid).then(() => {
         done();
       }).catch((err) => {
         done(err);
