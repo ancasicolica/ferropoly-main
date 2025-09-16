@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const {DateTime}                   = require('luxon');
 const logger   = require('../../lib/logger').getLogger('chancelleryTransaction');
 const isArray  = require('lodash/isArray');
-
+const omit = require('lodash/omit');
 /**
  * The mongoose schema for a team account
  */
@@ -103,7 +103,9 @@ async function getBalance(gameId) {
     .exec();
 
   if (result && isArray(result) && result.length > 0) {
-    result = result[0];
+    result = omit(result[0], ['_id']);
+  } else {
+    result = {balance: 0};
   }
   return result;
 }

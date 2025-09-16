@@ -23,7 +23,7 @@ router.get('/balance/:gameId', function (req, res) {
   }
   accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
     chancellery.getBalance(req.params.gameId).then(data => {
-      res.send({balance: data});
+      res.send(data);
     }).catch(err => {
       return res.status(500).send({message: 'getBalance error: ' + err.message});
     });
@@ -68,12 +68,13 @@ router.post('/play/:gameId/:teamId', function (req, res) {
       const data = await gameCache.getGameData(req.params.gameId);
 
       let gp   = data.gameplay;
-      let team = data.teams[req.params.teamId];
+      let team = data.teams.get(req.params.teamId);
 
       const chRes = await chancellery.playChancellery(gp, team);
       res.send({result: chRes});
     }
     catch (ex) {
+      logger.info('Error in /chancellery/play', ex);
       return res.status(500).send({message: 'playChancellery error: ' + ex.message});
     }
   });
@@ -103,7 +104,11 @@ router.post('/gamble/:gameId/:teamId', function (req, res) {
         }
         const data = await gameCache.getGameData(req.params.gameId);
         let gp     = data.gameplay;
-        let team   = data.teams[req.params.teamId];
+        let team   = data.teams.get(req.params.teamId);
+
+        if (!team) {
+          return res.status(404).send({message:'team not found'});
+        }
 
         let marketplace = marketplaceApi.getMarketplace();
         if (!marketplace.isOpen(gp)) {

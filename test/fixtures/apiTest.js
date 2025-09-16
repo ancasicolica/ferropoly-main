@@ -9,8 +9,9 @@ const {wrapper} = require('axios-cookiejar-support');
 const tough     = require('tough-cookie');
 const settings  = require('../../main/settings');
 
-const jar = new tough.CookieJar();
+const jar     = new tough.CookieJar();
 let client;
+let authToken = '';
 
 module.exports = {
 
@@ -30,6 +31,10 @@ module.exports = {
 
     const res = await client.post(`${settings.server.url}/login`, {username, password});
     console.log(`Login with ${username} and ${password}, status: ${res.status} `);
+
+    const resAuthtoken = await client.get(`${settings.server.url}/authToken`);
+    console.log(`Got authToken: ${resAuthtoken.data.authToken}`);
+    authToken = resAuthtoken.data.authToken;
     return res;
   },
 
@@ -40,10 +45,22 @@ module.exports = {
     return await client.post(`${settings.server.url}/logout`);
   },
 
-  get: async function (path) {
+  get:  async function (path) {
     if (!client) {
       throw 'no client';
     }
     return await client.get(`${settings.server.url}${path}`);
+  },
+  post: async function (path, data, _authToken = undefined) {
+    if (!client) {
+      throw 'no client';
+    }
+    data = data || {};
+    if (_authToken) {
+      data.authToken = _authToken;
+    } else {
+      data.authToken = authToken;
+    }
+    return await client.post(`${settings.server.url}${path}`, data);
   }
 };

@@ -14,23 +14,24 @@ const autopilot     = require('../lib/autopilot');
 /**
  * Refreshing the game cache
  */
-router.post('/refresh', function (req, res) {
-  gamecache.refreshCache(function (err) {
+router.post('/refresh', async function (req, res) {
+  try {
+    await gamecache.refreshCache();
+  }
+  catch (e) {
+    logger.error(e);
+    return res.status(500).send({message: e.message});
+  }
+  gameScheduler.update(function (err) {
     if (err) {
-      logger.error('can not refresh cache', err);
-      return res.status(500).send({message: 'refreshCache error: ' + err.message});
+      logger.error('can not update scheduler', err);
+      return res.status(500).send({message: 'gameScheduler.update error: ' + err.message});
     }
-    gameScheduler.update(function (err) {
-      if (err) {
-        logger.error('can not update scheduler', err);
-        return res.status(500).send({message: 'gameScheduler.update error: ' + err.message});
-      }
-      logger.info('Cache and scheduler updated');
-      res.send({status: 'ok'});
+    logger.info('Cache and scheduler updated');
+    res.send({status: 'ok'});
 
-      // restart autopilot, not sensitive concerning time
-      autopilot.refreshActiveGames();
-    });
+    // restart autopilot, not sensitive concerning time
+    autopilot.refreshActiveGames();
   });
 });
 
