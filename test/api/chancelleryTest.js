@@ -11,7 +11,6 @@ const db                     = require('../../common/lib/ferropolyDb');
 const settings               = require('../../main/settings');
 const teamAccount            = require('../../main/lib/accounting/teamAccount');
 const chancelleryTransaction = require('../../common/models/accounting/chancelleryTransaction');
-const {gamble}               = require('../../main/lib/accounting/chancelleryAccount');
 
 
 let gameData = null;
