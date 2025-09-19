@@ -5,7 +5,6 @@
 
 const teamAccount = require('../../lib/accounting/teamAccount');
 const teamModel   = require('../../../common/models/teamModel');
-const _           = require('lodash');
 const xlsx        = require('node-xlsx');
 const logger      = require('../../../common/lib/logger').getLogger('teamAccountReport');
 const {DateTime}  = require('luxon');
