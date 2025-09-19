@@ -25,46 +25,38 @@ router.get('/:gameId', function (req, res) {
 
 
 /* GET the data for the page */
-router.get('/data/:gameId', function (req, res) {
+router.get('/data/:gameId', async function (req, res) {
   let gameId = req.params.gameId;
 
-  gameplayModel.getGameplay(gameId, null, function (err, gp) {
-    if (err) {
-      logger.error();
-      return res.status(500).send({message: 'Interner Fehler: auslesen Gameplay'});
-    }
+  try {
+    const gp = await gameplayModel.getGameplay(gameId, null);
     if (!gp) {
       return res.status(500).send({message: 'Interner Fehler: gp ist null'});
     }
 
-    pricelist.getPricelist(gameId, function (err2, pl) {
-      if (err2) {
-        logger.error();
-        return res.status(500).send({message: 'Interner Fehler'});
-      }
-      if (!pl) {
-        return res.status(500).send({message: 'Interner Fehler: pl ist null'});
-      }
+    const pl = await pricelist.getPricelist(gameId);
+    if (!pl) {
+      return res.status(500).send({message: 'Interner Fehler: pl ist null'});
+    }
 
-      teamModel.getTeams(gameId, function (err3, foundTeams) {
-        if (err3) {
-          logger.error();
-          return res.status(500).send({message: 'Interner Fehler: auslesen Tea,s'});
-        }
-        // Filter some info
-        let teams = [];
-        for (let i = 0; i < foundTeams.length; i++) {
-          teams.push({
-            name          : _.get(foundTeams[i], 'data.name', 'no-name'),
-            organization  : _.get(foundTeams[i], 'data.organization', ''),
-            teamLeaderName: _.get(foundTeams[i], 'data.teamLeader.name', '')
-          });
-        }
-
-        res.send({gameplay: gp, pricelist: pl, teams});
+    const foundTeams = await teamModel.getTeams(gameId)
+    // Filter some info
+    let teams        = [];
+    for (let i = 0; i < foundTeams.length; i++) {
+      teams.push({
+        name:           _.get(foundTeams[i], 'data.name', 'no-name'),
+        organization:   _.get(foundTeams[i], 'data.organization', ''),
+        teamLeaderName: _.get(foundTeams[i], 'data.teamLeader.name', '')
       });
-    });
-  });
+    }
+
+    res.send({gameplay: gp, pricelist: pl, teams});
+  }
+  catch(ex) {
+    logger.info('Problem in route', ex.message);
+    res.status(500).send({message: ex.message});
+  }
+
 });
 
 router.get('/:gameId/download', priceListDownload.handler);
