@@ -46,7 +46,7 @@ const createGame = async function (gameId = 'unit-test', options = {}) {
     }
   }, gameId);
   const team1 = await teamModel.createTeam({data: {name: 'Team 1', teamLeader: {email: 'team1@ferropoly.ch'}}}, gameId);
-  const team2 = await teamModel.createTeam({data: {name: 'Team 3', teamLeader: {email: 'team2@ferropoly.ch'}}}, gameId);
+  const team2 = await teamModel.createTeam({data: {name: 'Team 2', teamLeader: {email: 'team2@ferropoly.ch'}}}, gameId);
   const team3 = await teamModel.createTeam({data: {name: 'Team 3', teamLeader: {email: 'team3@ferropoly.ch'}}}, gameId);
   const team4 = await teamModel.createTeam({data: {name: 'Team 4', teamLeader: {email: 'team4@ferropoly.ch'}}}, gameId);
   const team5 = await teamModel.createTeam({data: {name: 'Team 5', teamLeader: {email: 'team5@ferropoly.ch'}}}, gameId);

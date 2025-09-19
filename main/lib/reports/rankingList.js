@@ -5,9 +5,9 @@
 
 const teamAccount = require('../../lib/accounting/teamAccount');
 const teamModel   = require('../../../common/models/teamModel');
-const moment      = require('moment-timezone');
 const xlsx        = require('node-xlsx');
 const _           = require('lodash');
+const {DateTime}  = require('luxon');
 
 module.exports = {
   /**
@@ -15,42 +15,44 @@ module.exports = {
    * @param gameId
    * @param callback
    */
-  get: function (gameId, callback) {
-    teamModel.getTeamsAsObject(gameId, function (err, teams) {
-      if (err) {
-        return callback(err);
+  get: async function (gameId, callback) {
+    if (callback) {
+      return callback(new Error('no callbacks in rankingList.get'));
+    }
+    try {
+      const teams   = await teamModel.getTeamsAsMap(gameId);
+      const ranking = await teamAccount.getRankingList(gameId);
+
+      let xlist = [['Rangliste']];
+      for (let i = 0; i < ranking.length; i++) {
+        xlist.push([i + 1,
+                    _.get(teams.get(ranking[i].teamId), 'data.name', 'Fehler: Kein Name!'),
+                    _.get(ranking[i], 'asset', 0)]);
       }
-      teamAccount.getRankingList(gameId, function (err, ranking) {
-        if (err) {
-          return callback(err);
-        }
-        let xlist = [['Rangliste']];
-        for (let i = 0; i < ranking.length; i++) {
-          xlist.push([i + 1,
-                      _.get(teams[ranking[i].teamId], 'data.name', 'Fehler: Kein Name!'),
-                      _.get(ranking[i], 'asset', 0)]);
-        }
-        xlist.push(['Stand: ' + moment.tz(moment(), 'Europe/Zurich').format('D.M.YYYY HH:mm')]);
-        callback(null, xlist);
-      });
-    });
+      xlist.push(['Stand: ' + DateTime.now().toLocaleString(DateTime.DATETIME_MED)]);
+      return xlist;
+    }
+    catch (ex) {
+      return [['Fehler in Rangliste: ' + ex?.message || ex?.toString() || '']];
+    }
+
   },
   /**
    * Create an Excel-File with the ranking list
    * @param gameId
    * @param callback
    */
-  createXlsx: function (gameId, callback) {
-    this.get(gameId, function (err, xlist) {
-      if (err) {
-        return callback(err);
-      }
-      let xbuffer = xlsx.build([{name: 'Rangliste', data: xlist}]);
-      let prefix  = moment.tz(moment(), 'Europe/Zurich').format('YYMMDD-HHmmss');
-      callback(null, {
-        data: xbuffer,
-        name: prefix + '-' + gameId + '-rangliste.xlsx'
-      });
-    });
+  createXlsx: async function (gameId, callback) {
+    if (callback) {
+      return callback(new Error('no callbacks in rankingList.createXlsx'));
+    }
+    const xlist = await this.get(gameId);
+
+    let xbuffer = xlsx.build([{name: 'Rangliste', data: xlist}]);
+    let prefix  = DateTime.now().toFormat('yyMMdd-HHmmss');
+    return {
+      data: xbuffer,
+      name: prefix + '-' + gameId + '-rangliste.xlsx'
+    };
   }
 };

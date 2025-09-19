@@ -6,6 +6,7 @@
 
 const expect             = require('expect.js');
 const db                 = require('../../../../common/lib/ferropolyDb');
+const teamModel          = require('../../../../common/models/teamModel');
 const settings           = require('../../../../main/settings');
 const unitTestGame       = require('../../../fixtures/unitTestGame');
 const TestEmitter        = require('../../../fixtures/testEmitter');
@@ -14,6 +15,8 @@ const chancelleryAccount = require('../../../../main/lib/accounting/chancelleryA
 const propertyAccount    = require('../../../../main/lib/accounting/propertyAccount');
 const teamAccount        = require('../../../../main/lib/accounting/teamAccount');
 const propWrap           = require('../../../../main/lib/propertyWrapper');
+const rankingList        = require('../../../../main/lib/reports/rankingList');
+const teamAccountRepport = require('../../../../main/lib/reports/teamAccountReport');
 const testEmitter        = new TestEmitter();
 const gameId             = 'marketplace'
 let mp                   = null;
@@ -38,7 +41,7 @@ describe('Testing the marketplace', () => {
     await db.close();
   })
 
-  describe('Getting the market place', ()=> {
+  describe('Getting the market place', () => {
     it('should return the same marketplace instance', async () => {
       const mp2 = marketplace.getMarketplace();
       expect(mp).to.be(mp2);
@@ -376,39 +379,39 @@ describe('Testing the marketplace', () => {
     })
   })
 
-  describe('Chancellery', ()=> {
-    it('should pay or get the money by random', async ()=> {
+  describe('Chancellery', () => {
+    it('should pay or get the money by random', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
-      const result = await mp.chancellery(gameId, gameData.teams[5].uuid);
-      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result      = await mp.chancellery(gameId, gameData.teams[5].uuid);
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
       console.log(result, assetBefore, assetAfter);
       expect(assetBefore.asset + result.amount).to.be(assetAfter.asset);
     })
-    it('should pay gambling money', async ()=> {
+    it('should pay gambling money', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
-      const result = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, 3333);
-      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result      = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, 3333);
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
       console.log(result, assetBefore, assetAfter);
       expect(assetBefore.asset + 3333).to.be(assetAfter.asset);
     })
-    it('should loose gambling money', async ()=> {
+    it('should loose gambling money', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
-      const result = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, -2222);
-      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
+      const result      = await mp.chancelleryGamble(gameId, gameData.teams[5].uuid, -2222);
+      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[5].uuid);
       console.log(result, assetBefore, assetAfter);
       expect(assetBefore.asset - 2222).to.be(assetAfter.asset);
     })
   })
 
-  describe('Manipulating Team accounts', ()=> {
-    it ('should be possible to add some money', async () => {
+  describe('Manipulating Team accounts', () => {
+    it('should be possible to add some money', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
       const result      = await mp.manipulateTeamAccount(gameId, gameData.teams[4].uuid, 3000, 'Korrektur');
       const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
       console.log(result, assetBefore, assetAfter);
       expect(assetBefore.asset + 3000).to.be(assetAfter.asset);
     })
-    it ('should be possible to reduce some money', async () => {
+    it('should be possible to reduce some money', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
       const result      = await mp.manipulateTeamAccount(gameId, gameData.teams[4].uuid, -1200, 'Korrektur');
       const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
@@ -417,21 +420,25 @@ describe('Testing the marketplace', () => {
     })
   })
 
-  describe('Reset a prperty over the market place', ()=> {
+  describe('Reset a prperty over the market place', () => {
     it('should be possible to buy a property', async () => {
       const assetBefore = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
-      const result      = await mp.buyProperty({gameId, teamId: gameData.teams[4].uuid, propertyId:gameData.properties[22].uuid});
+      const result      = await mp.buyProperty({
+        gameId,
+        teamId:     gameData.teams[4].uuid,
+        propertyId: gameData.properties[22].uuid
+      });
       console.log(result, assetBefore);
-      const assetAfter  = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
+      const assetAfter = await teamAccount.getBalance(gameId, gameData.teams[4].uuid);
       console.log(result, assetBefore, assetAfter);
       expect(assetBefore.asset - 2500).to.be(assetAfter.asset);
     })
-    it ('should be possible to reset a property', async () => {
+    it('should be possible to reset a property', async () => {
       const assetBefore = await propertyAccount.getBalance(gameId, gameData.properties[22].uuid);
       const result      = await mp.resetProperty(gameId, gameData.properties[22].uuid, 'unit test');
       const assetAfter  = await propertyAccount.getBalance(gameId, gameData.properties[22].uuid);
       console.log(result, assetBefore, assetAfter);
-      expect(assetBefore.balance +2500).to.be(assetAfter.balance);
+      expect(assetBefore.balance + 2500).to.be(assetAfter.balance);
 
       const prop = await propWrap.getProperty(gameId, gameData.properties[22].uuid);
       console.log(prop);
@@ -462,7 +469,7 @@ describe('Testing the marketplace', () => {
       })
     })
 
-    it('should fit with the gains per group', async ()=> {
+    it('should fit with the gains per group', async () => {
       const assetsAfter = new Map();
       for (const team of gameData.teams) {
         assetsAfter.set(team.uuid, await teamAccount.getBalance(gameId, team.uuid));
@@ -474,6 +481,42 @@ describe('Testing the marketplace', () => {
         console.log(assetsBefore.get(id), assetsAfter.get(id), expectedGain.get(id));
         expect(assetsBefore.get(id).asset + expectedGain.get(id)).to.be(assetsAfter.get(id).asset)
       }
+    })
+  })
+
+  describe('Getting the rankingList (from reports)', () => {
+    it('should return the ranking list', async () => {
+      const list = await rankingList.get(gameId);
+      console.log(list);
+      expect(list.length).to.be(8);
+      // Header and footer: 1 Element
+      expect(list[0].length).to.be(1);
+      expect(list[7].length).to.be(1);
+      // all others 3
+      expect(list[1].length).to.be(3);
+      expect(list[6].length).to.be(3);
+    })
+
+    it('should return the ranking list as Excel', async () => {
+      const list = await rankingList.createXlsx(gameId);
+      console.log(list);
+      expect(list.data).to.be.a('object');
+      expect(list.name).to.be.a('string');
+    })
+  })
+
+  describe('Getting the teamAccountReport (from reports', () => {
+    it('should return the team account report', async () => {
+      const teams                   = await teamModel.getTeamsAsMap(gameId);
+      teams[gameData.teams[0].uuid] = gameData.teams[0];
+      const report                  = await teamAccountRepport.get(gameId, null, teams);
+      console.log(report.length);
+      expect(report.length).to.be(59);
+    })
+    it('should return the team account as Excel', async () => {
+      const report = await teamAccountRepport.createXlsx(gameId);
+      expect(report.data).to.be.a('object');
+      expect(report.name).to.be.a('string');
     })
   })
 

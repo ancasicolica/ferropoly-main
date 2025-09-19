@@ -4,67 +4,70 @@
  */
 
 const teamAccount = require('../../lib/accounting/teamAccount');
-const teamModel = require('../../../common/models/teamModel');
-const moment = require('moment-timezone');
-const _ = require('lodash');
-const xlsx = require('node-xlsx');
-const async = require('async');
+const teamModel   = require('../../../common/models/teamModel');
+const _           = require('lodash');
+const xlsx        = require('node-xlsx');
+const logger      = require('../../../common/lib/logger').getLogger('teamAccountReport');
+const {DateTime}  = require('luxon');
 
 module.exports = {
   /**
-   * Returns the team account repport for a given team (or for all teams, if teamId is not defined)
+   * Returns the team account report for a given team (or for all teams, if teamId is not defined)
    * @param gameId
    * @param teamId
+   * @param teams is a Map of all teams
    * @param callback
    */
-  get: function (gameId, teamId, teams, callback) {
+  get: async function (gameId, teamId, teams, callback) {
+    if (callback) {
+      return new Error('no callbacks in teamAccountReport.get');
+    }
 
-    teamAccount.getAccountStatement(gameId, teamId, function (err, data) {
-      if (err) {
-        return callback(err);
+    const data = await teamAccount.getAccountStatement(gameId, teamId);
+
+    let title = ' alle Teams';
+    if (teamId) {
+      if (!teams.get(teamId)) {
+        throw new Error(`Unknown teamId: ${teamId}`);
+      }
+      title = ' ' + teams.get(teamId).data.name;
+    }
+
+    let xlist = [['Kontobuch' + title], ['Zeit', 'Team', 'Buchungstext', 'Betrag', 'Saldo', 'Transaktionen']];
+
+    // Reset balance of all teams first
+    for (const team of teams.values()) {
+      team.balance = 0;
+    }
+
+    // Format all data
+    for (let bookingEntry of data) {
+      let partText = '';
+      if (bookingEntry.transaction.parts) {
+        bookingEntry.transaction.parts.forEach(p => {
+          partText += p.propertyName + ':' + p.amount + ' ';
+        });
       }
 
-      var title = ' alle Teams';
-      if (teamId) {
-        if (!teams[teamId]) {
-          return callback(new Error('Unknown teamId'));
+      if (!teams.get(bookingEntry.teamId).balance) {
+        const t = teams.get(bookingEntry.teamId);
+        if (t) {
+          t.balance = 0;
         }
-        title = ' ' + teams[teamId].data.name;
       }
+      teams.get(bookingEntry.teamId).balance += bookingEntry.transaction.amount;
 
-      var xlist = [['Kontobuch' + title], ['Zeit', 'Team', 'Buchungstext', 'Betrag', 'Saldo', 'Transaktionen']];
+      let entry = [DateTime.fromJSDate(bookingEntry.timestamp).toLocaleString(DateTime.TIME_WITH_SECONDS),
+                   teams.get(bookingEntry.teamId)?.data.name,
+                   bookingEntry.transaction.info,
+                   bookingEntry.transaction.amount,
+                   teams.get(bookingEntry.teamId)?.balance,
+                   partText
+      ];
 
-      // Reset balance of all teams first
-      _.forOwn(teams, (v, k) => {
-        teams[k].balance = 0;
-      });
-
-      // Format all data
-      for (var i = 0; i < data.length; i++) {
-        var partText = '';
-        if (data[i].transaction.parts) {
-          data[i].transaction.parts.forEach(p => {
-            partText += p.propertyName + ':' + p.amount + ' ';
-          });
-        }
-
-        if (!teams[data[i].teamId].balance) {
-          teams[data[i].teamId].balance = 0;
-        }
-        teams[data[i].teamId].balance += data[i].transaction.amount;
-
-        var entry = [moment(data[i].timestamp).format('HH:mm:ss'),
-          teams[data[i].teamId].data.name,
-          data[i].transaction.info,
-          data[i].transaction.amount,
-          teams[data[i].teamId].balance,
-          partText
-        ];
-
-        xlist.push(entry);
-      }
-      callback(null, xlist);
-    });
+      xlist.push(entry);
+    }
+    return xlist;
   },
 
   /**
@@ -72,40 +75,40 @@ module.exports = {
    * @param gameId
    * @param callback
    */
-  createXlsx: function (gameId, callback) {
-    var self = this;
-    var prefix = moment.tz(moment(), 'Europe/Zurich').format('YYMMDD-HHmmss');
-    teamModel.getTeamsAsObject(gameId, function (err, teams) {
-      if (err) {
-        return callback(err);
+  createXlsx: async function (gameId, callback) {
+    if (callback) {
+      return callback(new Error('no callbacks in teamAccountReport.createXlsx'));
+    }
+
+    try {
+      const self   = this;
+      const prefix = DateTime.now().toFormat('yyMMdd-HHmmss');
+      const teams  = await teamModel.getTeamsAsMap(gameId);
+
+      let teamArray = [undefined];
+      for (const team of teams.values()) {
+        teamArray.push(team);
       }
 
-      var teamArray = [undefined];
-      _.forOwn(teams, function (value, key) {
-        teamArray.push(key);
-      });
+      let sheets = [];
+      for (const team of teamArray) {
+        const xlist = await self.get(gameId, team?.uuid, teams);
+        if (!team) {
+          sheets.push({name: 'Alle Teams', data: xlist});
+        } else {
+          sheets.push({name: teams.get(team.uuid)?.data.name.substring(0, 30), data: xlist});
+        }
+      }
 
-      var sheets = [];
-      async.eachSeries(
-        teamArray,
-        function (team, cb) {
-          self.get(gameId, team, teams, function (err, xlist) {
-            if (!team) {
-              sheets.push({name: 'Alle Teams', data: xlist});
-              return cb(err);
-            }
-            sheets.push({name: teams[team].data.name.substring(0,30), data: xlist});
-            return cb(err);
-          });
-        },
-        function (err) {
-          // Finished all
-          if (err) {
-            return callback(err);
-          }
-          var xbuffer = xlsx.build(sheets);
-          return callback(null, {data: xbuffer, name: prefix + '-kontobuch.xlsx'});
-        });
-    });
+      const xbuffer = xlsx.build(sheets);
+      return {data: xbuffer, name: prefix + '-kontobuch.xlsx'};
+    }
+    catch (ex) {
+      logger.info('Failed to create XLSX', ex.message)
+      const xbuffer = xlsx.build([]);
+      return {data: xbuffer, name: prefix + '-kontobuch.xlsx'};
+    }
+
+
   }
 };

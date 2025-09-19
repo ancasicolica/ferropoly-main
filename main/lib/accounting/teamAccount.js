@@ -368,9 +368,6 @@ async function getAccountStatement(gameId, teamId, p1, p2, p3) {
   if(!_.isString(gameId)) {
     throw new Error('gameId must be a String');
   }
-  if(!_.isString(teamId)) {
-    throw new Error('teamId must be a String');
-  }
 
   return await teamAccountTransaction.getEntries(gameId, teamId, tsStart, tsEnd);
 }
