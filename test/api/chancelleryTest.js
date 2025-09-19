@@ -169,8 +169,18 @@ describe('/chancellery testing', () => {
         expect(e.response.status).to.be(404);
       }
     })
-
-
+    it('should fail with a string as value', async () => {
+      try {
+        const res                    = await api.post(`/chancellery/gamble/${gameId}/${gameData.teams[0].uuid}`, {amount: 'w1000'});
+        console.log(res.data);
+        expect().fail('Request should have failed with 400');
+      }
+      catch(e)
+      {
+        console.log(e);
+        expect(e.response.status).to.be(400);
+      }
+    })
   })
 
 })

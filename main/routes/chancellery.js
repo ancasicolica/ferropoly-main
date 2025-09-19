@@ -86,10 +86,10 @@ router.post('/play/:gameId/:teamId', function (req, res) {
 router.post('/gamble/:gameId/:teamId', function (req, res) {
   const user = _.get(req.session, 'passport.user', 'nobody');
   if (!req.body.authToken) {
-    return res.status(401).send({message: 'Permission denied (1)'});
+    return res.status(401).send({message: 'Permission denied (Missing authToken)'});
   }
   if (req.body.authToken !== req.session.authToken) {
-    return res.status(401).send({message: 'Permission denied (2)'});
+    return res.status(401).send({message: 'Permission denied (Wrong authToken)'});
   }
   if (!req.params.gameId || !req.params.teamId || !req.body.amount) {
     return res.status(400).send({message: 'No gameId, teamId or amount supplied'});
@@ -99,20 +99,20 @@ router.post('/gamble/:gameId/:teamId', function (req, res) {
     .then(async () => {
       try {
         let amount = parseInt(req.body.amount);
-        if (!_.isNumber(amount)) {
-          return res.status(500).send({message: 'amount is not a number'});
+        if (!_.isFinite(amount)) {
+          return res.status(400).send({message: 'amount is not a number'});
         }
         const data = await gameCache.getGameData(req.params.gameId);
         let gp     = data.gameplay;
         let team   = data.teams.get(req.params.teamId);
 
         if (!team) {
-          return res.status(404).send({message:'team not found'});
+          return res.status(404).send({message: 'team not found'});
         }
 
         let marketplace = marketplaceApi.getMarketplace();
         if (!marketplace.isOpen(gp)) {
-          return res.status(500).send({message: 'Marketplace is closed!'});
+          return res.status(403).send({message: 'Marketplace is closed!'});
         }
 
         const retVal = await chancellery.gamble(gp, team, amount)
@@ -123,7 +123,7 @@ router.post('/gamble/:gameId/:teamId', function (req, res) {
       }
     })
     .catch(err => {
-      logger.info(`Access right error ${user} in ${req.params.gameId}`);
+      logger.info(`Access right error ${user} in ${req.params.gameId}`, err?.message);
       return res.status(403).send({message: `Access right error: ${err.message}`});
     });
 });
