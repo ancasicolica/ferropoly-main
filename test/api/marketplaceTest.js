@@ -221,6 +221,65 @@ describe('Testing the /marketplace route', () => {
       })
 
     })
+    describe('with an invalid user', ()=> {
+      before(async () => {
+        const res = await api.login('team1@ferropoly.ch');
+        expect(res.status).to.be(200);
+        const gcRes = await api.post('/gamecache/refresh');
+        expect(gcRes.status).to.be(200);
+      })
+
+      after(async () => {
+        await api.logout();
+      })
+
+      it('should not buy property 10 for team 1', async () => {
+        try {
+          await await api.post(`/marketplace/buyProperty/${gameId}/${gameData.teams[1].uuid}/${gameData.properties[10].uuid}`);
+          expect().fail('Request should have failed with 403');
+        }
+        catch (err) {
+          expect(err.response && err.response.status).to.be(403);
+          expect(err.response.data).to.have.key('message');
+          console.log(err.response.data.message);
+        }
+      })
+
+      it('should not build a single house for team 1', async () => {
+        try {
+          await api.post(`/marketplace/buildHouse/${gameId}/${gameData.teams[2].uuid}/${gameData.properties[1].uuid}`);
+          expect().fail('Request should have failed with 403');
+        }
+        catch (err) {
+          expect(err.response && err.response.status).to.be(403);
+          expect(err.response.data).to.have.key('message');
+          console.log(err.response.data.message);
+        }
+      })
+
+      it('should not any houses for team 1', async () => {
+        try {
+          await api.post(`/marketplace/buildHouses/${gameId}/${gameData.teams[1].uuid}`);
+          expect().fail('Request should have failed with 403');
+        }
+        catch (err) {
+          expect(err.response && err.response.status).to.be(403);
+          expect(err.response.data).to.have.key('message');
+          console.log(err.response.data.message);
+        }
+      })
+      it('should not pay rents', async () => {
+        try {
+          await api.get(`/marketplace/payRents/${gameId}`);
+          expect().fail('Request should have failed with 403');
+        }
+        catch (err) {
+          expect(err.response && err.response.status).to.be(403);
+          expect(err.response.data).to.have.key('message');
+          console.log(err.response.data.message);
+        }
+      })
+    })
 
   })
 });
