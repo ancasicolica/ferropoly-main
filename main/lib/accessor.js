@@ -81,7 +81,7 @@ module.exports = {
    * @returns {Promise<Object>} Resolves to an empty object if access is granted.
    * @throws {Error} Throws an error if the teamId is invalid or if access is denied to the user.
    */
-  verifyPlayer: async function (userId, gameId, teamId, callback) {
+  verifyPlayer: async function (userId, gameId, teamId, callback = null) {
     if (callback) {
       logger.info('>>>>>>>>  No more callbacks in verifyPlayer');
       return callback(new Error('no callback'));

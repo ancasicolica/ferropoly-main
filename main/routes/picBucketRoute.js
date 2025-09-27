@@ -31,16 +31,16 @@ router.post('/announce/:gameId/:teamId', (req, res) => {
     return res.status(401).send({message: 'Permission denied (2)'});
   }
 
-  accessor.verifyPlayer(user, gameId, teamId, err => {
-    if (err) {
-      return res.status(401).send({message: 'Diese Aktion ist nicht erlaubt'});
-    }
-    picBucket.announceUpload(gameId, teamId, {propertyId, message, user, position, lastModifiedDate}, (err, info) => {
-      if (err) {
+  accessor.verifyPlayer(user, gameId, teamId).then(() => {
+    picBucket.announceUpload(gameId, teamId, {propertyId, message, user, position, lastModifiedDate})
+      .then(info => {
+        res.send(info);
+      })
+      .catch(err => {
         return res.status(500).send({message: err.message});
-      }
-      res.send(info);
-    })
+      })
+  }).catch(err => {
+    return res.status(401).send({message: 'Diese Aktion ist nicht erlaubt', err: err.message});
   })
 });
 
@@ -51,28 +51,35 @@ router.post('/confirm/:id', (req, res) => {
   // No need for auth checks, the id is too specific for abuse, don't waste time
   const position = req.body.position;
 
-  picBucket.confirmUpload(req.params.id, {position}, (err, doc) => {
-    if (err) {
+  picBucket.confirmUpload(req.params.id, {position})
+    .then(doc => {
+      if (!doc) {
+        return res.status(404).send({message: 'not found'});
+      }
+      res.send(doc);
+    })
+    .catch(err => {
       return res.status(500).send({message: err.message});
-    }
-    res.send(doc);
-  })
+    })
 });
 
 /**
  * assigns a picture to a location
  */
 router.post('/assign/:id', (req, res) => {
-  // No need for auth checks, the id is too specific for abuse, don't waste time
   const propertyId = req.body.propertyId;
 
-  picBucket.assignProperty(req.params.id, propertyId, (err) => {
-    if (err) {
-      res.status(500).send(err);
-      return;
-    }
-    res.send({});
-  })
+  if (!propertyId) {
+    return res.status(400).send({message: 'no property to assign'});
+  }
+
+  picBucket.assignProperty(req.params.id, propertyId)
+    .then(() => {
+      res.send({});
+    })
+    .catch(err => {
+      return res.status(500).send({message: err.message});
+    })
 });
 
 
@@ -82,17 +89,19 @@ router.post('/assign/:id', (req, res) => {
 router.get('/:gameId', (req, res) => {
   const gameId = req.params.gameId;
   const user   = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, gameId, accessor.admin, err => {
-    if (err) {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    }
-    picBucket.list(gameId, {uploaded: true}, (err, list) => {
-      if (err) {
-        return res.status(500).send({message: err.message});
-      }
-      res.send(list);
+  accessor.verify(user, gameId, accessor.admin)
+    .then(() => {
+      picBucket.list(gameId, {uploaded: true})
+        .then(list => {
+          res.send(list);
+        })
+        .catch(err => {
+          return res.status(500).send({message: err.message});
+        })
     })
-  })
+    .catch(err => {
+      return res.status(403).send({message: 'Access right error: ' + err.message});
+    })
 });
 
 
@@ -103,17 +112,19 @@ router.get('/:gameId/:teamId', (req, res) => {
   const gameId = req.params.gameId;
   const teamId = req.params.teamId;
   const user   = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verifyPlayer(user, gameId, teamId, err => {
-    if (err) {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    }
-    picBucket.list(gameId, {teamId, uploaded: true}, (err, list) => {
-      if (err) {
-        return res.status(500).send({message: err.message});
-      }
-      res.send(list);
+  accessor.verifyPlayer(user, gameId, teamId)
+    .then(() => {
+      picBucket.list(gameId, {teamId, uploaded: true})
+        .then(list => {
+          res.send(list);
+        })
+        .catch(err => {
+          return res.status(500).send({message: err.message});
+        })
     })
-  })
+    .catch(err => {
+      return res.status(403).send({message: 'Access right error: ' + err.message});
+    })
 });
 
 

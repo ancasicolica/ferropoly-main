@@ -142,8 +142,8 @@ class PicBucket extends EventEmitter {
     }
 
     self.emit('new', entry);
-    return await picBucketModel.save(entry);
-
+    await picBucketModel.save(entry);
+    return entry;
 
   }
 
@@ -236,8 +236,7 @@ let picBucketObject = undefined;
  * @param settings is the picBucket part of the settings
  * @returns {{confirmUpload: confirmUpload, announceUpload: announceUpload, list: list}}
  */
-module
-  .exports = function (settings) {
+module.exports = function (settings) {
   if (!picBucketObject) {
     if (!settings) {
       throw (new Error('settings must be supplied in first call'))
