@@ -12,7 +12,7 @@ const settings     = require('../../main/settings');
 let gameData = null;
 const gameId = 'basic-test';
 
-describe('Testing the /info route', () => {
+describe('Testing the /marketplace route', () => {
   before(async () => {
     await db.init(settings);
     gameData = await unitTestGame.createGame(gameId);
