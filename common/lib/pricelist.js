@@ -1,8 +1,8 @@
 /**
  * Common library for the pricelist
+ * Tests are found in the main sources.
  * Created by kc on 26.04.15.
  */
-
 
 const _             = require('lodash');
 const properties    = require('../models/propertyModel');

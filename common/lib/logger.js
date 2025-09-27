@@ -14,7 +14,7 @@ const {LoggingWinston}                    = require('@google-cloud/logging-winst
 
 // The default settings
 let settings = {
-  debugLevel: 'silly',
+  debugLevel: 'info',
   google    : {
     enabled: false
   }
