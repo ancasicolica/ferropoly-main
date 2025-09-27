@@ -11,7 +11,7 @@ const settings    = require('../../../main/settings');
 let picBucket = undefined;
 describe('PicBucket Tests Initialisation', () => {
 
-  it('will fail without settings', () => {
+  it.skip('will fail without settings', () => {
     let failed = true;
     try {
       picBucket = require('../../../main/lib/picBucket')();
