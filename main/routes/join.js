@@ -12,30 +12,33 @@ const logger       = require('../../common/lib/logger').getLogger('routes:join')
 const mailer       = require('../../common/lib/mailer');
 const errorHandler = require('../lib/errorHandler');
 const path         = require('path');
-const _            = require("lodash");
+const _            = require('lodash');
 
 /**
  * Send HTML Page
  */
-router.get('/:gameId', function (req, res) {
-  gameCache.getGameData(req.params.gameId, (err, gameData) => {
-    if (err || !gameData) {
-      return errorHandler(res, 'Spiel nicht gefunden.', err, 404);
+router.get('/:gameId', async function (req, res) {
+  try {
+    const gameData = await gameCache.getGameData(req.params.gameId);
+    if (!gameData) {
+      return errorHandler(res, 'Spiel nicht gefunden.', null, 404);
     }
     res.sendFile(path.join(__dirname, '..', 'public', 'html', 'join.html'));
-  });
+  }
+  catch (err) {
+    errorHandler(res, 'Spiel nicht gefunden.', err, 404);
+  }
 });
 
 /**
  * Returns the data displayed on the joining page
  */
-router.get('/data/:gameId', function (req, res) {
-  const user = _.get(req.session, 'passport.user', 'nobody');
+router.get('/data/:gameId', async function (req, res) {
+  try {
+    const user = _.get(req.session, 'passport.user', 'nobody');
 
-  gameCache.getGameData(req.params.gameId, (err, gameData) => {
-    if (err) {
-      return res.status(500).send({message: err.message});
-    }
+    const gameData = await gameCache.getGameData(req.params.gameId);
+
     if (!gameData) {
       return res.status(404).send({message: 'Game not found'});
     }
@@ -45,132 +48,108 @@ router.get('/data/:gameId', function (req, res) {
       gameplay = gameData.gameplay;
     }
 
-    users.getUserByMailAddress(user, (err, userInfo) => {
-      if (err) {
-        logger.error(err);
-        return res.status(500).send(err.message);
-      }
-      if (!userInfo) {
-        return res.status(404).send({message: 'User not found'});
-      }
-      teams.getMyTeam(req.params.gameId, user, (err, team) => {
-          if (err) {
-            logger.error(err);
-            return res.status(500).send(err.message);
-          }
-          let teamInfo = {};
-          if (team) {
-            teamInfo.name             = team.data.name;
-            teamInfo.organization     = team.data.organization;
-            teamInfo.phone            = team.data.teamLeader.phone;
-            teamInfo.remarks          = team.data.remarks;
-            teamInfo.confirmed        = team.data.confirmed;
-            teamInfo.id               = team.id;
-            teamInfo.registrationDate = team.data.registrationDate;
-            teamInfo.changedDate      = team.data.changedDate;
-          }
-          res.send({gameplay, user: {personalData: userInfo.personalData, id: userInfo._id}, teamInfo: teamInfo});
-        }
-      );
-    });
-  });
+    const userInfo = await users.getUserByMailAddress(user);
+    if (!userInfo) {
+      return res.status(404).send({message: 'User not found'});
+    }
+
+    const team   = await teams.getMyTeam(req.params.gameId, user);
+    let teamInfo = {};
+    if (team) {
+      teamInfo.name             = team.data.name;
+      teamInfo.organization     = team.data.organization;
+      teamInfo.phone            = team.data.teamLeader.phone;
+      teamInfo.remarks          = team.data.remarks;
+      teamInfo.confirmed        = team.data.confirmed;
+      teamInfo.id               = team.id;
+      teamInfo.registrationDate = team.data.registrationDate;
+      teamInfo.changedDate      = team.data.changedDate;
+    }
+    res.send({gameplay, user: {personalData: userInfo.personalData, id: userInfo._id}, teamInfo: teamInfo});
+  }
+  catch (err) {
+    logger.error('GET /data', err);
+    res.status(500).send({message: err.message});
+  }
 });
 
 /**
  * Submit a request to join a game
  */
-router.post('/:gameId', (req, res) => {
-  if (!req.body.authToken) {
-    return res.status(401).send({message: 'Permission denied, no authToken found'});
-  }
-  if (req.body.authToken !== req.session.authToken) {
-    return res.status(401).send({message: 'Permission denied, invalid authToken'});
-  }
-  const user = _.get(req.session, 'passport.user', 'nobody');
-
-  gameCache.getGameData(req.params.gameId, (err, gameData) => {
-    if (err) {
-      logger.error(err);
-      return res.status(500).send({message: err.message});
+router.post('/:gameId', async (req, res) => {
+  try {
+    if (!req.body.authToken) {
+      return res.status(401).send({message: 'Permission denied, no authToken found'});
     }
+    if (req.body.authToken !== req.session.authToken) {
+      return res.status(401).send({message: 'Permission denied, invalid authToken'});
+    }
+    const user = _.get(req.session, 'passport.user', 'nobody');
+
+    const gameData = await gameCache.getGameData(req.params.gameId);
+
     if (!gameData) {
       return res.status(404).send({message: 'Game not found'});
     }
-    users.getUserByMailAddress(user, (err, userInfo) => {
+
+    const userInfo = await users.getUserByMailAddress(user);
+    if (!userInfo) {
+      return res.status(404).send({message: 'User not found'});
+    }
+
+    const team = await teams.getMyTeam(req.params.gameId, user);
+
+    // Sets the data according to the request
+    function setTeamData(d) {
+      d.gameId                  = req.params.gameId;
+      d.data                    = d.data || {};
+      d.data.name               = req.body.teamName;
+      d.data.organization       = req.body.organization;
+      d.data.teamLeader         = {
+        name:  userInfo.personalData.forename + ' ' + userInfo.personalData.surname,
+        email: userInfo.personalData.email,
+        phone: req.body.phone
+      };
+      d.data.remarks            = req.body.remarks;
+      d.data.onlineRegistration = true; // Game owner can't change email address
+      d.data.changedDate        = new Date();
+      return d;
+    }
+
+    if (!team) {
+      // New team
+      logger.info(`New Team for ${req.params.gameId}: ${req.body.teamName}`);
+
+      const newTeam = await teams.createTeam(setTeamData({
+        data: {
+          confirmed:        false,
+          registrationDate: new Date()
+        }
+      }), req.params.gameId);
+
+      logger.info(`Saved Team for ${req.params.gameId}: ${req.body.teamName} / ${newTeam.uuid}`);
+      sendInfoMail(gameData.gameplay, newTeam, {newTeam: true}, err => {
         if (err) {
           logger.error(err);
-          return res.status(500).send(err.message);
         }
-        if (!userInfo) {
-          return res.status(404).send({message: 'User not found'});
+        res.status(200).send(newTeam);
+      });
+    } else {
+      // Existing team
+      const savedTeam = await teams.updateTeam(setTeamData(team));
+      logger.info(`Saved Team for ${req.params.gameId}: ${req.body.teamName} / ${savedTeam.uuid}`);
+      sendInfoMail(gameData.gameplay, savedTeam, {newTeam: false}, err => {
+        if (err) {
+          logger.error(err);
         }
-
-        teams.getMyTeam(req.params.gameId, user, (err, team) => {
-          if (err) {
-            logger.error(err);
-            return res.status(500).send(err.message);
-          }
-
-          // Sets the data according to the request
-          function setTeamData(d) {
-            d.gameId                  = req.params.gameId;
-            d.data                    = d.data || {};
-            d.data.name               = req.body.teamName;
-            d.data.organization       = req.body.organization;
-            d.data.teamLeader         = {
-              name : userInfo.personalData.forename + ' ' + userInfo.personalData.surname,
-              email: userInfo.personalData.email,
-              phone: req.body.phone
-            };
-            d.data.remarks            = req.body.remarks;
-            d.data.onlineRegistration = true; // Game owner can't change email address
-            d.data.changedDate        = new Date();
-            return d;
-          }
-
-          if (!team) {
-            // New team
-            logger.info(`New Team for ${req.params.gameId}: ${req.body.teamName}`);
-
-            teams
-              .createTeam(setTeamData({
-                data: {
-                  confirmed       : false,
-                  registrationDate: new Date()
-                }
-              }), req.params.gameId)
-              .then(newTeam => {
-                logger.info(`Saved Team for ${req.params.gameId}: ${req.body.teamName} / ${newTeam.uuid}`);
-                sendInfoMail(gameData.gameplay, newTeam, {newTeam: true}, err => {
-                  if (err) {
-                    logger.error(err);
-                  }
-                  res.status(200).send(newTeam);
-                });
-              })
-              .catch(err => {
-                return res.status(500).send(err.message);
-              });
-            return;
-          }
-
-          // Existing team
-          teams.updateTeam(setTeamData(team), (err, savedTeam) => {
-            if (err) {
-              return res.status(500).send(err.message);
-            }
-            logger.info(`Saved Team for ${req.params.gameId}: ${req.body.teamName} / ${savedTeam.uuid}`);
-            sendInfoMail(gameData.gameplay, savedTeam, {newTeam: false}, err => {
-              if (err) {
-                logger.error(err);
-              }
-              res.status(200).send(savedTeam);
-            });
-          });
-        });
-      }
-    );
-  });
+        res.status(200).send(savedTeam);
+      });
+    }
+  }
+  catch (err) {
+    logger.error('POST /', err);
+    res.status(500).send({message: err.message});
+  }
 });
 
 
@@ -211,11 +190,11 @@ function sendInfoMail(gameplay, team, options, callback) {
 
   logger.info('Mailtext created', text);
   mailer.send({
-    to     : gameplay.owner.organisatorEmail,
-    cc     : team.data.teamLeader.email,
+    to:      gameplay.owner.organisatorEmail,
+    cc:      team.data.teamLeader.email,
     subject: subject,
-    html   : html,
-    text   : text
+    html:    html,
+    text:    text
   }, callback);
 }
 

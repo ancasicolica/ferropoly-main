@@ -18,6 +18,6 @@ module.exports = function(res, message, err, status) {
   return res.render('error/generic', {
     status: `Status ${status}`,
     message: message,
-    error: err
+    error: err || new Error('Interner Ferropoly-Bug!')
   });
 };
