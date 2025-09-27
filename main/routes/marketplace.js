@@ -3,12 +3,11 @@
  * Created by kc on 25.05.15.
  */
 
-
 const express        = require('express');
 const router         = express.Router();
 const marketplaceApi = require('../lib/accounting/marketplace');
 const accessor       = require('../lib/accessor');
-const _              = require("lodash");
+const _              = require('lodash');
 
 /**
  * Build Houses
@@ -22,16 +21,14 @@ router.post('/buildHouses/:gameId/:teamId', function (req, res) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Verification Error, ' + err.message});
-    }
-    marketplace.buildHouses(req.params.gameId, req.params.teamId, function (err, result) {
-      if (err) {
-        return res.status(500).send({message: 'buildHouses error: ' + err.message});
-      }
+  accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
+    marketplace.buildHouses(req.params.gameId, req.params.teamId).then(result => {
       res.send({result: result});
+    }).catch(err => {
+      return res.status(500).send({message: 'buildHouses error: ' + err.message});
     });
+  }).catch(err => {
+    return res.status(403).send({message: 'Verification Error, ' + err.message});
   });
 });
 
@@ -47,16 +44,14 @@ router.post('/buildHouse/:gameId/:teamId/:propertyId', function (req, res) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Verification Error, ' + err.message});
-    }
-    marketplace.buildHouse(req.params.gameId, req.params.teamId, req.params.propertyId, function (err, result) {
-      if (err) {
-        return res.status(500).send({message: 'buildHouse error: ' + err.message});
-      }
+  accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
+    marketplace.buildHouse(req.params.gameId, req.params.teamId, req.params.propertyId).then(result => {
       res.send({result: result});
+    }).catch(err => {
+      return res.status(500).send({message: 'buildHouse error: ' + err.message});
     });
+  }).catch(err => {
+    return res.status(403).send({message: 'Verification Error, ' + err.message});
   });
 });
 
@@ -73,21 +68,19 @@ router.post('/buyProperty/:gameId/:teamId/:propertyId', function (req, res) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Verification Error, ' + err.message});
-    }
+  accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
     marketplace.buyProperty({
-      gameId    : req.params.gameId,
-      teamId    : req.params.teamId,
+      gameId:     req.params.gameId,
+      teamId:     req.params.teamId,
       propertyId: req.params.propertyId,
-      user      : user
-    }, function (err, result) {
-      if (err) {
-        return res.status(500).send({message: 'buyProperty error: ' + err.message});
-      }
+      user:       user
+    }).then(result => {
       res.send({result: result});
+    }).catch(err => {
+      return res.status(500).send({message: 'buyProperty error: ' + err.message});
     });
+  }).catch(err => {
+    return res.status(403).send({message: 'Verification Error, ' + err.message});
   });
 });
 
@@ -96,17 +89,15 @@ router.post('/buyProperty/:gameId/:teamId/:propertyId', function (req, res) {
  */
 router.get('/payRents/:gameId', function (req, res) {
   const user = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      return res.status(403).send({message: 'Verification Error, ' + err.message});
-    }
+  accessor.verify(user, req.params.gameId, accessor.admin).then(() => {
     let marketplace = marketplaceApi.getMarketplace();
-    marketplace.payRents({gameId: req.params.gameId, user: user}, function (err) {
-      if (err) {
-        return res.status(500).send({message: 'payRents error: ' + err.message});
-      }
+    marketplace.payRents({gameId: req.params.gameId, user: user}).then(() => {
       res.send({status: 'ok'});
+    }).catch(err => {
+      return res.status(500).send({message: 'payRents error: ' + err.message});
     });
+  }).catch(err => {
+    return res.status(403).send({message: 'Verification Error, ' + err.message});
   });
 });
 module.exports = router;

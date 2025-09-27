@@ -248,20 +248,19 @@ class Marketplace extends EventEmitter {
       callback(new Error('no callback'));
     }
 
-    const properties = await propWrap.getTeamProperties(gameId, teamId);
-
-    if (properties.length === 0) {
-      marketLog(gameId, 'nothing to build');
-      return {amount: 0, log: []};
-    }
-
     const res = await gameCache.getGameData(gameId);
-
     let gp   = res.gameplay;
     let team = res.teams.get(teamId);
 
     if (!gp || !team) {
       throw new Error('Gameplay error or team invalid');
+    }
+
+    const properties = await propWrap.getTeamProperties(gameId, teamId);
+
+    if (properties.length === 0) {
+      marketLog(gameId, 'nothing to build');
+      return {amount: 0, log: []};
     }
 
     if (!self.isOpen(gp)) {
