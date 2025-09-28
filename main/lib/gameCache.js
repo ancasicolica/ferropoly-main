@@ -32,8 +32,9 @@ module.exports = {
     }
 
     // not in cache
+    let gp = null;
     try {
-      const gp = await gpModel.getGameplay(gameId, null);
+      gp = await gpModel.getGameplay(gameId, null);
       if (!gp) {
         logger.info(`${gameId}: not found`);
         return null;
