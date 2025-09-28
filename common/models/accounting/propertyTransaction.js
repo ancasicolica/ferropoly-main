@@ -91,6 +91,17 @@ async function getEntries(gameId, propertyId, tsStart, tsEnd) {
       .lean()
       .exec();
   }
+
+  // map _id -> propertyId in all returned objects and remove _id
+  data = (data || []).map(d => {
+    if (d && d._id && !d.propertyId) {
+      return { ...d, propertyId: d._id, _id: undefined };
+    }
+    // If propertyId already exists, just drop _id
+    const { _id, ...rest } = d;
+    return rest;
+  });
+
   return data;
 }
 
@@ -118,6 +129,13 @@ async function getSummary(gameId, propertyId) {
       $group: {
         _id    : '$propertyId',
         balance: {$sum: "$transaction.amount"}
+      }
+    }, {
+      // rename _id to propertyId and keep balance
+      $project: {
+        _id: 0,
+        propertyId: '$_id',
+        balance: 1
       }
     }])
     .exec();

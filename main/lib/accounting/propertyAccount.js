@@ -481,7 +481,7 @@ function getBuildingPrice(property) {
  * @param propertyId (can be undefined if all are requested)
  * @param callback
  */
-async function getPropertyProfitability(gameId, propertyId, callback) {
+async function getPropertyProfitability(gameId, propertyId = undefined, callback = null) {
   if (callback) {
     logger.info('>>>>>>>>  No more callbacks in getPropertyProfitability');
     return callback(new Error('no callback'));
@@ -490,8 +490,8 @@ async function getPropertyProfitability(gameId, propertyId, callback) {
   if (!_.isString(gameId)) {
     throw new Error('gameId must be a string in getPropertyProfitability');
   }
-  if (!_.isString(propertyId)) {
-    throw new Error('propertyId must be a string in getPropertyProfitability');
+  if (!_.isString(propertyId) && !_.isUndefined(propertyId)) {
+    throw new Error('propertyId must be a string OR undefined in getPropertyProfitability');
   }
 
   return await propertyTransaction.getSummary(gameId, propertyId);
