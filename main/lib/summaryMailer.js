@@ -49,11 +49,7 @@ function SummaryMailer(scheduler) {
  */
 SummaryMailer.prototype.sendInfo = function (gameId, callback) {
   try {
-    gameCache.getGameData(gameId, (err, gameData) => {
-      if (err) {
-        return callback(err);
-      }
-
+    gameCache.getGameData(gameId).then(gameData => {
       // Do not send any information for Demo games!
       if (gameData.gameplay.internal.isDemo) {
         logger.info(`${gameId}: NOT sending Summary Email as this is a demo game!`);
@@ -84,12 +80,12 @@ SummaryMailer.prototype.sendInfo = function (gameId, callback) {
       text += 'Viele Grüsse vom Ferropoly-Team!';
 
       mailer.send({
-        to     : 'noreply@ferropoly.ch',
-        cc     : _.get(gameData, 'gameplay.owner.organisatorEmail', undefined),
-        bcc    : bccString,
+        to:      'noreply@ferropoly.ch',
+        cc:      _.get(gameData, 'gameplay.owner.organisatorEmail', undefined),
+        bcc:     bccString,
         subject: 'Ferropoly Spielinfo',
-        html   : html,
-        text   : text
+        html:    html,
+        text:    text
       }, err => {
         if (err) {
           return callback(err);
@@ -97,7 +93,11 @@ SummaryMailer.prototype.sendInfo = function (gameId, callback) {
         logger.info(`${gameId}: Summary Email for sent`, {recipients: bccString, text});
         callback();
       });
-    });
+    })
+      .catch(err => {
+        logger.error(err);
+        callback(err);
+      });
   }
   catch (ex) {
     logger.error(ex);
@@ -120,7 +120,7 @@ module.exports = {
    * Gets the summary mailer, throws an error, if not defined
    * @returns {*}
    */
-  getMailer   : function () {
+  getMailer: function () {
     if (!summaryMailer) {
       throw new Error('You must create a Summary Mailer first before getting it');
     }

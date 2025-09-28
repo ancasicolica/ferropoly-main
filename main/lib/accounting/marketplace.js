@@ -127,8 +127,8 @@ class Marketplace extends EventEmitter {
     let end   = DateTime.fromJSDate(gameplay.scheduling.gameEndTs).plus({minutes: additionalMinutes});
     if (DateTime.now() > end) {
       marketLog(gameplay.internal.gameId, 'Game over', {
-        start:             start.toDate(),
-        end:               end.toDate(),
+        start:             start.toJSDate(),
+        end:               end.toJSDate(),
         additionalMinutes: additionalMinutes
       });
       return false;
