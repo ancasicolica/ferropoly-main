@@ -88,9 +88,13 @@ module.exports = {
     }
     const gc = await gamecache.getGameData(gameId);
 
+    if (!teamId) {
+      throw new Error(`${gameId}: User ${userId} has no team and therefore no access`);
+    }
+
     let team = gc.teams.get(teamId);
     if (!team) {
-      throw new Error(`Unknown teamId "${teamId}", not allowed`);
+      throw new Error(`${gameId}: Unknown teamId "${teamId}", not allowed`);
     }
 
     if (team.data.teamLeader.email === userId) {
@@ -108,7 +112,7 @@ module.exports = {
       return {};
     }
 
-    logger.debug('No user access rights granted for ' + userId);
-    throw new Error('No access rights granted');
+    logger.debug(`${gameId} No user access rights granted for ${userId}`, {gameId});
+    throw new Error(`${gameId}: No access rights granted`);
   }
 };
