@@ -32,10 +32,15 @@ module.exports = {
     }
 
     // not in cache
-    const gp = await gpModel.getGameplay(gameId, null);
-    if (!gp) {
-      logger.info(`${gameId}: not found`);
-      throw new Error(`Game with id ${gameId} not found`);
+    try {
+      const gp = await gpModel.getGameplay(gameId, null);
+      if (!gp) {
+        logger.info(`${gameId}: not found`);
+        return null;
+      }
+    }
+    catch (ex) {
+      return null;
     }
 
     logger.info(`${gameId}: GP-Query`, {gameId});
