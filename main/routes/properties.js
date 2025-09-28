@@ -21,48 +21,38 @@ function handleGetPropertiesRequest(req, res, gameId, teamId) {
   accessor.verify(user, gameId, accessor.admin)
     .then(() => {
       // Admin has access to all properties
-      console.log('YYYYYY then 22222');
       if (teamId) {
         propWrap.getTeamProperties(gameId, teamId)
           .then(props => {
-            console.log('YYYYYY then 4');
             res.send({properties: props});
           })
           .catch(err => {
-            console.log('XXXXXX catch 3');
             return res.status(500).send({message: 'getTeamProperties error: ' + err.message});
           });
       } else {
         propWrap.getAllProperties(gameId)
           .then(props => {
-            console.log('YYYYYY then 3');
             res.send({properties: props});
           })
           .catch(err => {
-            console.log('XXXXXX catch 4');
             return res.status(500).send({message: 'getAllProperties error: ' + err.message});
           });
       }
     })
     .catch(() => {
-      console.log('XXXXXX catch 1');
       // definitely not an admin and game in process. Be careful what we return; only data of the calling team is
       // returned
       accessor.verifyPlayer(user, gameId, teamId)
         .then(() => {
-          console.log('YYYYYY then 1');
           propWrap.getTeamProperties(gameId, teamId)
             .then(props => {
-              console.log('YYYYYY then 2');
               res.send({properties: props});
             })
             .catch(err => {
-              console.log('XXXXXX catch 5');
               return res.status(500).send({message: 'getTeamProperties error: ' + err.message});
             });
         })
         .catch(err => {
-          console.log('XXXXXX catch 2');
           return res.status(403).send({message: 'Access right error: ' + err.message});
         })
     })
