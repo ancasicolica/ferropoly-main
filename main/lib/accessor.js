@@ -88,6 +88,11 @@ module.exports = {
     }
     const gc = await gamecache.getGameData(gameId);
 
+    if (userHasAdminRights(userId, gc.gameplay)) {
+      // Admin is also ok
+      return {};
+    }
+
     if (!teamId) {
       throw new Error(`${gameId}: User ${userId} has no team and therefore no access`);
     }
@@ -107,10 +112,7 @@ module.exports = {
       return {};
     }
 
-    if (userHasAdminRights(userId, gc.gameplay)) {
-      // Admin is also ok
-      return {};
-    }
+
 
     logger.debug(`${gameId} No user access rights granted for ${userId}`, {gameId});
     throw new Error(`${gameId}: No access rights granted`);
