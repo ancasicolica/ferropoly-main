@@ -53,6 +53,9 @@ module.exports = {
     }
 
     const gc = await gamecache.getGameData(gameId);
+    if (!gc) {
+      throw new Error('Game not found');
+    }
     if (userHasAdminRights(userId, gc.gameplay)) {
       // it's the admin and the game is in the cache, return always ok
       return {hasAdminRights: true};
