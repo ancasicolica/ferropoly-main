@@ -62,5 +62,17 @@ module.exports = {
       data.authToken = authToken;
     }
     return await client.post(`${settings.server.url}${path}`, data);
+  },
+  delete: async function (path, data, _authToken = undefined) {
+    if (!client) {
+      throw 'no client';
+    }
+    data = data || {};
+    if (_authToken) {
+      data.authToken = _authToken;
+    } else {
+      data.authToken = authToken;
+    }
+    return await client.delete(`${settings.server.url}${path}`, {data});
   }
 };
