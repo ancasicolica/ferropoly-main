@@ -13,57 +13,56 @@ const _         = require('lodash');
 /**
  * Get the Travel log
  */
-router.get('/:gameId/:teamId', function (req, res) {
+function handler(req, res) {
   if (!req.params.gameId) {
     return res.status(400).send({message: 'No gameId supplied'});
   }
-  if (!req.params.teamId) {
-    return res.status(400).send({message: 'No teamId supplied'});
-  }
-  const user = _.get(req.session, 'passport.user', 'nobody');
-  let teamId = req.params.teamId;
-  if (req.params.teamId === 'undefined') {
-    teamId = undefined;
-  }
+  const user   = _.get(req.session, 'passport.user', 'nobody');
+  const teamId = req.params.teamId || undefined;
+  const gameId = req.params.gameId;
 
   /**
    * Collect data and send it back
    * @param tId
    */
-  function collectAndSendLog(tId) {
+  async function collectAndSendLog(tId) {
     if (tId) {
-      logger.info(`${req.params.gameId}: TravelLog Request for ${tId}`);
-    }
-    else {
-      logger.info(`${req.params.gameId}: TravelLog Request for all teams`);
+      logger.info(`${gameId}: TravelLog Request for ${tId}`);
+    } else {
+      logger.info(`${gameId}: TravelLog Request for all teams`);
     }
 
-    travelLog.getAllLogEntries(req.params.gameId, tId, function (err, log) {
-      if (err) {
-        return res.status(500).send({message: err.message});
-      }
+    try {
+      const log = await travelLog.getAllLogEntries(gameId, tId);
       for (let i = 0; i < log.length; i++) {
         log[i] = _.omit(log[i], ['_id', '__v', 'gameId']);
       }
-      res.send({status: 'ok', travelLog: log});
-    });
+      res.send(log);
+    }
+    catch(err) {
+      return res.status(500).send({message: err.message});
+    }
   }
 
-  accessor.verify(user, req.params.gameId, accessor.admin, function (err) {
-    if (err) {
-      accessor.verifyPlayer(user, req.params.gameId, teamId, err => {
-        if (err) {
+  accessor.verify(user, gameId, accessor.admin)
+    .then(async () => {
+      // Admin Response
+      await collectAndSendLog(teamId);
+    })
+    .catch(() => {
+      accessor.verifyPlayer(user, gameId, teamId)
+        .then(async () => {
+          // User response
+          return await collectAndSendLog(teamId);
+        })
+        .catch(err => {
           return res.status(401).send({message: err.message});
-        }
-        // User response
-        return collectAndSendLog(teamId);
-      })
-      return;
-    }
+        })
+    })
 
-    // Admin Response
-    collectAndSendLog(teamId);
-  });
-});
+}
+
+router.get('/:gameId/:teamId', handler);
+router.get('/:gameId', handler);
 
 module.exports = router;
