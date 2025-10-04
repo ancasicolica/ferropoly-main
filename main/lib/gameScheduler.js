@@ -10,12 +10,12 @@
 
 
 const eventRepo    = require('../../common/models/schedulerEventModel');
-const moment       = require('moment');
 const EventEmitter = require('events').EventEmitter;
-const schedule     = require('node-schedule');
-const gameCache    = require('./gameCache');
-const logger       = require('../../common/lib/logger').getLogger('gameScheduler');
-const settings     = require('../settings');
+const {CronJob} = require('cron');
+const {DateTime} = require('luxon');
+const gameCache = require('./gameCache');
+const logger    = require('../../common/lib/logger').getLogger('gameScheduler');
+const settings  = require('../settings');
 
 /**
  * Constructor of the scheduler
@@ -34,14 +34,16 @@ class Scheduler extends EventEmitter {
     this.jobs      = [];
     this.updateJob = undefined;
 
-    schedule.scheduleJob('1 0 * * *', function () {
-      // Update cache at start of the day
-      gameCache.refreshCache(function (err) {
-        if (err) {
+    new CronJob('0 1 0 * * *',
+      function () {
+        // Update cache at start of the day
+        gameCache.refreshCache().catch(err => {
           logger.error('Error in Constructor', err);
-        }
-      });
-    });
+        });
+      },
+      null,
+      true,
+      'Europe/Berlin')
   }
 
   /**
@@ -104,7 +106,7 @@ class Scheduler extends EventEmitter {
       self.jobs = [];
 
       if (events.length > 0) {
-        const now = moment();
+        const now = DateTime.now();
 
         let handlerFunction = function (ev) {
           logger.info(`${ev.gameId}: Emitting event type:${ev.type} id:${ev._id}`);
@@ -115,13 +117,18 @@ class Scheduler extends EventEmitter {
           let event = events[i];
           logger.debug(`${events[i].gameId}: upcoming Event "${events[i].type}"`, events[i]);
 
-          if (moment(event.timestamp) < now) {
+          if (event.timestamp < now) {
             logger.info(`${event.gameId}: Emit an old event:${event._id}`, event);
             self.handleEvent(event.type, event);
           } else {
             logger.info(`${event.gameId}: Push event in joblist:${event._id}`, event);
-            let scheduledTs = moment(event.timestamp).add({seconds: self.settings.scheduler.delay});
-            self.jobs.push(schedule.scheduleJob(scheduledTs.toDate(), handlerFunction.bind(null, event)));
+            let scheduledTs = DateTime.fromJSDate(event.timestamp).plus({seconds: self.settings.scheduler.delay});
+            self.jobs.push(
+              new CronJob(scheduledTs.toJSDate(),
+                handlerFunction.bind(null, event),
+                null,
+                true,
+                'Europe/Berlin'));
           }
         }
       }
@@ -134,12 +141,16 @@ class Scheduler extends EventEmitter {
       // The problem is that new games won't be recognized after creation until the scheduler was updated, now
       // we get new games at least once an hour. Should be fixed with a communication between Editor and Main,
       // added as GitHub ticket #2 in EDITOR project (as the trigger has to come from the editor)
-      self.updateJob = schedule.scheduleJob(moment().add({minutes: 54, seconds: 3}).toDate(), function () {
-        self.update(function (err) {
-          if (err) {
-            logger.error('SCHEDULER UPDATE FAILED!', err);
-          }
-        });
+      self.updateJob = new CronJob(DateTime.now().plus({minutes: 54, seconds: 3}).toJSDate(),
+        function () {
+          self.update(function (err) {
+              if (err) {
+                logger.error('SCHEDULER UPDATE FAILED!', err);
+              }
+            },
+        null,
+        true,
+        'Europe/Berlin');
       });
     }).finally(callback);
   };
