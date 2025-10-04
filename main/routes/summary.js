@@ -78,22 +78,23 @@ router.get('/:gameId/static', async function (req, res) {
       props[i] = _.omit(props[i], ['_id', '__v', 'gameId']);
     }
     // Now we continue with the ranking list
-    const ranking = await teamAccountTransactionModel.getRankingList(req.params.gameId);
+    const ranking = await teamAccountTransactionModel.getRankingList(gameId);
 
     for (let i in ranking) {
       ranking[i] = _.omit(ranking[i], ['_id', '__v', 'gameId']);
     }
     // of course we want to add all account statements of all teams too
-    const accountStatement = await collectAccountStatement(req);
+    const accountStatement = await collectAccountStatement(gameId);
+
     // now we get all travel log entries
-    const travelLogEntries = await travelLogModel.getAllLogEntries(req.params.gameId, undefined);
+    const travelLogEntries = await travelLogModel.getAllLogEntries(gameId, undefined);
 
     for (let i in travelLogEntries) {
       travelLog[i] = _.omit(travelLog[i], ['_id', '__v', 'gameId']);
     }
 
     // and the chancellery shall also not to be forgotten
-    const chancelleryStatement = await chancelleryTransactionModel.getEntries(req.params.gameId);
+    const chancelleryStatement = await chancelleryTransactionModel.getEntries(gameId);
 
     let balance = 0;
     const chancelleryEntries = [];

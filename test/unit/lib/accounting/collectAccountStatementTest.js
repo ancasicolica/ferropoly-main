@@ -32,26 +32,26 @@ describe('collectAccountStatement Testing', ()=> {
   })
 
   it('should have 5 transactions for team 1',  async ()=> {
-    const res = await collectAccountStatement({params: {gameId: gameId, teamId: gameData.teams[1].uuid}});
+    const res = await collectAccountStatement( gameId,  gameData.teams[1].uuid);
     console.log(res);
     expect(res.accountData.length).to.be(5);
     expect(res.accountData[4].balance).to.be(10000);
   })
 
   it('should have 0 transactions for team 1 in the past',  async ()=> {
-    const res = await collectAccountStatement({params: {gameId: gameId, teamId: gameData.teams[1].uuid}, query:{start: '2020-01-01', end: '2020-01-02'}});
+    const res = await collectAccountStatement(gameId, gameData.teams[1].uuid, '2020-01-01', '2020-01-02');
     console.log(res);
     expect(res.accountData.length).to.be(0);
   })
 
   it('should have 5 transactions for team 1 over all the time',  async ()=> {
-    const res = await collectAccountStatement({params: {gameId: gameId, teamId: gameData.teams[1].uuid}, query:{start: '2020-01-01', end: '2040-01-02'}});
+    const res = await collectAccountStatement(gameId, gameData.teams[1].uuid, '2020-01-01', '2040-01-02');
     console.log(res);
     expect(res.accountData.length).to.be(5);
   })
 
   it('should have 0 transactions for team 0',  async ()=> {
-    const res = await collectAccountStatement({params: {gameId: gameId, teamId: gameData.teams[0].uuid}});
+    const res = await collectAccountStatement(gameId,  gameData.teams[0].uuid);
     console.log(res);
     expect(res.accountData.length).to.be(0);
   })

@@ -11,21 +11,23 @@ const {DateTime} = require('luxon');
 /**
  * Collects the account statement used for the frontend, a generic function used in different locations with different
  * access rights
- * @param req
+ * @param gameId
+ * @param teamId
+ * @param start is an ISO String
+ * @param end is an ISO String
  */
-module.exports = async function (req) {
+module.exports = async function (gameId, teamId = undefined, start = undefined, end = undefined) {
 
   let teamBalance = {};
-  let query       = req.query || {};
-  let tsStart     = query.start ?  DateTime.fromISO(query.start) : undefined;
-  let tsEnd       = query.end ?  DateTime.fromISO(query.end) : undefined;
+  let tsStart     = start ?  DateTime.fromISO(start) : undefined;
+  let tsEnd       = end ?  DateTime.fromISO(end) : undefined;
 
-  data = await teamAccount.getAccountStatement(req.params.gameId, req.params.teamId, tsStart, tsEnd);
+  data = await teamAccount.getAccountStatement(gameId, teamId, tsStart, tsEnd);
 
   for (let i = 0; i < data.length; i++) {
 
     if (!(tsStart || tsEnd)) {
-      // The balance is only available if ALL data is requested. Otherwise it does not make sense!
+      // The balance is only available if ALL data is requested. Otherwise, it does not make sense!
       if (_.isUndefined(teamBalance[data[i].teamId])) {
         teamBalance[data[i].teamId] = 0;
       }
