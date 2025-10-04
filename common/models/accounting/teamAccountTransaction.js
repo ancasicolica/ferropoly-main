@@ -84,7 +84,7 @@ async function getEntries(gameId, teamId, tsStart, tsEnd) {
     tsStart = DateTime.fromISO('2025-01-01').toJSDate();
   }
   if (!tsEnd) {
-    tsEnd = DateTime.fromISO('2100-01-01').toJSDate();
+    tsEnd = DateTime.now().toJSDate();
   }
 
   if (teamId) {

@@ -9,7 +9,7 @@ let ferroSocket;
 const logger         = require('../../../common/lib/logger').getLogger('teams:teamPositions');
 const travelLogModel = require('../../../common/models/travelLogModel');
 const gameCache      = require('../gameCache');
-const moment         = require('moment');
+const {DateTime} = require('luxon');
 
 function addLog(data) {
   gameCache.getGameData(data.gameId, (err, gc) => {
@@ -25,9 +25,10 @@ function addLog(data) {
      * a little before and after the game (could be helpful if one team is missing on the
      * way to the game respectively when coming home after the game)
      */
-    let start = moment(gc.gameplay.scheduling.gameStartTs).subtract(2, 'hours');
-    let end   = moment(gc.gameplay.scheduling.gameEndTs).add(60, 'minutes');
-    if (moment().isAfter(end) || moment().isBefore(start)) {
+    let start = DateTime.fromJSDate(gc.gameplay.scheduling.gameStartTs).minus({hours: 2});
+    let end   = DateTime.fromJSDate(gc.gameplay.scheduling.gameEndTs).plus({minutes: 60});
+    let now = DateTime.now();
+    if (now > end || now < start) {
       return;
     }
 

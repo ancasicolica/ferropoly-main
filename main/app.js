@@ -21,7 +21,7 @@ const flash        = require('connect-flash');
 const session      = require('express-session');
 const compression  = require('compression');
 const MongoStore   = require('connect-mongo');
-const moment       = require('moment');
+const {DateTime} = require('luxon');
 const {v4: uuid}   = require('uuid');
 
 // Model includes
@@ -94,7 +94,7 @@ async function initMain() {
       secure: 'auto'
     },
     genid:             function () {
-      return 'S_' + moment().format('YYMMDD-HHmmss-') + uuid();
+      return 'S_' + DateTime.now().toISO() + '_' + uuid();
     },
     store:             MongoStore.create({mongoUrl: settings.locationDbSettings.mongoDbUrl, ttl: 2 * 24 * 60 * 60}),
     name:              'ferropoly-spiel'

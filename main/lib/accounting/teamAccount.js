@@ -338,8 +338,8 @@ async function getRankingList(gameId, callback) {
  *
  * @param gameId
  * @param teamId
- * @param p1  Timestamp for start (moment, optional)
- * @param p2  Timestamp for end (moment, optional)
+ * @param p1  Timestamp for start (optional)
+ * @param p2  Timestamp for end (optional)
  * @param p3  Callback
  */
 async function getAccountStatement(gameId, teamId, p1, p2, p3) {

@@ -11,7 +11,7 @@ const _                = require('lodash');
 const accessor         = require('./accessor');
 const {v4: uuid}       = require('uuid');
 const gameLogModel     = require('../../common/models/gameLogModel');
-const moment           = require('moment');
+const {DateTime}       = require('luxon');
 const picBucket        = require('./picBucket')(require('../settings.js').picBucket);
 const EventEmitter     = require('./eventEmitter');
 
@@ -37,10 +37,10 @@ class FerroSocket extends EventEmitter {
     this.io.on('connection', function (socket) {
       logger.debug('io connection event');
       socket.emit('welcome', {
-        name   : settings.name,
+        name:    settings.name,
         appName: settings.appName,
         version: settings.version,
-        debug  : settings.debug,
+        debug:   settings.debug,
         preview: settings.preview
       });
     });
@@ -89,11 +89,11 @@ class FerroSocket extends EventEmitter {
                   return;
                 }
                 socket.ferropoly = {
-                  isAdmin : false,
+                  isAdmin:  false,
                   isPlayer: true,
-                  teamId  : data.teamId,
-                  user    : data.user,
-                  gameId  : data.gameId
+                  teamId:   data.teamId,
+                  user:     data.user,
+                  gameId:   data.gameId
                 };
                 logger.info(`${data.gameId}: Verified PLAYER socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
                 self.addSocket(socket, data.user, data.gameId);
@@ -106,10 +106,10 @@ class FerroSocket extends EventEmitter {
 
             // Admin verification ok
             socket.ferropoly = {
-              isAdmin : true,
+              isAdmin:  true,
               isPlayer: true, // get player info too
-              user    : data.user,
-              gameId  : data.gameId
+              user:     data.user,
+              gameId:   data.gameId
             };
             logger.info(`${data.gameId}: Verified ADMIN socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
             self.addSocket(socket, data.user, data.gameId);
@@ -306,18 +306,18 @@ class FerroSocket extends EventEmitter {
    * Emits all game messages to a single socket after connecting
    */
   emitGameMessagesAfterConnect(gameId, socket) {
-    gameLogModel.getLogEntries(gameId, null, moment().subtract(30, 'minutes'), null, (err, entries) => {
+    gameLogModel.getLogEntries(gameId, null, DateTime.now().minus({minutes: 30}), null, (err, entries) => {
       if (err) {
         return logger.error(`${gameId}: error in emitGameMessagesAfterConnect`, err);
       }
 
       entries.forEach(e => {
         let message = {
-          title    : e.saveTitle,
-          message  : e.message,
-          category : e.category,
+          title:     e.saveTitle,
+          message:   e.message,
+          category:  e.category,
           timestamp: e.timestamp,
-          id       : e._id
+          id:        e._id
         }
         if (socket.ferropoly.isAdmin) {
           message.title = e.title;
