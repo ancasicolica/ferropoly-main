@@ -7,6 +7,7 @@
 class EventEmitter {
   constructor() {
     this._events = {};
+    console.warn('deprecated! use node.js EventEmitter instead');
   }
 
   on(name, listener) {
