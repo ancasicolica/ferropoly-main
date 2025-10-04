@@ -10,12 +10,11 @@
 const logger         = require('../../common/lib/logger').getLogger('picBucket');
 const _              = require('lodash');
 const {Storage}      = require('@google-cloud/storage');
-const EventEmitter   = require('./eventEmitter');
 const {v4: uuidv4}   = require('uuid');
 const picBucketModel = require('../../common/models/picBucketModel');
 const axios          = require('axios').default;
-
-const storage = new Storage();
+const EventEmitter   = require('node:events');
+const storage        = new Storage();
 
 /**
  * PicBucket Class

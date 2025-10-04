@@ -13,7 +13,7 @@ const {v4: uuid}       = require('uuid');
 const gameLogModel     = require('../../common/models/gameLogModel');
 const {DateTime}       = require('luxon');
 const picBucket        = require('./picBucket')(require('../settings.js').picBucket);
-const EventEmitter     = require('./eventEmitter');
+const EventEmitter   = require('node:events');
 
 let ferroSocket;
 
