@@ -123,7 +123,6 @@ async function initMain() {
   app.use('/propertyAccount', require('./routes/propertyAccount'));
   app.use('/chancellery', require('./routes/chancellery'));
   app.use('/travellog', require('./routes/travellog'));
-  app.use('/traffic', require('./routes/traffic'));
   app.use('/userinfo', require('./routes/userinfo'));
   app.use('/account', require('./routes/account'));
   app.use('/checkin', require('./routes/checkin'));
