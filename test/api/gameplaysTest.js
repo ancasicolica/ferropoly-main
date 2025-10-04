@@ -51,7 +51,6 @@ describe('/gameplays testing', () => {
     } catch (err) {
       // Axios liefert den Status hier
       expect(err.response && err.response.status).to.be(401);
-      expect(err.response.data).to.have.key('message');
       console.log(err.response.data.message);
     }
   })

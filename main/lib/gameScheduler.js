@@ -101,7 +101,7 @@ class Scheduler extends EventEmitter {
 
       // Cancel all existing jobs
       for (i = 0; i < self.jobs.length; i++) {
-        self.jobs[i].cancel();
+        self.jobs[i].stop();
       }
       self.jobs = [];
 
@@ -135,7 +135,7 @@ class Scheduler extends EventEmitter {
 
       // Start the next update job
       if (self.updateJob) {
-        self.updateJob.cancel();
+        self.updateJob.stop();
       }
       // Todo: this time is too short, we don't need to update so often.
       // The problem is that new games won't be recognized after creation until the scheduler was updated, now
