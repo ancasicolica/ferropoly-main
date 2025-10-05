@@ -12,7 +12,7 @@ ferropolyApps.forEach(app => {
   plugins.push(new HtmlWebpackPlugin(({
     chunks    : [`${app.name}`],
     template  : path.join(__dirname, 'html', app.htmlFile),
-    filename  : path.join(__dirname, '..', 'editor', 'public', 'html', app.htmlFile),
+    filename  : path.join(__dirname, '..', 'main', 'public', 'html', app.htmlFile),
     publicPath: '/js/test/',
     minify    : false
   })));

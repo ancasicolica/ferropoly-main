@@ -16,7 +16,7 @@ ferropolyApps.forEach(app => {
   plugins.push(new HtmlWebpackPlugin(({
     chunks    : [`${app.name}`],
     template  : path.join(__dirname, 'html', app.htmlFile),
-    filename  : path.join(__dirname, '..', 'editor', 'public', 'html', app.htmlFile),
+    filename  : path.join(__dirname, '..', 'main', 'public', 'html', app.htmlFile),
     publicPath: '/build/',
     minify    : true
   })));
@@ -34,7 +34,7 @@ module.exports = merge(common, {
   output : {
     filename     : '[name].min.js',
     chunkFilename: '[name].bundle.js',
-    path    : path.resolve(__dirname, '..', 'editor', 'public', 'build')
+    path    : path.resolve(__dirname, '..', 'main', 'public', 'build')
   },
   stats  : {
     preset  : 'normal',

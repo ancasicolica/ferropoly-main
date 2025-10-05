@@ -23,8 +23,8 @@
  * Created by kc on 14.04.15.
  */
 'use strict';
-const webpackDevConfig  = require('./main/webapp/webpack.dev.js');
-const webpackProdConfig = require('./main/webapp/webpack.prod.js');
+const webpackDevConfig  = require('./webapp-v4/webpack.dev.js');
+const webpackProdConfig = require('./webapp-v4/webpack.prod.js');
 
 module.exports          = function (grunt) {
 
