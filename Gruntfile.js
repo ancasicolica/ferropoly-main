@@ -35,40 +35,18 @@ module.exports          = function (grunt) {
         files: [
           {
             expand   : true,
-            cwd      : '../ferropoly-editor/common/lib',
-            src      : '*.js*',
-            dest     : 'common/lib/',
-            flatten  : true,
+            cwd      : '../ferropoly-editor/common',
+            src      : '**/*',
+            dest     : 'common/',
             filter   : 'isFile',
             timestamp: true
           },
-
           {
             expand   : true,
-            cwd      : '../ferropoly-editor/common/models',
-            src      : '*.js',
-            dest     : 'common/models/',
-            flatten  : true,
-            filter   : 'isFile',
-            timestamp: true
-          },
-
-          {
-            expand   : true,
-            cwd      : '../ferropoly-editor/common/models/accounting',
-            src      : '*.js',
-            dest     : 'common/models/accounting',
-            flatten  : true,
-            filter   : 'isFile',
-            timestamp: true
-          },
-
-          {
-            expand   : true,
-            cwd      : '../ferropoly-editor/common/routes',
-            src      : '*.js',
-            dest     : 'common/routes/',
-            flatten  : true,
+            cwd      : '../ferropoly-editor/webapp-v4/common/',
+            src      : '**/*',
+            dest     : 'webapp-v4/common/',
+            flatten  : false,
             filter   : 'isFile',
             timestamp: true
           }
@@ -122,7 +100,7 @@ module.exports          = function (grunt) {
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-bump');
   grunt.loadNpmTasks('grunt-webpack');
-  grunt.registerTask('default', ['browserify']);
+  grunt.registerTask('default', ['copy']);
   grunt.registerTask('v:patch', ['bump-only:patch']);
   grunt.registerTask('v:minor', ['bump-only:minor']);
   grunt.registerTask('v:major', ['bump-only:major']);
