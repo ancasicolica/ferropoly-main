@@ -54,3 +54,4 @@ checkin.min.js
 /.nyc_output/
 /package-lock.json
 /.yarn
+/main/public/js/test/*.*

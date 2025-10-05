@@ -29,8 +29,8 @@
   },
   "main": "server.js",
   "dependencies": {
-    "@google-cloud/logging-winston": "6.0.0",
-    "@google-cloud/storage": "7.10.0",
+    "@google-cloud/logging-winston": "6.0.1",
+    "@google-cloud/storage": "7.17.1",
     "async": "3.2.6",
     "axios": "1.12.2",
     "axios-cookiejar-support": "6.0.4",
@@ -69,7 +69,6 @@
     "socket.io-client": "4.8.1",
     "tough-cookie": "5.1.2",
     "uuid": "13.0.0",
-    "vue-apexcharts": "1.6.2",
     "winston": "3.18.3"
   },
   "devDependencies": {
@@ -80,11 +79,11 @@
     "@fortawesome/vue-fontawesome": "3.1.2",
     "@googlemaps/js-api-loader": "1.16.10",
     "@googlemaps/ogc": "1.0.27",
-    "@primeuix/styled": "0.7.2",
+    "@primeuix/styled": "0.7.4",
     "@primevue/forms": "4.3.7",
-    "@primevue/themes": "4.3.7",
-    "@tailwindcss/postcss": "4.1.12",
-    "autoprefixer": "^10.4.21",
+    "@primevue/themes": "4.4.0",
+    "@tailwindcss/postcss": "4.1.14",
+    "autoprefixer": "10.4.21",
     "css-loader": "7.1.2",
     "eslint": "9.37.0",
     "eslint-plugin-vue": "9.33.0",
@@ -114,14 +113,14 @@
     "style-loader": "4.0.0",
     "tailwindcss": "4.1.12",
     "tailwindcss-primeui": "^0.6.1",
-    "vue": "3.5.18",
+    "vue": "3.5.22",
     "vue-loader": "17.4.2",
     "vue-router": "4.5.1",
     "webpack": "5.102.0",
     "webpack-bundle-analyzer": "4.10.2",
-    "webpack-cli": "5.1.4",
+    "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
-    "zod": "3.25.56"
+    "zod": "4.1.11"
   },
   "bundleDependencies": []
 }
