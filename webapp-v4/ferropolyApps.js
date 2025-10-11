@@ -14,5 +14,10 @@ module.exports = [
     entry   : path.join(__dirname, 'apps', 'gameSelector', 'app.js'),
     htmlFile: 'game-selector.html'
   },
+  {
+    name    : 'join',
+    entry   : path.join(__dirname, 'apps', 'join', 'app.js'),
+    htmlFile: 'join.html'
+  },
 
 ];
