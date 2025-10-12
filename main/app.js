@@ -88,13 +88,14 @@ async function initMain() {
   // required for passport: configuration
   app.use(session({
     secret:            'ferropolyIsAGameWithAVeryLargePlayground',
-    resave:            false,
+    resave:            true,
     saveUninitialized: false,
+    httpOnly:          false,
     cookie:            {
       secure: 'auto'
     },
     genid:             function () {
-      return 'S_' + DateTime.now().toISO() + '_' + uuid();
+      return 'MAIN_' + DateTime.now().toISO() + '_' + uuid();
     },
     store:             MongoStore.create({mongoUrl: settings.locationDbSettings.mongoDbUrl, ttl: 2 * 24 * 60 * 60}),
     name:              'ferropoly-spiel'
@@ -167,8 +168,24 @@ async function initMain() {
   // will print stacktrace
   if (app.get('env') === 'development') {
     app.use(function (err, req, res) {
-      res.status(err.status || 500);
-      res.render('error', {
+      let status    = err.status || 500;
+      let errorPage = 'error';
+      res.status(status);
+      switch (status) {
+        case 401:
+          errorPage = 'error/401';
+          break;
+        case 403:
+          errorPage = 'error/403';
+          break;
+        case 404:
+          errorPage = 'error/404';
+          break;
+        case 500:
+          errorPage = 'error/500';
+          break;
+      }
+      res.render(errorPage, {
         message: err.message,
         error:   err
       });
@@ -178,8 +195,21 @@ async function initMain() {
   // production error handler
   // no stacktraces leaked to user
   app.use(function (err, req, res) {
-    res.status(err.status || 500);
-    res.render('error', {
+    let status    = err.status || 500;
+    let errorPage = 'error';
+    res.status(status);
+    switch (status) {
+      case 401:
+        errorPage = 'error/401';
+        break;
+      case 403:
+        errorPage = 'error/403';
+        break;
+      case 404:
+        errorPage = 'error/404';
+        break;
+    }
+    res.render(errorPage, {
       message: err.message,
       error:   {}
     });
