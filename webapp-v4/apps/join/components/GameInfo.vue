@@ -20,8 +20,6 @@ import JoinContact from './JoinContact.vue';
 </script>
 
 <style scoped lang="scss">
-div {
-  background-color: #22e80a;
-}
+
 </style>
 
