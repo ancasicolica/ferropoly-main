@@ -14,6 +14,8 @@ module.exports = {
     'plugin:vue/recommended' // Use this if you are using Vue.js 2.x.
   ],
   rules: {
-    'vue/html-indent': 'off'
+    'vue/html-indent': 'off',
+    'vue/singleline-html-element-content-newline': 'off',
+    'vue/multiline-html-element-content-newline': 'off'
   }
 }
