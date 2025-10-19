@@ -23,6 +23,7 @@
         </div>
         <div class="col-span-2 md:col-span-1">
           <join-form />
+          <join-my-registration />
         </div>
       </div>
     </div>
@@ -38,6 +39,7 @@ import JoinForm from './JoinForm.vue';
 import {onMounted} from 'vue';
 import {last, split} from 'lodash';
 import {useJoinStore} from '../store/joinStore';
+import JoinMyRegistration from './JoinMyRegistration.vue';
 
 const joinStore = useJoinStore();
 

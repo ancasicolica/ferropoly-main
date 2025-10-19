@@ -13,7 +13,6 @@
 </template>
 
 <script setup>
-
 import JoinInfo from './JoinInfo.vue';
 import JoinGameDates from './JoinGameDates.vue';
 import JoinContact from './JoinContact.vue';

@@ -9,25 +9,36 @@
     <div>
       <div class="input-wrapper">
         <span class="p-input-icon-right">
-          <i :class="[ 'pi',valid ? 'pi-check-circle' : 'pi-times-circle', valid ? 'p-success' :  'p-error']"
-             v-if="validationIconsEnabled"></i>
-          <input-text type="text"
-                      :value="modelValue"
-                      @valueChange="onValueChange"
-                      :invalid="!valid"
-                      :class="{ 'p-invalid': !valid }"></input-text>
+          <i
+              v-if="validationIconsEnabled"
+              :class="[ 'pi',valid ? 'pi-check-circle' : 'pi-times-circle', valid ? 'p-success' : 'p-error']"
+          />
+          <input-text
+              type="text"
+              :value="modelValue"
+              :invalid="!valid"
+              :disabled="disabled"
+              :class="{ 'p-invalid': !valid }"
+              @valueChange="onValueChange"
+          />
         </span>
       </div>
     </div>
-    <prime-message id="organisatorName" v-if="valid"
-                   size="small"
-                   variant="simple"
-                   severity="secondary">{{ info }}
+    <prime-message
+        v-if="valid"
+        id="organisatorName"
+        size="small"
+        variant="simple"
+        severity="secondary"
+    >{{ info }}
     </prime-message>
-    <prime-message v-for="err in errors"
-      severity="error"
-      size="small"
-      variant="simple">{{ err.message }}
+    <prime-message
+        v-for="err in errors"
+        :key="err.message"
+        severity="error"
+        size="small"
+        variant="simple"
+    >{{ err.message }}
     </prime-message>
   </div>
 
@@ -96,6 +107,17 @@ export default {
      * The default value is set to `false`, meaning validation icons are enabled by default.
      */
     validationIconsDisabled: {
+      type:    Boolean,
+      default: () => {
+        return false;
+      }
+    },
+    /**
+     * Represents whether the component is disabled.
+     * @property {Boolean} disabled - A boolean value to indicate the disabled state of the component.
+     * @default false
+     */
+    disabled: {
       type:    Boolean,
       default: () => {
         return false;
