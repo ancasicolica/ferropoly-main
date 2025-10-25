@@ -110,7 +110,7 @@
     "raw-loader": "4.0.2",
     "sandboxed-module": "2.0.4",
     "sass": "1.93.2",
-    "sass-loader": "16.0.5",
+    "sass-loader": "16.0.6",
     "style-loader": "4.0.0",
     "tailwindcss": "4.1.16",
     "tailwindcss-primeui": "^0.6.1",

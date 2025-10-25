@@ -19,5 +19,10 @@ module.exports = [
     entry   : path.join(__dirname, 'apps', 'join', 'app.js'),
     htmlFile: 'join.html'
   },
+  {
+    name    : 'game-info',
+    entry   : path.join(__dirname, 'apps', 'info', 'app.js'),
+    htmlFile: 'game-info.html'
+  },
 
 ];
