@@ -10,6 +10,7 @@ const router  = express.Router();
 const gameplayModel     = require('../../common/models/gameplayModel');
 const pricelist         = require('../../common/lib/pricelist');
 const teamModel         = require('../../common/models/teamModel');
+const rulesModel        = require('../../common/models/rulesModel');
 const logger            = require('../../common/lib/logger').getLogger('routes:info');
 const priceListDownload = require('../../common/routes/downloadPricelist');
 const _                 = require('lodash');
@@ -34,9 +35,15 @@ router.get('/data/:gameId', async function (req, res) {
       return res.status(500).send({message: 'Interner Fehler: gp ist null'});
     }
 
-    const pl = await pricelist.getPricelist(gameId);
-    if (!pl) {
-      return res.status(500).send({message: 'Interner Fehler: pl ist null'});
+    let pl    = [];
+    let rules = null;
+    if (gp.internal.finalized) {
+      pl = await pricelist.getPricelist(gameId);
+      if (!pl) {
+        return res.status(500).send({message: 'Interner Fehler: pl ist null'});
+      }
+
+      rules = await rulesModel.getRules(gameId);
     }
 
     const foundTeams = await teamModel.getTeams(gameId)
@@ -50,9 +57,9 @@ router.get('/data/:gameId', async function (req, res) {
       });
     }
 
-    res.send({gameplay: gp, pricelist: pl, teams});
+    res.send({gameplay: gp, pricelist: pl, teams, rules});
   }
-  catch(ex) {
+  catch (ex) {
     logger.info('Problem in route', ex.message);
     res.status(500).send({message: ex.message});
   }

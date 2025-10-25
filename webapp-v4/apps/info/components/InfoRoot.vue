@@ -13,7 +13,10 @@
       help-text="Infos zum Ferropoly"
   />
     <div class="ferropoly-container">
-      <router-view />
+      <FatalApiError :error="infoStore.apiError" />
+      <div v-if="!infoStore.apiError">
+        <router-view />
+      </div>
     </div>
 
   </div>
@@ -23,8 +26,19 @@
 
 import MenuBar from '../../../common/components/MenuBar.vue';
 import {useInfoStore} from '../store/InfoStore';
+import {onMounted} from 'vue';
+import {last, split} from 'lodash';
+import FatalApiError from '../../../lib/components/FatalApiError.vue';
 
 const infoStore = useInfoStore();
+
+onMounted(() => {
+  const elements = split(window.location.pathname, '/');
+  let gameId     = last(elements);
+  infoStore.fetchData(gameId).then(() => {
+    console.log('data loaded');
+  });
+})
 </script>
 
 <style scoped lang="scss">
