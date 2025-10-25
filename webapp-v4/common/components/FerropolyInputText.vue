@@ -9,36 +9,26 @@
     <div>
       <div class="input-wrapper">
         <span class="p-input-icon-right">
-          <i
-              v-if="validationIconsEnabled"
-              :class="[ 'pi',valid ? 'pi-check-circle' : 'pi-times-circle', valid ? 'p-success' : 'p-error']"
-          />
-          <input-text
-              type="text"
-              :value="modelValue"
-              :invalid="!valid"
-              :disabled="disabled"
-              :class="{ 'p-invalid': !valid }"
-              @valueChange="onValueChange"
-          />
+          <i :class="[ 'pi',valid ? 'pi-check-circle' : 'pi-times-circle', valid ? 'p-success' :  'p-error']"
+             v-if="validationIconsEnabled"></i>
+          <input-text type="text"
+                      :value="modelValue"
+                      @valueChange="onValueChange"
+                      :invalid="!valid"
+                      :disabled="disabled"
+                      :class="{ 'p-invalid': !valid }" />
         </span>
       </div>
     </div>
-    <prime-message
-        v-if="valid"
-        id="organisatorName"
-        size="small"
-        variant="simple"
-        severity="secondary"
-    >{{ info }}
+    <prime-message id="organisatorName" v-if="valid"
+                   size="small"
+                   variant="simple"
+                   severity="secondary">{{ info }}
     </prime-message>
-    <prime-message
-        v-for="err in errors"
-        :key="err.message"
-        severity="error"
-        size="small"
-        variant="simple"
-    >{{ err.message }}
+    <prime-message v-for="err in errors" v-bind:key="err.message"
+      severity="error"
+      size="small"
+      variant="simple">{{ err.message }}
     </prime-message>
   </div>
 
@@ -118,7 +108,7 @@ export default {
      * @default false
      */
     disabled: {
-      type:    Boolean,
+      type: Boolean,
       default: () => {
         return false;
       }
