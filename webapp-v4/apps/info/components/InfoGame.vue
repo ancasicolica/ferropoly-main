@@ -9,11 +9,11 @@
   <!-- On mobile: blocks stack vertically (flex-wrap default behavior) -->
   <!-- On md and larger: blocks appear side by side -->
   <div class="flex flex-wrap">
-    <div class="basis-full md:basis-1/2">
+    <div class="basis-full md:basis-1/2 md:pr-1">
       <game-info />
-      <pricelist-info />
+      <pricelist-info class="mt-4 mb-4" />
     </div>
-    <div class="basis-full md:basis-1/2">
+    <div class="basis-full md:basis-1/2 md:pl-1">
       <registered-teams />
     </div>
   </div>

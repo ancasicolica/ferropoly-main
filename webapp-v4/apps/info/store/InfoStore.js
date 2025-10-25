@@ -17,17 +17,19 @@ export const useInfoStore = defineStore('Info', {
       {label: 'Karte', route: 'map'},
       {label: 'Spielregeln', route: 'rules'},
     ],
-    gameInfo: {
-      date: null,
-      start: '',
-      end: '',
+    pricelist:       [],
+    gameInfo:        {
+      date:        null,
+      start:       '',
+      end:         '',
       organisator: '',
-      email: '',
-      phone: ''
+      email:       '',
+      phone:       '',
+      gameName:    '',
     },
     gameId:          '',
     apiError:        null,
-    teams: [],
+    teams:           [],
   }),
   getters: {},
   actions: {
@@ -37,16 +39,17 @@ export const useInfoStore = defineStore('Info', {
         console.log(`Loading data for ${gameId}`);
         const resp = await axios.get(`/info/data/${gameId}`);
         this.teams = resp.data.teams;
-        const gp = resp.data.gameplay;
+        const gp   = resp.data.gameplay;
         console.log(resp.data, gp);
-        this.gameInfo.date = DateTime.fromISO(gp.scheduling.gameDate);
-        this.gameInfo.start = gp.scheduling.gameStart;
-        this.gameInfo.end = gp.scheduling.gameEnd;
-        this.gameInfo.organisator= gp.owner.organisatorName;
-        this.gameInfo.email = gp.owner.organisatorEmail;
-        this.gameInfo.phone = gp.owner.organisatorPhone;
+        this.gameInfo.date        = DateTime.fromISO(gp.scheduling.gameDate);
+        this.gameInfo.start       = gp.scheduling.gameStart;
+        this.gameInfo.end         = gp.scheduling.gameEnd;
+        this.gameInfo.organisator = gp.owner.organisatorName;
+        this.gameInfo.email       = gp.owner.organisatorEmail;
+        this.gameInfo.phone       = gp.owner.organisatorPhone;
+        this.gameInfo.gameName       = gp.gamename;
 
-
+        this.pricelist = resp.data.pricelist;
       }
 
       catch (err) {
