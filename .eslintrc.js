@@ -16,6 +16,7 @@ module.exports = {
   rules: {
     'vue/html-indent': 'off',
     'vue/singleline-html-element-content-newline': 'off',
-    'vue/multiline-html-element-content-newline': 'off'
+    'vue/multiline-html-element-content-newline': 'off',
+    'vue/html-self-closing': 'off',
   }
 }

@@ -6,13 +6,11 @@
 
 <template>
   <div>
-    <ferro-card
-        title="Preisliste"
-    >
+    <ferro-card title="Preisliste">
       <div v-if="!pricelistAvailable">Die Preisliste ist noch in Bearbeitung. Sobald sie fertig ist, kannst Du sie hier
         anschauen.
       </div>
-      <div v-if="pricelistAvailable">Die Preisliste enthält {{propsCount}} Orte und kann unter dem Menupunkt "Preisliste" angeschaut
+      <div v-if="pricelistAvailable">Die Preisliste enthält {{ propsCount }} Orte und kann unter dem Menupunkt "Preisliste" angeschaut
       oder <a :href="downloadLink">hier als Excel-Datei</a> geladen werden.</div>
     </ferro-card>
   </div>
