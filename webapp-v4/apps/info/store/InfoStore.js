@@ -8,6 +8,7 @@ import {defineStore} from 'pinia'
 import axios from 'axios';
 import FerropolyApiError from '../../../lib/FerropolyApiError';
 import {DateTime} from 'luxon';
+import {last} from 'lodash';
 
 export const useInfoStore = defineStore('Info', {
   state:   () => ({
@@ -17,6 +18,7 @@ export const useInfoStore = defineStore('Info', {
       {label: 'Karte', route: 'map'},
       {label: 'Spielregeln', route: 'rules'},
     ],
+    dataLoaded:      false,
     pricelist:       [],
     gameInfo:        {
       date:        null,
@@ -30,8 +32,19 @@ export const useInfoStore = defineStore('Info', {
     gameId:          '',
     apiError:        null,
     teams:           [],
+    rules:           {
+      changelog: [],
+      released:  ''
+    }
   }),
-  getters: {},
+  getters: {
+    rulesDate(state) {
+      if (state.rules.changelog.length === 0) {
+        return DateTime.fromISO('2020-01-01T08:00').toJSDate();
+      }
+      return DateTime.fromISO(last(state.rules.changelog).date).toJSDate();
+    }
+  },
   actions: {
     async fetchData(gameId) {
       try {
@@ -41,15 +54,19 @@ export const useInfoStore = defineStore('Info', {
         this.teams = resp.data.teams;
         const gp   = resp.data.gameplay;
         console.log(resp.data, gp);
-        this.gameInfo.date        = DateTime.fromISO(gp.scheduling.gameDate);
-        this.gameInfo.start       = gp.scheduling.gameStart;
-        this.gameInfo.end         = gp.scheduling.gameEnd;
+        this.gameInfo.date        = DateTime.fromISO(gp.scheduling.gameDate).toJSDate();
+        this.gameInfo.start       = DateTime.fromISO(gp.scheduling.gameStart).toJSDate();
+        this.gameInfo.end         = DateTime.fromISO(gp.scheduling.gameEnd).toJSDate();
         this.gameInfo.organisator = gp.owner.organisatorName;
         this.gameInfo.email       = gp.owner.organisatorEmail;
         this.gameInfo.phone       = gp.owner.organisatorPhone;
-        this.gameInfo.gameName       = gp.gamename;
+        this.gameInfo.gameName    = gp.gamename;
 
-        this.pricelist = resp.data.pricelist;
+        this.rules.changelog = resp.data.rules.changelog;
+        this.rules.released  = resp.data.rules.released;
+
+        this.pricelist  = resp.data.pricelist;
+        this.dataLoaded = true;
       }
 
       catch (err) {

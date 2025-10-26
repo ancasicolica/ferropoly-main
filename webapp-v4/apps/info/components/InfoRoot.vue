@@ -14,7 +14,7 @@
   />
     <div class="ferropoly-container">
       <FatalApiError :error="infoStore.apiError" />
-      <div v-if="!infoStore.apiError">
+      <div v-if="showContents">
         <router-view />
       </div>
     </div>
@@ -26,12 +26,13 @@
 
 import MenuBar from '../../../common/components/MenuBar.vue';
 import {useInfoStore} from '../store/InfoStore';
-import {onMounted} from 'vue';
+import {computed, onMounted} from 'vue';
 import {last, split} from 'lodash';
 import FatalApiError from '../../../lib/components/FatalApiError.vue';
 
 const infoStore = useInfoStore();
 
+const showContents = computed(()=> !infoStore.apiError && infoStore.dataLoaded )
 onMounted(() => {
   const elements = split(window.location.pathname, '/');
   let gameId     = last(elements);

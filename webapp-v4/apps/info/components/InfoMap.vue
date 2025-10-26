@@ -13,6 +13,13 @@
       >
       </ferro-jumbotron>
     </div>
+    <div v-if="pricelistAvailable">
+      <ferro-jumbotron
+          :title="infoStore.gameInfo.gameName"
+          info="coming soon!"
+      >
+      </ferro-jumbotron>
+    </div>
   </div>
 </template>
 

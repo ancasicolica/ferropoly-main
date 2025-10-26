@@ -14,11 +14,11 @@
     </div>
     <div class="flex flex-row">
       <div class="basis-64">Startzeit</div>
-      <div class="basis-128">{{ infoStore.gameInfo.start }}</div>
+      <div class="basis-128">{{ start }}</div>
     </div>
     <div class="flex flex-row">
       <div class="basis-64">Spielende</div>
-      <div class="basis-128">{{ infoStore.gameInfo.end }}</div>
+      <div class="basis-128">{{ end }}</div>
     </div>
     <div class="flex flex-row">
       <div class="basis-64">Spielleitung</div>
@@ -42,12 +42,14 @@
 import FerroCard from '../../../../common/components/FerroCard.vue';
 import {useInfoStore} from '../../store/InfoStore';
 import {computed} from 'vue';
-import {formatGameDate} from '../../../../common/lib/formatters';
+import {formatGameDate, formatGameTime} from '../../../../common/lib/formatters';
 
 const infoStore = useInfoStore();
 
 const email = computed(() => `mailto:${infoStore.gameInfo.email}`);
 const gameDate = computed(()=> formatGameDate(infoStore.gameInfo.date));
+const start = computed(()=> formatGameTime(infoStore.gameInfo.start));
+const end = computed(()=> formatGameTime(infoStore.gameInfo.end));
 </script>
 
 <style scoped lang="scss">

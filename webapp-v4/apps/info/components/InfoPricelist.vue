@@ -13,6 +13,15 @@
       >
       </ferro-jumbotron>
     </div>
+    <div v-if="pricelistAvailable">
+      <ferropoly-pricelist
+          :gamename="gamename"
+          :game-date="gameDate"
+          :game-start="gameStart"
+          :game-end="gameEnd"
+          :pricelist="pricelist"
+      />
+    </div>
   </div>
 </template>
 
@@ -20,10 +29,17 @@
 import {useInfoStore} from '../store/InfoStore';
 import {computed} from 'vue';
 import FerroJumbotron from '../../../lib/components/FerroJumbotron.vue';
+import FerropolyPricelist from '../../../common/components/FerropolyPricelist.vue';
 
 const infoStore = useInfoStore();
 
 const pricelistAvailable = computed(() => infoStore.pricelist.length > 0)
+
+const gamename = computed(() => infoStore.gameInfo.gameName);
+const gameDate = computed(() => infoStore.gameInfo.date);
+const gameStart = computed(() => infoStore.gameInfo.start);
+const gameEnd = computed(() => infoStore.gameInfo.end);
+const pricelist = computed(() => infoStore.pricelist);
 
 </script>
 
