@@ -12,7 +12,7 @@
         help-url="/about"
         help-text="Infos / Kontakt"
     />
-    <welcome-bar user-name="ABC" />
+    <welcome-bar :user-name="mainSelectorStore.userName" />
     <FatalApiError :error="mainSelectorStore.apiError" />
   </div>
 </template>
