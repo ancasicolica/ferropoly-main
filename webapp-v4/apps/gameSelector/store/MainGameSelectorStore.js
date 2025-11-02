@@ -12,9 +12,9 @@ import FerropolyApiError from '../../../lib/FerropolyApiError';
 export const useMainGameSelectorStore = defineStore('MainGameSelector', {
   state:   () => ({
     menuBarElements: [],
-    gameplays:       [], // the ones as admin
-    games:           [], // the ones as player
-    userName: '',
+    adminGameplays:  [], // the ones as admin
+    playerGameplays: [], // the ones as player
+    userName:        '',
     apiError:        null
   }),
   getters: {},
@@ -28,17 +28,17 @@ export const useMainGameSelectorStore = defineStore('MainGameSelector', {
         this.apiError = null;
         const resp    = await axios.get('/gameplays')
         console.log('Game Data fetched', resp.data);
-        this.gameplays = get(resp, 'data.gameplays', []);
-        this.games     = get(resp, 'data.games', []);
+        this.adminGameplays  = get(resp, 'data.gameplays', []);
+        this.playerGameplays = get(resp, 'data.games', []);
 
-        for (let gp of this.gameplays) {
+        for (let gp of this.adminGameplays) {
           gp.scheduling.gameDate = new Date(gp.scheduling.gameDate);
           gp.scheduling.deleteTs = new Date(gp.scheduling.deleteTs);
         }
 
         const userResp = await axios.get('/userInfo');
         console.log('User Data fetched', userResp.data);
-        const p = userResp.data.info.personalData;
+        const p       = userResp.data.info.personalData;
         this.userName = `${p.forename} ${p.surname}`;
       }
       catch (err) {

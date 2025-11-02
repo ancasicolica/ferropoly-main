@@ -13,7 +13,11 @@
         help-text="Infos / Kontakt"
     />
     <welcome-bar :user-name="mainSelectorStore.userName" />
-    <FatalApiError :error="mainSelectorStore.apiError" />
+    <div class="ferropoly-container">
+      <FatalApiError :error="mainSelectorStore.apiError" />
+      <admin-gameplays />
+    </div>
+
   </div>
 </template>
 
@@ -23,6 +27,7 @@ import WelcomeBar from '../../../common/components/WelcomeBar.vue'
 import {useMainGameSelectorStore} from '../store/MainGameSelectorStore';
 import {onMounted} from 'vue';
 import FatalApiError from '../../../lib/components/FatalApiError.vue';
+import AdminGameplays from './AdminGameplays.vue';
 
 const mainSelectorStore = useMainGameSelectorStore();
 
