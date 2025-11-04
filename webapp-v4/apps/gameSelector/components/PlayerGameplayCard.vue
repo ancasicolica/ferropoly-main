@@ -34,12 +34,22 @@
         <div class="basis-128"> {{ deleteTs }}</div>
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
+      <Button
+          v-if="isTeamLead"
+          label="Team Mitglieder"
+          size="small"
+          icon="pi pi-users"
+          severity="secondary"
+          as="a"
+          :href="teamEditLink"
+      />
     </ferro-card>
   </div>
 </template>
 
 <script setup>
 
+import Button from 'primevue/button';
 import FerroCard from '../../../common/components/FerroCard.vue';
 import {formatGameDate, formatGameTime, formatMap} from '../../../common/lib/formatters';
 import {computed} from 'vue';
@@ -64,6 +74,8 @@ const gameStart  = computed(() => formatGameTime(props.gameplay.scheduling.gameS
 const gameEnd    = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
 const map        = computed(() => formatMap(props.gameplay.internal.map))
 const deleteTs   = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs))
+const isTeamLead   = computed(() => props.gameplay.isTeamLead)
+const teamEditLink = computed(()=> `/team/edit/${props.gameplay.internal.gameId}/${props.gameplay.team.uuid}`)
 </script>
 
 <style scoped lang="scss">
