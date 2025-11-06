@@ -23,34 +23,36 @@
         dem Spiel erfasst, es könnte sonst zu einem "Gruppe geteilt Alarm" in der Zentrale kommen.
       </p>
       <div class="flex flex-wrap mt-2">
-        <div class="basis-full md:basis-1/2 md:pr-1">
+        <div class="basis-full md:basis-1/2 md:pr-1 mb-2">
           <add-team-member />
         </div>
         <div class="basis-full md:basis-1/2 md:pl-1">
           <team-member-list />
         </div>
       </div>
+      <FatalApiError :error="teamStore.apiError" />
     </div>
   </div>
 </template>
 
 <script setup>
 
-import {onMounted} from 'vue';
 import {split} from 'lodash';
 import {useTeamStore} from '../store/Team';
 import MenuBar from '../../../common/components/MenuBar.vue';
 import AddTeamMember from './AddTeamMember.vue';
 import TeamMemberList from './TeamMemberList.vue';
+import FatalApiError from '../../../lib/components/FatalApiError.vue';
 
 const teamStore = useTeamStore();
 
-onMounted(() => {
-  const elements = split(window.location.pathname, '/');
-  const gameId   = elements[elements.length - 2];
-  const teamId   = elements[elements.length - 1];
-  teamStore.fetchData(gameId, teamId);
-})
+const elements = split(window.location.pathname, '/');
+const gameId   = elements[elements.length - 2];
+const teamId   = elements[elements.length - 1];
+teamStore.fetchData(gameId, teamId).then(() => {
+  console.log('Data loaded');
+});
+
 </script>
 
 <style scoped lang="scss">

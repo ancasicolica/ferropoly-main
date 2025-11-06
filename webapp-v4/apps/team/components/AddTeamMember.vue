@@ -15,7 +15,11 @@
           label="Loginname"
           validation-icons-disabled
       />
-      <Button label="Hinzufügen" :disabled="disableButton" />
+      <Button
+          label="Hinzufügen"
+          :disabled="disableButton"
+          @click="onAdd"
+      />
     </div>
   </ferro-card>
 </template>
@@ -26,9 +30,18 @@ import FerroCard from '../../../common/components/FerroCard.vue';
 import FerropolyInputText from '../../../common/components/FerropolyInputText.vue';
 import {computed, ref} from 'vue';
 import Button from 'primevue/button';
+import {useTeamStore} from '../store/Team';
+
+const teamStore = useTeamStore();
 
 const teamName      = ref('');
-const disableButton = computed(() => teamName.value.length < 6)
+const disableButton = computed(() => teamName.value.length < 6);
+
+const onAdd = function() {
+  teamStore.storeMember(teamName.value).catch(err => {
+    console.error(err);
+  });
+}
 </script>
 
 <style scoped lang="scss">
