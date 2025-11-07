@@ -40,6 +40,7 @@ export const useTeamStore = defineStore('Team', {
      */
     async storeMember(memberId) {
       try {
+        this.apiError = null;
         const authToken = await getAuthToken();
         await axios.post(`/team/members/${this.gameId}/${this.teamId}`,
           {
@@ -62,6 +63,7 @@ export const useTeamStore = defineStore('Team', {
      */
     async removeMember(memberId) {
       try {
+        this.apiError = null;
         const authToken = await getAuthToken();
         await axios.delete(`/team/members/${this.gameId}/${this.teamId}`,
           {
@@ -85,6 +87,7 @@ export const useTeamStore = defineStore('Team', {
     async fetchMembers() {
       const self = this;
       try {
+        this.apiError = null;
         const resp = await axios.get(`/team/members/${this.gameId}/${this.teamId}`);
         console.log('Team members', resp.data.members);
         self.teamMembers = resp.data.members;

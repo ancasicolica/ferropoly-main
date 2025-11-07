@@ -37,10 +37,14 @@ const teamStore = useTeamStore();
 const teamName      = ref('');
 const disableButton = computed(() => teamName.value.length < 6);
 
-const onAdd = function() {
-  teamStore.storeMember(teamName.value).catch(err => {
-    console.error(err);
-  });
+const onAdd = function () {
+  teamStore.storeMember(teamName.value)
+      .then(() => {
+        teamName.value = '';
+      })
+      .catch(err => {
+        console.error(err);
+      });
 }
 </script>
 
