@@ -43,6 +43,13 @@
           as="a"
           :href="teamEditLink"
       />
+      <Button
+          label="Preisliste"
+          size="small"
+          severity="secondary"
+          as="a"
+          :href="pricelistLink"
+        />
     </ferro-card>
   </div>
 </template>
@@ -76,6 +83,7 @@ const map        = computed(() => formatMap(props.gameplay.internal.map))
 const deleteTs   = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs))
 const isTeamLead   = computed(() => props.gameplay.isTeamLead)
 const teamEditLink = computed(()=> `/team/edit/${props.gameplay.internal.gameId}/${props.gameplay.team.uuid}`)
+const pricelistLink = computed(()=> `/info/${props.gameplay.internal.gameId}`)
 </script>
 
 <style scoped lang="scss">

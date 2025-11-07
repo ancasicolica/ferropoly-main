@@ -28,6 +28,13 @@
         <div class="basis-128"> {{ deleteTs }}</div>
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
+      <Button
+          label="Preisliste"
+          size="small"
+          severity="secondary"
+          as="a"
+          :href="pricelistLink"
+      />
     </ferro-card>
   </div>
 </template>
@@ -37,6 +44,7 @@
 import FerroCard from '../../../common/components/FerroCard.vue';
 import {formatGameDate, formatGameTime, formatMap} from '../../../common/lib/formatters';
 import {computed} from 'vue';
+import Button from 'primevue/button';
 
 const props = defineProps({
   gameplay: {
@@ -50,11 +58,12 @@ const props = defineProps({
   }
 });
 
-const gameDate  = computed(() => formatGameDate(props.gameplay.scheduling.gameDate));
-const gameStart = computed(() => formatGameTime(props.gameplay.scheduling.gameStart));
-const gameEnd   = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
-const map       = computed(() => formatMap(props.gameplay.internal.map))
-const deleteTs  = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs))
+const gameDate      = computed(() => formatGameDate(props.gameplay.scheduling.gameDate));
+const gameStart     = computed(() => formatGameTime(props.gameplay.scheduling.gameStart));
+const gameEnd       = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
+const map           = computed(() => formatMap(props.gameplay.internal.map));
+const deleteTs      = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs));
+const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`)
 </script>
 
 <style scoped lang="scss">
