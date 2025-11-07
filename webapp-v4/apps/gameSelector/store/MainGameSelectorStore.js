@@ -17,7 +17,9 @@ export const useMainGameSelectorStore = defineStore('MainGameSelector', {
     userName:        '',
     apiError:        null
   }),
-  getters: {},
+  getters: {
+    
+  },
   actions: {
     /**
      * Read the data for the Game selector
