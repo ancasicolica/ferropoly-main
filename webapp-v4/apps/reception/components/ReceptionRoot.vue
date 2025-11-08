@@ -5,11 +5,24 @@
 -->
 
 <template>
-  <div>ReceptionRoot.vue</div>
+  <div>
+    <menu-bar
+        :elements="receptionStore.menuBarElements"
+        show-online-status
+        help-url="/about"
+    />
+    <div class="ferropoly-container">
+      <router-view />
+    </div>
+  </div>
 </template>
 
 <script setup>
 
+import MenuBar from '../../../common/components/MenuBar.vue';
+import {useReceptionStore} from '../store/ReceptionStore';
+
+const receptionStore = useReceptionStore();
 </script>
 
 <style scoped lang="scss">
