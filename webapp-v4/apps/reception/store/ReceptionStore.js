@@ -5,9 +5,11 @@
  **/
 
 import {defineStore} from 'pinia'
+import axios from 'axios';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
+    gameId: '',
     menuBarElements: [
       {label: 'Übersicht', route:'dashboard'},
       {label: 'Anruf behandeln', route: 'call'},
@@ -23,8 +25,16 @@ export const useReceptionStore = defineStore('Reception', {
                 {label: 'Service', route: 'service'}
         ]
       },
-    ]
+    ],
+    socketConnected: false
   }),
   getters: {},
-  actions: {}
+  actions: {
+    async fetchStaticData(gameId) {
+      this.gameId = gameId;
+      const resp  = await axios.get(`/static/${gameId}`);
+      console.log(resp.data);
+      return resp.data;
+    }
+  }
 })

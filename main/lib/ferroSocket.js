@@ -13,7 +13,7 @@ const {v4: uuid}       = require('uuid');
 const gameLogModel     = require('../../common/models/gameLogModel');
 const {DateTime}       = require('luxon');
 const picBucket        = require('./picBucket')(require('../settings.js').picBucket);
-const EventEmitter   = require('node:events');
+const EventEmitter     = require('node:events');
 
 let ferroSocket;
 
@@ -70,55 +70,62 @@ class FerroSocket extends EventEmitter {
      * sockets (otherwise disconnect)
      */
     this.io.on('connection', function (socket) {
-      socket.on('identify', function (data) {
-        authTokenManager.verifyToken(data.user, data.authToken, function (err) {
-          if (err) {
-            logger.warn('Invalid socket', data);
-            socket.disconnect();
-            return;
+
+      socket.on('identify', async function (data) {
+        try {
+          const checkToken = await authTokenManager.verifyToken(data.user, data.authToken);
+          if (!checkToken) {
+            logger.info('invalid socket', data);
+            return socket.disconnect();
           }
 
           // Check the access rights
-          accessor.verify(data.user, data.gameId, accessor.admin, function (err) {
-            if (err) {
+          await accessor.verify(data.user, data.gameId, accessor.admin)
+            .then(() => {
+              // Admin verification ok
+              socket.ferropoly = {
+                isAdmin:  true,
+                isPlayer: true, // get player info too
+                user:     data.user,
+                gameId:   data.gameId
+              };
+              logger.info(`${data.gameId}: Verified ADMIN socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
+              self.addSocket(socket, data.user, data.gameId);
+              self.emit('admin-connected', {gameId: data.gameId, user: data.user});
+              self.registerChannels(socket);
+              self.emitGameMessagesAfterConnect(data.gameId, socket);
+            })
+            .catch(err => {
+
               // Admin verification failed, is it a player?
-              accessor.verifyPlayer(data.user, data.gameId, data.teamId, function (err) {
-                if (err) {
+              accessor.verifyPlayer(data.user, data.gameId, data.teamId)
+                .then(() => {
+                  socket.ferropoly = {
+                    isAdmin:  false,
+                    isPlayer: true,
+                    teamId:   data.teamId,
+                    user:     data.user,
+                    gameId:   data.gameId
+                  };
+                  logger.info(`${data.gameId}: Verified PLAYER socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
+                  self.addSocket(socket, data.user, data.gameId);
+                  self.registerChannels(socket);
+                  self.emit('player-connected', {gameId: data.gameId, teamId: data.teamId, user: data.user});
+                  self.emitGameMessagesAfterConnect(data.gameId, socket);
+                })
+                .catch(() => {
                   logger.warn(`${data.gameId}: No access rights, invalid socket`, data);
                   socket.disconnect();
-                  return;
-                }
-                socket.ferropoly = {
-                  isAdmin:  false,
-                  isPlayer: true,
-                  teamId:   data.teamId,
-                  user:     data.user,
-                  gameId:   data.gameId
-                };
-                logger.info(`${data.gameId}: Verified PLAYER socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
-                self.addSocket(socket, data.user, data.gameId);
-                self.registerChannels(socket);
-                self.emit('player-connected', {gameId: data.gameId, teamId: data.teamId, user: data.user});
-                self.emitGameMessagesAfterConnect(data.gameId, socket);
-              });
-              return;
-            }
-
-            // Admin verification ok
-            socket.ferropoly = {
-              isAdmin:  true,
-              isPlayer: true, // get player info too
-              user:     data.user,
-              gameId:   data.gameId
-            };
-            logger.info(`${data.gameId}: Verified ADMIN socket added ${socket.id} for ${_.get(socket, 'ferropoly.user')}`, socket.ferropoly);
-            self.addSocket(socket, data.user, data.gameId);
-            self.emit('admin-connected', {gameId: data.gameId, user: data.user});
-            self.registerChannels(socket);
-            self.emitGameMessagesAfterConnect(data.gameId, socket);
-          });
-        });
+                })
+            });
+        }
+        catch
+          (err) {
+          logger.warn('Invalid socket', data);
+          socket.disconnect();
+        }
       });
+
       socket.emit('identify', {});
 
       socket.on('disconnect', function () {
@@ -129,9 +136,10 @@ class FerroSocket extends EventEmitter {
 
     // New pic received, inform admins
     picBucket.on('new', info => {
-      this.emitToAdmins(info.gameId, 'pic', info);
-      this.emitToTeam(info.gameId, info.teamId, 'pic', info);
-    })
+        this.emitToAdmins(info.gameId, 'pic', info);
+        this.emitToTeam(info.gameId, info.teamId, 'pic', info);
+      }
+    );
   }
 
   /**
