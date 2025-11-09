@@ -24,9 +24,13 @@ import MenuBar from '../../../common/components/MenuBar.vue';
 import {useReceptionStore} from '../store/ReceptionStore';
 import {last, split,get} from 'lodash';
 import {getReceptionSocket} from '../lib/ReceptionSocket';
+import {useTeamsStore} from '../../../lib/store/Teams';
+import {usePropertiesStore} from '../../../lib/store/Properties';
 
 const receptionStore = useReceptionStore();
 const receptionSocket = getReceptionSocket();
+const teamsStore = useTeamsStore();
+const propertiesStore = usePropertiesStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -39,7 +43,9 @@ receptionStore.fetchStaticData(gameId)
         authToken: staticData.authToken,
         user: get(staticData, 'user', 'none'),
         gameId: gameId
-      })
+      });
+      teamsStore.setTeams(staticData.teams);
+      propertiesStore.init(staticData.pricelist);
     })
     .catch(err => {
       console.error(err);
