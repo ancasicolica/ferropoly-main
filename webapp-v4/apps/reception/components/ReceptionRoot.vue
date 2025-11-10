@@ -25,27 +25,27 @@ import {useReceptionStore} from '../store/ReceptionStore';
 import {last, split,get} from 'lodash';
 import {getReceptionSocket} from '../lib/ReceptionSocket';
 import {useTeamsStore} from '../../../lib/store/Teams';
-import {usePropertiesStore} from '../../../lib/store/Properties';
+import {usePropertyStore} from '../../../lib/store/PropertyStore';
 
 const receptionStore = useReceptionStore();
 const receptionSocket = getReceptionSocket();
 const teamsStore = useTeamsStore();
-const propertiesStore = usePropertiesStore();
+const propertyStore = usePropertyStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
 
 receptionStore.fetchStaticData(gameId)
-    .then(staticData => {
+    .then(async staticData => {
       console.log('data loaded');
       receptionSocket.initSocket({
-        url: staticData.socketUrl,
+        url:       staticData.socketUrl,
         authToken: staticData.authToken,
-        user: get(staticData, 'user', 'none'),
-        gameId: gameId
+        user:      get(staticData, 'user', 'none'),
+        gameId:    gameId
       });
       teamsStore.setTeams(staticData.teams);
-      propertiesStore.init(staticData.pricelist);
+      await propertyStore.init(staticData.pricelist);
     })
     .catch(err => {
       console.error(err);
