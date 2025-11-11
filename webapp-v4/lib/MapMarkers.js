@@ -12,6 +12,7 @@ import {toRaw} from 'vue';
 import {faHouse} from '@fortawesome/free-solid-svg-icons';
 import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
 import {useTeamsStore} from './store/Teams';
+import {booleanYesNo, buildingStatus, formatGameTime} from '../common/lib/formatters';
 
 class MapMarkers extends EventEmitter {
   constructor() {
@@ -43,9 +44,17 @@ class MapMarkers extends EventEmitter {
     };
     this.ready         = false;
     this.teamsStore    = useTeamsStore();
-
+    this.infoWindow = null;
   }
 
+  /**
+   * Initializes the application by loading the map instance, creating markers for properties,
+   * and setting up relevant event listeners. This method populates the internal markers and prepares
+   * the map for interaction.
+   *
+   * @return {Promise<void>} A promise that resolves when the initialization is complete,
+   * indicating that the API is loaded, markers are created, and the application is ready.
+   */
   async init() {
     const self     = this;
     const instance = await mapLoader.getInstance();
@@ -63,7 +72,7 @@ class MapMarkers extends EventEmitter {
           lng: parseFloat(prop.location.position.lng)
         },
         map:      null,
-        title:    prop.location.name
+        title:    prop.location.name,
       });
       //  console.log(`Marker set for ${marker.title}, ${marker.position.lat}`)
       marker.addListener('click', () => {
@@ -71,6 +80,7 @@ class MapMarkers extends EventEmitter {
       })
       self.markers.set(prop.uuid, marker);
     }
+    this.infoWindow    = new this.googleInstance.InfoWindow();
     console.log('Created', self.markers.size, 'markers');
     this.ready = true;
   }
@@ -143,16 +153,11 @@ class MapMarkers extends EventEmitter {
       const prop = self.propertyStore.properties.get(marker[0]);
       // console.log(marker, prop);
       if (prop) {
-        /*  console.log(`Property ${prop.location.name}:`, {
-         visibleOnMap:   prop.visibleOnMap,
-         hasMarker:      !!marker[1],
-         markerPosition: marker[1].position
-         });*/
-
         if (prop.visibleOnMap) {
           // IMPORTANT: Set content BEFORE adding to map!
           marker[1]     = this.createMarker(prop);
           marker[1].map = map;
+
           visibleCount++;
           console.log(`  ✓ Marker ${prop.location.name} set to visible`, marker[1].children);
 
@@ -167,10 +172,6 @@ class MapMarkers extends EventEmitter {
     console.log(`APPLY FILTER complete: ${visibleCount} markers visible`, this.markers);
   }
 
-  getPriceIconIndex() {
-    return '01.png';
-  }
-
   /**
    * Creates the marker for the property
    * @param property
@@ -181,83 +182,132 @@ class MapMarkers extends EventEmitter {
     const self = this;
     const {
             showAsCategory = false
-          } = options;
+          }    = options;
+
+    let marker;
 
     if (property?.gamedata.owner) {
-      // Owned properties are "simple", just display the icon for a owned property in the teams color
-      return createAdvancedFontAwesomeMarker({
+      // -----------------------------------
+      // Owned properties are "simple", just display the icon for an owned property in the team color
+      marker = createAdvancedFontAwesomeMarker({
         AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
         faIcon:                faHouse,
         color:                 self.teamsStore.idToColor(property.gamedata.owner),
 
-        size:     24,
-        position: {
+        size:         24,
+        position:     {
           lat: parseFloat(property.location.position.lat),
           lng: parseFloat(property.location.position.lng)
         },
-        map:      null,
+        map:          null,
+        gmpClickable: true
       });
+    } else {
+      // -----------------------------------
+      // Generic Markers for free properties
+      marker = new this.googleInstance.AdvancedMarkerElement({
+        position:     {
+          lat: parseFloat(property.location.position.lat),
+          lng: parseFloat(property.location.position.lng)
+        },
+        map:          null,
+        gmpClickable: true,
+        title:        property.location.name
+      });
+
+      const htmlElement = document.createElement('img');
+      const priceTag    = options.showAsCategory ? -1 : get(property, 'pricelist.priceTag', 0) - 1;
+
+      console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
+
+      switch (property.location.accessibility) {
+        case 'train':
+          if (priceTag === -1) {
+            htmlElement.src = this.ICON_TRAIN_LOCATION;
+          } else {
+            htmlElement.src = this.ICON_TRAIN_LOCATION_USED + this.iconPriceLabels[priceTag];
+          }
+          break;
+
+        case 'bus':
+          if (priceTag === -1) {
+            htmlElement.src = this.ICON_BUS_LOCATION;
+          } else {
+            htmlElement.src = this.ICON_BUS_LOCATION_USED + this.iconPriceLabels[priceTag];
+          }
+          break;
+
+        case 'boat':
+          if (priceTag === -1) {
+            htmlElement.src = this.ICON_BOAT_LOCATION;
+          } else {
+            htmlElement.src = this.ICON_BOAT_LOCATION_USED + this.iconPriceLabels[priceTag];
+          }
+          break;
+
+        case 'cablecar':
+          if (priceTag === -1) {
+            htmlElement.src = this.ICON_CABLECAR_LOCATION;
+          } else {
+            htmlElement.src = this.ICON_CABLECAR_LOCATION_USED + this.iconPriceLabels[priceTag];
+          }
+          break;
+
+        default:
+          if (priceTag === -1) {
+            htmlElement.src = this.ICON_OTHER_LOCATION;
+          } else {
+            htmlElement.src = this.ICON_OTHER_LOCATION_USED + this.iconPriceLabels[priceTag];
+          }
+          break;
+      }
+      marker.append(htmlElement);
     }
 
-    // -----------------------------------
-    // Generic Markers for free properties
-    const marker = new this.googleInstance.AdvancedMarkerElement({
-      position: {
-        lat: parseFloat(property.location.position.lat),
-        lng: parseFloat(property.location.position.lng)
-      },
-      map:      null,
-      title:    property.location.name
-    });
-
-    const htmlElement = document.createElement('img');
-    const priceTag    = options.showAsCategory ? -1 : get(property, 'pricelist.priceTag', 0) - 1;
-
-    console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
-
-    switch (property.location.accessibility) {
-      case 'train':
-        if (priceTag === -1) {
-          htmlElement.src = this.ICON_TRAIN_LOCATION;
-        } else {
-          htmlElement.src = this.ICON_TRAIN_LOCATION_USED + this.iconPriceLabels[priceTag];
-        }
-        break;
-
-      case 'bus':
-        if (priceTag === -1) {
-          htmlElement.src = this.ICON_BUS_LOCATION;
-        } else {
-          htmlElement.src = this.ICON_BUS_LOCATION_USED + this.iconPriceLabels[priceTag];
-        }
-        break;
-
-      case 'boat':
-        if (priceTag === -1) {
-          htmlElement.src = this.ICON_BOAT_LOCATION;
-        } else {
-          htmlElement.src = this.ICON_BOAT_LOCATION_USED + this.iconPriceLabels[priceTag];
-        }
-        break;
-
-      case 'cablecar':
-        if (priceTag === -1) {
-          htmlElement.src = this.ICON_CABLECAR_LOCATION;
-        } else {
-          htmlElement.src = this.ICON_CABLECAR_LOCATION_USED + this.iconPriceLabels[priceTag];
-        }
-        break;
-
-      default:
-        if (priceTag === -1) {
-          htmlElement.src = this.ICON_OTHER_LOCATION;
-        } else {
-          htmlElement.src = this.ICON_OTHER_LOCATION_USED + this.iconPriceLabels[priceTag];
-        }
-        break;
-    }
-    marker.append(htmlElement);
+    // Add the listener which will
+    // a) emit an event
+    // b) open a pop-up window
+    marker.addListener('click', () => {
+      self.infoWindow.close();
+      const header = document.createElement('h3');
+      header.innerHTML=property.location.name;
+      self.infoWindow.setHeaderContent(header);
+      self.infoWindow.setContent(self.setInfoWindowContent(property));
+      self.infoWindow.open(marker.map, marker);
+      self.emit('property-selected', property);
+    })
     return marker;
+  }
+
+  /**
+   * Sets the content of the information window for a given property.
+   *
+   * @param {Object} property - The property object containing details to be displayed in the information window.
+   * The object may include `gamedata` (owner, purchase timestamp, building details) and `pricelist` (price).
+   * @return {HTMLDivElement} A DOM element containing the content of the information window, formatted based on the property data.
+   */
+  setInfoWindowContent(property) {
+    const self = this;
+    const element = document.createElement('div');
+    if (property?.gamedata.owner) {
+      element.innerHTML= `
+      <div>Besitzer: ${self.teamsStore.idToTeamName(property.gamedata.owner)}</div>
+      <div>Kaufpreis: ${property.pricelist.price}</div>
+      <div>Kaufzeit: ${formatGameTime(property.gamedata.boughtTs)}</div>
+      <p>
+      <div>&nbsp;</div>
+      <div>Baustatus: ${buildingStatus(property.gamedata.buildings)}</div>
+      <div>Hausbau möglich: ${booleanYesNo(property.gamedata.buildingEnabled)}</div>
+      </p>
+    `;
+    }
+    else {
+      element.innerHTML= `
+      <div>Kaufpreis: ${property.pricelist.price}</div>
+      <div>verfügbar</div>
+    `;
+    }
+    return element;
   }
 }
 
