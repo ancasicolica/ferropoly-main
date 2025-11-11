@@ -48,6 +48,7 @@ const onNewMap = async function (_map) {
   if (mapRef.value && propertyStore.ready) {
     mapRef.value.setCenter(mapMarkers.getCenter());
     mapRef.value.fitBounds(mapMarkers.getBounds());
+    await propertyStore.update();
     mapMarkers.applyFilter(map);
   } else {
     console.warn('Map initialization skipped - propertyStore not ready or timeout reached');

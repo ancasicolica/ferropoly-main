@@ -37,7 +37,11 @@ export const useTeamsStore = defineStore('Teams', {
      * @returns {function(*): unknown}
      */
     idToColor: (state) => (id) => {
-      return result(find(state.teams, {uuid: id}), 'color');
+      const color = result(find(state.teams, {uuid: id}), 'color');
+      if (!color) {
+        return 'pink';
+      }
+      return color;
     },
     /**
      * Returns the number of teams

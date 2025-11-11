@@ -45,7 +45,7 @@ receptionStore.fetchStaticData(gameId)
         gameId:    gameId
       });
       teamsStore.setTeams(staticData.teams);
-      await propertyStore.init(staticData.pricelist);
+      await propertyStore.init(gameId, staticData.pricelist);
     })
     .catch(err => {
       console.error(err);

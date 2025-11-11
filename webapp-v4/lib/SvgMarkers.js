@@ -1,22 +1,28 @@
-
 /**
  * Helper functions for creating custom map markers with Font Awesome icons
  */
-import { icon } from '@fortawesome/fontawesome-svg-core'
+import {icon} from '@fortawesome/fontawesome-svg-core'
 import {faTrain} from '@fortawesome/free-solid-svg-icons';
+
+
 /**
- * Creates a custom marker element using a Font Awesome icon and a specified color.
+ * Creates a custom marker element using Font Awesome icons.
  *
- * @param {Object} faIcon The Font Awesome icon object to be used for the marker.
- * @param {string} color The color to fill the SVG icon with.
- * @return {HTMLElement} The created marker element as an HTML div element containing the SVG icon.
+ * @param {Object} faIcon - The Font Awesome icon object used to generate the marker.
+ * @param {Object} options - The customization options for the marker.
+ * @param {number} [options.size=24] - The size of the marker icon.
+ * @param {string} [options.color='red'] - The color of the marker icon.
+ * @return {HTMLElement} The generated custom marker element.
  */
-function createCustomMarkerElement(faIcon, color) {
-  const size = 24;
+function createCustomMarkerElement(faIcon, options) {
+  const {
+          size  = 24,
+          color = 'red'
+        } = options;
 
   const markerElement = document.createElement('div');
 
-  const i = icon(faIcon);
+  const iconData = icon(faIcon);
 
   // Train SVG Icon (von Font Awesome kopiert)
   markerElement.innerHTML = `
@@ -26,65 +32,43 @@ function createCustomMarkerElement(faIcon, color) {
          viewBox="0 0 448 512"
          fill="${color}"
          style="cursor: pointer;">
-      <path d="${i.icon[4]}"/>
+      <path d="${iconData.icon[4]}"/>
   `;
   return markerElement;
 }
 
 
+
 /**
- * Creates a custom advanced Font Awesome marker with configurable properties such as icon, color, size, and more.
+ * Creates an advanced FontAwesome marker with the specified options.
  *
- * @param {Object} options - Configuration options for the marker.
- * @param {Object} options.position - The geographical position of the marker (e.g., LatLng instance).
- * @param {Object} options.map - The map instance where the marker will be added.
- * @param {string} [options.iconClass='fa-train'] - The Font Awesome icon class to use for the marker.
- * @param {string} [options.color='#d32f2f'] - The color of the Font Awesome icon and the border of the marker.
- * @param {string} [options.backgroundColor='#ffffff'] - The background color for the marker.
- * @param {number} [options.size=40] - The size (width and height) of the circular marker container, in pixels.
- * @param {string} [options.title=''] - The optional tooltip text for the marker.
- * @param {Function} options.AdvancedMarkerElement - Function or class responsible for creating advanced marker elements.
+ * @param {Object} options - Configuration options for creating the marker.
+ * @param {google.maps.LatLng|google.maps.LatLngLiteral} options.position - The position of the marker on the map.
+ * @param {google.maps.Map} options.map - The Google Maps instance to place the marker on.
+ * @param {Object} [options.faIcon=faTrain] - The FontAwesome icon to use for the marker. Defaults to `faTrain`.
+ * @param {string} [options.color='#d32f2f'] - The color of the icon. Defaults to `#d32f2f`.
+ * @param {number} [options.size=24] - The size of the icon in pixels. Defaults to 24.
+ * @param {string} [options.title=''] - The title of the marker, displayed as a tooltip on hover. Defaults to an empty string.
+ * @param {Object} options.AdvancedMarkerElement - The constructor for creating advanced marker elements.
  *
- * @return {Object} A new AdvancedMarkerElement instance configured with the specified options.
+ * @return {Object} An instance of the advanced marker element customized with a FontAwesome icon.
  */
 export function createAdvancedFontAwesomeMarker(options) {
   const {
           position,
           map,
           faIcon = faTrain,
-          color = '#d32f2f',
-          backgroundColor = '#ffffff',
-          size = 40,
-          title = ''
+          color  = '#d32f2f',
+          size   = 24,
+          title  = ''
         } = options;
 
-  // Create custom HTML element for the marker
-  const markerElement = document.createElement('div');
-  markerElement.style.cssText = `
-    width: ${size}px;
-    height: ${size}px;
-    background-color: ${backgroundColor};
-    border: 2px solid ${color};
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  `;
-
-  const iconElement = document.createElement('i');
-  iconElement.className = `fa-solid`;
-  iconElement.style.fontSize = `${size * 0.6}px`;
-  iconElement.style.color = color;
-
-  markerElement.appendChild(iconElement);
 
   // Create AdvancedMarkerElement
   return new options.AdvancedMarkerElement({
     map,
     position,
-    content: createCustomMarkerElement(options.faIcon, options.color),
+    content: createCustomMarkerElement(options.faIcon, options),
     title
   });
 }

@@ -9,6 +9,9 @@ import mapLoader from '../common/lib/googleLoader';
 import EventEmitter from '../common/lib/eventEmitter';
 import {get, maxBy, minBy} from 'lodash';
 import {toRaw} from 'vue';
+import {faHouse} from '@fortawesome/free-solid-svg-icons';
+import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
+import {useTeamsStore} from './store/Teams';
 
 class MapMarkers extends EventEmitter {
   constructor() {
@@ -38,8 +41,8 @@ class MapMarkers extends EventEmitter {
       east:  0,
       west:  0
     };
-    this.ready = false;
-
+    this.ready         = false;
+    this.teamsStore    = useTeamsStore();
 
   }
 
@@ -52,7 +55,7 @@ class MapMarkers extends EventEmitter {
     console.log('PropertyStore has', this.propertyStore.properties.size, 'properties');
 
     for (let prop of this.propertyStore.properties.values()) {
-      console.log('Creating marker for property:', prop.location.name, prop.uuid);
+      //console.log('Creating marker for property:', prop.location.name, prop.uuid);
 
       let marker = new instance.AdvancedMarkerElement({
         position: {
@@ -62,7 +65,7 @@ class MapMarkers extends EventEmitter {
         map:      null,
         title:    prop.location.name
       });
-      console.log(`Marker set for ${marker.title}, ${marker.position.lat}`)
+      //  console.log(`Marker set for ${marker.title}, ${marker.position.lat}`)
       marker.addListener('click', () => {
         self.emit('property-selected', prop);
       })
@@ -114,6 +117,13 @@ class MapMarkers extends EventEmitter {
     }
   }
 
+  /**
+   * Applies a filter to map markers based on their associated properties' visibility.
+   * Updates the marker's visibility and content on the map.
+   *
+   * @param {Object} _map - The map instance that the markers should be applied to.
+   * @return {void} This method does not return a value.
+   */
   applyFilter(_map) {
     if (!this.ready) {
       console.log('not ready for applyFilter yet');
@@ -133,24 +143,19 @@ class MapMarkers extends EventEmitter {
       const prop = self.propertyStore.properties.get(marker[0]);
       // console.log(marker, prop);
       if (prop) {
-     /*  console.log(`Property ${prop.location.name}:`, {
-          visibleOnMap:   prop.visibleOnMap,
-          hasMarker:      !!marker[1],
-          markerPosition: marker[1].position
-        });*/
+        /*  console.log(`Property ${prop.location.name}:`, {
+         visibleOnMap:   prop.visibleOnMap,
+         hasMarker:      !!marker[1],
+         markerPosition: marker[1].position
+         });*/
 
         if (prop.visibleOnMap) {
           // IMPORTANT: Set content BEFORE adding to map!
-          const iconContent = self.setMarkerIcon(marker[1], prop);
+          marker[1]     = this.createMarker(prop);
+          marker[1].map = map;
+          visibleCount++;
+          console.log(`  ✓ Marker ${prop.location.name} set to visible`, marker[1].children);
 
-          if (iconContent) {
-            marker[1].content = iconContent;
-            marker[1].map     = map;
-            visibleCount++;
-            console.log(`  ✓ Marker ${prop.location.name} set to visible`);
-          } else {
-            console.warn(`  ✗ No icon content for ${prop.location.name}`);
-          }
         } else {
           marker[1].map = null;
           console.log(`  ○ Marker ${prop.location.name} hidden (visibleOnMap=false)`);
@@ -166,83 +171,93 @@ class MapMarkers extends EventEmitter {
     return '01.png';
   }
 
-  setMarkerIcon(marker, property, editMode = false) {
-    if (!marker) {
-      console.warn('No valid marker provided');
-      return null;
+  /**
+   * Creates the marker for the property
+   * @param property
+   * @param options
+   * @return {HTMLImageElement|null}
+   */
+  createMarker(property, options = {}) {
+    const self = this;
+    const {
+            showAsCategory = false
+          } = options;
+
+    if (property?.gamedata.owner) {
+      // Owned properties are "simple", just display the icon for a owned property in the teams color
+      return createAdvancedFontAwesomeMarker({
+        AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
+        faIcon:                faHouse,
+        color:                 self.teamsStore.idToColor(property.gamedata.owner),
+
+        size:     24,
+        position: {
+          lat: parseFloat(property.location.position.lat),
+          lng: parseFloat(property.location.position.lng)
+        },
+        map:      null,
+      });
     }
 
-    const htmlElement        = document.createElement('img');
-
-    let x = -1;
-    if (this.pricelist) {
-      x = this.pricelist.priceRange;
-    }
-
-    if (editMode) {
-      htmlElement.src = this.ICON_EDIT_LOCATION;
-      marker.zIndex   = 1000;
-    } else {
-      switch (property.location.accessibility) {
-        case 'train':
-          if (x === -1) {
-            htmlElement.src = this.ICON_TRAIN_LOCATION;
-            marker.zIndex   = 1;
-          } else {
-            htmlElement.src = this.ICON_TRAIN_LOCATION_USED + this.getPriceIconIndex(x);
-            marker.zIndex   = 20;
-          }
-          break;
-
-        case 'bus':
-          if (x === -1) {
-            htmlElement.src = this.ICON_BUS_LOCATION;
-            marker.zIndex   = 1;
-          } else {
-            htmlElement.src = this.ICON_BUS_LOCATION_USED + this.getPriceIconIndex(x);
-            marker.zIndex   = 15;
-          }
-          break;
-
-        case 'boat':
-          if (x === -1) {
-            htmlElement.src = this.ICON_BOAT_LOCATION;
-            marker.zIndex   = 1;
-          } else {
-            htmlElement.src = this.ICON_BOAT_LOCATION_USED + this.getPriceIconIndex(x);
-            marker.zIndex   = 18;
-          }
-          break;
-
-        case 'cablecar':
-          if (x === -1) {
-            htmlElement.src = this.ICON_CABLECAR_LOCATION;
-            marker.zIndex   = 1;
-          } else {
-            htmlElement.src = this.ICON_CABLECAR_LOCATION_USED + this.getPriceIconIndex(x);
-            marker.zIndex   = 20;
-          }
-          break;
-
-        default:
-          if (x === -1) {
-            htmlElement.src = this.ICON_OTHER_LOCATION;
-            marker.zIndex   = 1;
-          } else {
-            htmlElement.src = this.ICON_OTHER_LOCATION_USED + this.getPriceIconIndex(x);
-            marker.zIndex   = 5;
-          }
-          break;
-      }
-    }
-
- /*   console.log('Created icon element:', {
-      property:      property.location.name,
-      src:           htmlElement.src,
-      accessibility: property.location.accessibility
+    // -----------------------------------
+    // Generic Markers for free properties
+    const marker = new this.googleInstance.AdvancedMarkerElement({
+      position: {
+        lat: parseFloat(property.location.position.lat),
+        lng: parseFloat(property.location.position.lng)
+      },
+      map:      null,
+      title:    property.location.name
     });
-*/
-    return htmlElement;
+
+    const htmlElement = document.createElement('img');
+    const priceTag    = options.showAsCategory ? -1 : get(property, 'pricelist.priceTag', 0) - 1;
+
+    console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
+
+    switch (property.location.accessibility) {
+      case 'train':
+        if (priceTag === -1) {
+          htmlElement.src = this.ICON_TRAIN_LOCATION;
+        } else {
+          htmlElement.src = this.ICON_TRAIN_LOCATION_USED + this.iconPriceLabels[priceTag];
+        }
+        break;
+
+      case 'bus':
+        if (priceTag === -1) {
+          htmlElement.src = this.ICON_BUS_LOCATION;
+        } else {
+          htmlElement.src = this.ICON_BUS_LOCATION_USED + this.iconPriceLabels[priceTag];
+        }
+        break;
+
+      case 'boat':
+        if (priceTag === -1) {
+          htmlElement.src = this.ICON_BOAT_LOCATION;
+        } else {
+          htmlElement.src = this.ICON_BOAT_LOCATION_USED + this.iconPriceLabels[priceTag];
+        }
+        break;
+
+      case 'cablecar':
+        if (priceTag === -1) {
+          htmlElement.src = this.ICON_CABLECAR_LOCATION;
+        } else {
+          htmlElement.src = this.ICON_CABLECAR_LOCATION_USED + this.iconPriceLabels[priceTag];
+        }
+        break;
+
+      default:
+        if (priceTag === -1) {
+          htmlElement.src = this.ICON_OTHER_LOCATION;
+        } else {
+          htmlElement.src = this.ICON_OTHER_LOCATION_USED + this.iconPriceLabels[priceTag];
+        }
+        break;
+    }
+    marker.append(htmlElement);
+    return marker;
   }
 }
 

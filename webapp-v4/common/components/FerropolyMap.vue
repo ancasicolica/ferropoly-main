@@ -12,7 +12,6 @@
   #map-root
     #map
 
-
 </template>
 
 <script>
