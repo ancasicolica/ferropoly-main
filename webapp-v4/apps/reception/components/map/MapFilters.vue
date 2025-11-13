@@ -71,6 +71,7 @@
           class="mb-2"
       >
         <Checkbox
+            class="mr-2"
             v-model="propertyStore.filter.teams"
             name="team"
             :value="team.uuid"
@@ -78,10 +79,16 @@
             :disabled="teamCheckboxDisabled"
             @update:model-value="onFilterUpdate"
         />
+        <FontAwesomeIcon
+            :icon="faHome"
+            :style="{ color: teamStore.idToColor(team.uuid) }"
+        />
         <label
             :for="team.uuid"
-            class="ml-2"
-        > {{ team.data.name }} </label>
+            class="ml-1"
+        >
+          <i class="fa-solid fa-house" />
+          {{ team.data.name }} </label>
       </div>
     </div>
     <div>
@@ -94,6 +101,7 @@
       />
       <label
           class="ml-2"
+          for="presentation"
       > Freie Orte nach Erreichbarkeit
       </label>
     </div>
@@ -103,6 +111,8 @@
 <script setup>
 import RadioButton from 'primevue/radiobutton';
 import Checkbox from 'primevue/checkbox';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import {faHome} from '@fortawesome/free-solid-svg-icons';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {computed} from 'vue';
