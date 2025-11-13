@@ -11,7 +11,7 @@ import {get, maxBy, minBy} from 'lodash';
 import {toRaw} from 'vue';
 import {faHouse} from '@fortawesome/free-solid-svg-icons';
 import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
-import {useTeamsStore} from './store/Teams';
+import {useTeamsStore} from './store/TeamsStore';
 import {booleanYesNo, buildingStatus, formatGameTime} from '../common/lib/formatters';
 
 class MapMarkers extends EventEmitter {
@@ -33,7 +33,6 @@ class MapMarkers extends EventEmitter {
     this.ICON_CABLECAR_LOCATION_USED = '/images/markers/32-b/v-';
     this.ICON_OTHER_LOCATION_USED    = '/images/markers/32-b/v-';
 
-
     this.propertyStore = usePropertyStore();
     this.markers       = new Map();
     this.bounds        = {
@@ -44,7 +43,8 @@ class MapMarkers extends EventEmitter {
     };
     this.ready         = false;
     this.teamsStore    = useTeamsStore();
-    this.infoWindow = null;
+    this.infoWindow    = null;
+    this.map           = null;
   }
 
   /**
@@ -80,9 +80,13 @@ class MapMarkers extends EventEmitter {
       })
       self.markers.set(prop.uuid, marker);
     }
-    this.infoWindow    = new this.googleInstance.InfoWindow();
+    this.infoWindow = new this.googleInstance.InfoWindow();
     console.log('Created', self.markers.size, 'markers');
     this.ready = true;
+  }
+
+  setMap(map) {
+    this.map = map;
   }
 
   /**
@@ -134,19 +138,20 @@ class MapMarkers extends EventEmitter {
    * @param {Object} _map - The map instance that the markers should be applied to.
    * @return {void} This method does not return a value.
    */
-  applyFilter(_map) {
+  applyFilter(_map = null) {
     if (!this.ready) {
       console.log('not ready for applyFilter yet');
       return;
     }
 
+    if (!_map) {
+      _map = this.map;
+    }
     const map = toRaw(_map);
-
     const self = this;
-    console.log('APPLY FILTER called');
-    console.log('  - Map instance:', map);
-    console.log('  - Markers available:', self.markers.size);
-    console.log('  - Properties in store:', self.propertyStore.properties.size);
+    const showAsCategory = self.propertyStore.showMarkersAsCategory;
+
+    console.log('APPLY FILTER called', map);
 
     let visibleCount = 0;
     for (const marker of self.markers) {
@@ -154,22 +159,30 @@ class MapMarkers extends EventEmitter {
       // console.log(marker, prop);
       if (prop) {
         if (prop.visibleOnMap) {
+          const oldMarker = this.markers.get(prop.uuid)
+          if (oldMarker) {
+            oldMarker.remove();
+          }
+
           // IMPORTANT: Set content BEFORE adding to map!
-          marker[1]     = this.createMarker(prop);
-          marker[1].map = map;
-
+          const newMarker = this.createMarker(prop, {showAsCategory : showAsCategory});
+          newMarker.map   = map;
+          this.markers.set(prop.uuid, newMarker);
           visibleCount++;
-          console.log(`  ✓ Marker ${prop.location.name} set to visible`, marker[1].children);
-
+          if (self.propertyStore.debugOutput) {
+            console.log(`  ✓ Marker ${prop.location.name} set to visible`);
+          }
         } else {
-          marker[1].map = null;
-          console.log(`  ○ Marker ${prop.location.name} hidden (visibleOnMap=false)`);
+          if (self.propertyStore.debugOutput) {
+            console.log(`  ○ Marker ${prop.location.name} hidden (visibleOnMap=false)`);
+          }
+          marker[1].remove();
         }
       } else {
         console.warn('No fit for marker in properties', marker);
       }
     }
-    console.log(`APPLY FILTER complete: ${visibleCount} markers visible`, this.markers);
+    console.log(`APPLY FILTER complete: ${visibleCount} markers visible`);
   }
 
   /**
@@ -218,7 +231,7 @@ class MapMarkers extends EventEmitter {
       const htmlElement = document.createElement('img');
       const priceTag    = options.showAsCategory ? -1 : get(property, 'pricelist.priceTag', 0) - 1;
 
-      console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
+      //console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
 
       switch (property.location.accessibility) {
         case 'train':
@@ -269,13 +282,15 @@ class MapMarkers extends EventEmitter {
     // b) open a pop-up window
     marker.addListener('click', () => {
       self.infoWindow.close();
-      const header = document.createElement('h3');
-      header.innerHTML=property.location.name;
+      const header     = document.createElement('h3');
+      header.innerHTML = property.location.name;
       self.infoWindow.setHeaderContent(header);
       self.infoWindow.setContent(self.setInfoWindowContent(property));
       self.infoWindow.open(marker.map, marker);
       self.emit('property-selected', property);
     })
+
+    // console.log('created marker', marker);
     return marker;
   }
 
@@ -284,13 +299,14 @@ class MapMarkers extends EventEmitter {
    *
    * @param {Object} property - The property object containing details to be displayed in the information window.
    * The object may include `gamedata` (owner, purchase timestamp, building details) and `pricelist` (price).
-   * @return {HTMLDivElement} A DOM element containing the content of the information window, formatted based on the property data.
+   * @return {HTMLDivElement} A DOM element containing the content of the information window, formatted based on the
+   *   property data.
    */
   setInfoWindowContent(property) {
-    const self = this;
+    const self    = this;
     const element = document.createElement('div');
     if (property?.gamedata.owner) {
-      element.innerHTML= `
+      element.innerHTML = `
       <div>Besitzer: ${self.teamsStore.idToTeamName(property.gamedata.owner)}</div>
       <div>Kaufpreis: ${property.pricelist.price}</div>
       <div>Kaufzeit: ${formatGameTime(property.gamedata.boughtTs)}</div>
@@ -300,9 +316,8 @@ class MapMarkers extends EventEmitter {
       <div>Hausbau möglich: ${booleanYesNo(property.gamedata.buildingEnabled)}</div>
       </p>
     `;
-    }
-    else {
-      element.innerHTML= `
+    } else {
+      element.innerHTML = `
       <div>Kaufpreis: ${property.pricelist.price}</div>
       <div>verfügbar</div>
     `;

@@ -6,11 +6,18 @@
 
 <template>
   <div>
-    <ferropoly-map
-        ref="mapRef"
-        :map-options="mapOptions"
-        @map="onNewMap"
-    />
+    <div class="flex flex-row w-full h-full">
+      <div class="flex-1 min-w-0">
+      <ferropoly-map
+          ref="mapRef"
+          :map-options="mapOptions"
+          @map="onNewMap"
+      />
+      </div>
+      <div class="w-90 flex-shrink-0">
+        <map-filters />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -19,6 +26,7 @@ import {ref} from 'vue';
 import FerropolyMap from '../../../../common/components/FerropolyMap.vue';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
+import MapFilters from './MapFilters.vue';
 
 const propertyStore = usePropertyStore();
 const mapMarkers    = getMapMarkerInstance();
@@ -46,10 +54,13 @@ const onNewMap = async function (_map) {
   console.log('>>>>  FINALLY READY', propertyStore.ready);
   // Access the component instance through mapRef.value
   if (mapRef.value && propertyStore.ready) {
-    mapRef.value.setCenter(mapMarkers.getCenter());
+    console.log(mapMarkers.getBounds());
     mapRef.value.fitBounds(mapMarkers.getBounds());
+    mapRef.value.setCenter(mapMarkers.getCenter());
+    getMapMarkerInstance().setMap(map);
+
     await propertyStore.update();
-    mapMarkers.applyFilter(map);
+   // mapMarkers.applyFilter(map);
   } else {
     console.warn('Map initialization skipped - propertyStore not ready or timeout reached');
   }

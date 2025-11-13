@@ -24,7 +24,7 @@ import MenuBar from '../../../common/components/MenuBar.vue';
 import {useReceptionStore} from '../store/ReceptionStore';
 import {last, split,get} from 'lodash';
 import {getReceptionSocket} from '../lib/ReceptionSocket';
-import {useTeamsStore} from '../../../lib/store/Teams';
+import {useTeamsStore} from '../../../lib/store/TeamsStore';
 import {usePropertyStore} from '../../../lib/store/PropertyStore';
 
 const receptionStore = useReceptionStore();
