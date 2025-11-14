@@ -12,26 +12,28 @@ import {toRaw} from 'vue';
 import {faHouse} from '@fortawesome/free-solid-svg-icons';
 import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
 import {useTeamsStore} from './store/TeamsStore';
-import {booleanYesNo, buildingStatus, formatGameTime} from '../common/lib/formatters';
+import {booleanYesNo, buildingStatus, formatAccessibility, formatGameTime, formatPrice} from '../common/lib/formatters';
+import {MARKER_MODE_INFO, MARKER_MODE_RECEPTION} from './constants/markerMode';
 
 class MapMarkers extends EventEmitter {
+  // The Icons to use
+  static ICON_EDIT_LOCATION     = '/images/markers/selected.png';
+  static ICON_TRAIN_LOCATION    = '/images/markers/z-neutral.png';
+  static ICON_BUS_LOCATION      = '/images/markers/b-neutral.png';
+  static ICON_BOAT_LOCATION     = '/images/markers/s-neutral.png';
+  static ICON_CABLECAR_LOCATION = '/images/markers/v-neutral.png';
+  static ICON_OTHER_LOCATION    = '/images/markers/v-neutral.png';
+
+  static ICON_PRICE_LABELS           = ['01.png', '02.png', '03.png', '04.png', '05.png', '06.png', '07.png', '08.png',
+                                        '09.png', '10.png'];
+  static ICON_TRAIN_LOCATION_USED    = '/images/markers/32-b/z-';
+  static ICON_BUS_LOCATION_USED      = '/images/markers/32-b/b-';
+  static ICON_BOAT_LOCATION_USED     = '/images/markers/32-b/s-';
+  static ICON_CABLECAR_LOCATION_USED = '/images/markers/32-b/v-';
+  static ICON_OTHER_LOCATION_USED    = '/images/markers/32-b/v-';
+
   constructor() {
     super();
-    // The Icons to use
-    this.ICON_EDIT_LOCATION     = '/images/markers/selected.png';
-    this.ICON_TRAIN_LOCATION    = '/images/markers/z-neutral.png';
-    this.ICON_BUS_LOCATION      = '/images/markers/b-neutral.png';
-    this.ICON_BOAT_LOCATION     = '/images/markers/s-neutral.png';
-    this.ICON_CABLECAR_LOCATION = '/images/markers/v-neutral.png';
-    this.ICON_OTHER_LOCATION    = '/images/markers/v-neutral.png';
-
-    this.iconPriceLabels             = ['01.png', '02.png', '03.png', '04.png', '05.png', '06.png', '07.png', '08.png',
-                                        '09.png', '10.png'];
-    this.ICON_TRAIN_LOCATION_USED    = '/images/markers/32-b/z-';
-    this.ICON_BUS_LOCATION_USED      = '/images/markers/32-b/b-';
-    this.ICON_BOAT_LOCATION_USED     = '/images/markers/32-b/s-';
-    this.ICON_CABLECAR_LOCATION_USED = '/images/markers/32-b/v-';
-    this.ICON_OTHER_LOCATION_USED    = '/images/markers/32-b/v-';
 
     this.propertyStore = usePropertyStore();
     this.markers       = new Map();
@@ -147,9 +149,10 @@ class MapMarkers extends EventEmitter {
     if (!_map) {
       _map = this.map;
     }
-    const map = toRaw(_map);
-    const self = this;
+    const map            = toRaw(_map);
+    const self           = this;
     const showAsCategory = self.propertyStore.showMarkersAsCategory;
+    const markerMode     = self.propertyStore.markerMode;
 
     console.log('APPLY FILTER called', map);
 
@@ -165,7 +168,7 @@ class MapMarkers extends EventEmitter {
           }
 
           // IMPORTANT: Set content BEFORE adding to map!
-          const newMarker = this.createMarker(prop, {showAsCategory : showAsCategory});
+          const newMarker = this.createMarker(prop, {showAsCategory, markerMode});
           newMarker.map   = map;
           this.markers.set(prop.uuid, newMarker);
           visibleCount++;
@@ -194,7 +197,8 @@ class MapMarkers extends EventEmitter {
   createMarker(property, options = {}) {
     const self = this;
     const {
-            showAsCategory = false
+            showAsCategory = false,
+            markerMode     = MARKER_MODE_INFO
           }    = options;
 
     let marker;
@@ -202,6 +206,8 @@ class MapMarkers extends EventEmitter {
     if (property?.gamedata.owner) {
       // -----------------------------------
       // Owned properties are "simple", just display the icon for an owned property in the team color
+      // As the store controls whether the gamedata is loaded or not (and for which groups), there
+      // must be no separate check for displaying the gamedata markers.
       marker = createAdvancedFontAwesomeMarker({
         AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
         faIcon:                faHouse,
@@ -231,46 +237,44 @@ class MapMarkers extends EventEmitter {
       const htmlElement = document.createElement('img');
       const priceTag    = options.showAsCategory ? -1 : get(property, 'pricelist.priceTag', 0) - 1;
 
-      //console.log('priceTag', priceTag, this.iconPriceLabels[priceTag], property);
-
       switch (property.location.accessibility) {
         case 'train':
           if (priceTag === -1) {
-            htmlElement.src = this.ICON_TRAIN_LOCATION;
+            htmlElement.src = MapMarkers.ICON_TRAIN_LOCATION;
           } else {
-            htmlElement.src = this.ICON_TRAIN_LOCATION_USED + this.iconPriceLabels[priceTag];
+            htmlElement.src = MapMarkers.ICON_TRAIN_LOCATION_USED + MapMarkers.ICON_PRICE_LABELS[priceTag];
           }
           break;
 
         case 'bus':
           if (priceTag === -1) {
-            htmlElement.src = this.ICON_BUS_LOCATION;
+            htmlElement.src = MapMarkers.ICON_BUS_LOCATION;
           } else {
-            htmlElement.src = this.ICON_BUS_LOCATION_USED + this.iconPriceLabels[priceTag];
+            htmlElement.src = MapMarkers.ICON_BUS_LOCATION_USED + MapMarkers.ICON_PRICE_LABELS[priceTag];
           }
           break;
 
         case 'boat':
           if (priceTag === -1) {
-            htmlElement.src = this.ICON_BOAT_LOCATION;
+            htmlElement.src = MapMarkers.ICON_BOAT_LOCATION;
           } else {
-            htmlElement.src = this.ICON_BOAT_LOCATION_USED + this.iconPriceLabels[priceTag];
+            htmlElement.src = MapMarkers.ICON_BOAT_LOCATION_USED + MapMarkers.ICON_PRICE_LABELS[priceTag];
           }
           break;
 
         case 'cablecar':
           if (priceTag === -1) {
-            htmlElement.src = this.ICON_CABLECAR_LOCATION;
+            htmlElement.src = MapMarkers.ICON_CABLECAR_LOCATION;
           } else {
-            htmlElement.src = this.ICON_CABLECAR_LOCATION_USED + this.iconPriceLabels[priceTag];
+            htmlElement.src = MapMarkers.ICON_CABLECAR_LOCATION_USED + MapMarkers.ICON_PRICE_LABELS[priceTag];
           }
           break;
 
         default:
           if (priceTag === -1) {
-            htmlElement.src = this.ICON_OTHER_LOCATION;
+            htmlElement.src = MapMarkers.ICON_OTHER_LOCATION;
           } else {
-            htmlElement.src = this.ICON_OTHER_LOCATION_USED + this.iconPriceLabels[priceTag];
+            htmlElement.src = MapMarkers.ICON_OTHER_LOCATION_USED + MapMarkers.ICON_PRICE_LABELS[priceTag];
           }
           break;
       }
@@ -285,7 +289,13 @@ class MapMarkers extends EventEmitter {
       const header     = document.createElement('h3');
       header.innerHTML = property.location.name;
       self.infoWindow.setHeaderContent(header);
-      self.infoWindow.setContent(self.setInfoWindowContent(property));
+      if (options.markerMode === MARKER_MODE_RECEPTION) {
+        self.infoWindow.setContent(self.setInfoWindowContentReception(property));
+      } else if (options.markerMode === MARKER_MODE_INFO) {
+        self.infoWindow.setContent(self.setInfoWindowContentInfo(property));
+      } else {
+        console.warn('Unknown marker mode', options.markerMode);
+      }
       self.infoWindow.open(marker.map, marker);
       self.emit('property-selected', property);
     })
@@ -295,14 +305,14 @@ class MapMarkers extends EventEmitter {
   }
 
   /**
-   * Sets the content of the information window for a given property.
+   * Sets the content of the information window for a given property for the RECEPTION.
    *
    * @param {Object} property - The property object containing details to be displayed in the information window.
    * The object may include `gamedata` (owner, purchase timestamp, building details) and `pricelist` (price).
    * @return {HTMLDivElement} A DOM element containing the content of the information window, formatted based on the
    *   property data.
    */
-  setInfoWindowContent(property) {
+  setInfoWindowContentReception(property) {
     const self    = this;
     const element = document.createElement('div');
     if (property?.gamedata.owner) {
@@ -318,12 +328,41 @@ class MapMarkers extends EventEmitter {
     `;
     } else {
       element.innerHTML = `
-      <div>Kaufpreis: ${property.pricelist.price}</div>
+      <div>Kaufpreis: ${formatPrice(property.pricelist.price)}</div>
       <div>verfügbar</div>
     `;
     }
     return element;
   }
+
+  /**
+   * Sets the info window of a marker for INFO purposes
+   * @param property
+   * @return {HTMLDivElement}
+   */
+  setInfoWindowContentInfo(property) {
+    const self    = this;
+    const element = document.createElement('div');
+    if (property?.gamedata.owner) {
+      element.innerHTML = `
+      <div>Besitzer: ${self.teamsStore.idToTeamName(property.gamedata.owner)}</div>
+      <div>Kaufpreis: ${property.pricelist.price}</div>
+      <div>Kaufzeit: ${formatGameTime(property.gamedata.boughtTs)}</div>
+      <p>
+      <div>&nbsp;</div>
+      <div>Baustatus: ${buildingStatus(property.gamedata.buildings)}</div>
+      <div>Hausbau möglich: ${booleanYesNo(property.gamedata.buildingEnabled)}</div>
+      </p>
+    `;
+    } else {
+      element.innerHTML = `
+      <div>Kaufpreis: ${formatPrice(property.pricelist.price)}</div>
+      <div>Erreichbarkeit: ${formatAccessibility(property.location.accessibility)}</div>
+    `;
+    }
+    return element;
+  }
+
 }
 
 let instance = null;

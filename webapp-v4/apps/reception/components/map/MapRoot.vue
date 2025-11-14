@@ -26,6 +26,7 @@ import {ref} from 'vue';
 import FerropolyMap from '../../../../common/components/FerropolyMap.vue';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
+import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import MapFilters from './MapFilters.vue';
 
 const propertyStore = usePropertyStore();
@@ -55,6 +56,7 @@ const onNewMap = async function (_map) {
   // Access the component instance through mapRef.value
   if (mapRef.value && propertyStore.ready) {
     console.log(mapMarkers.getBounds());
+    propertyStore.markerMode = MARKER_MODE_RECEPTION;
     mapRef.value.fitBounds(mapMarkers.getBounds());
     mapRef.value.setCenter(mapMarkers.getCenter());
     getMapMarkerInstance().setMap(map);

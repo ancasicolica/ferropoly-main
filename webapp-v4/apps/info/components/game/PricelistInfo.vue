@@ -20,11 +20,13 @@
 import FerroCard from '../../../../common/components/FerroCard.vue';
 import {useInfoStore} from '../../store/InfoStore';
 import {computed} from 'vue';
+import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 
 const infoStore = useInfoStore();
+const propertyStore = usePropertyStore();
 
-const pricelistAvailable = computed(() => infoStore.pricelist.length > 0)
-const propsCount = computed(() => infoStore.pricelist.length)
+const pricelistAvailable = computed(() => propertyStore.properties.size > 0)
+const propsCount = computed(() => propertyStore.properties.size)
 const downloadLink = computed(() => {
   return `/info/${infoStore.gameId}/download`;
 })

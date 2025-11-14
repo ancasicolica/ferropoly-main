@@ -12,7 +12,7 @@
         <RadioButton
             v-model="propertyStore.filter.propertyStatus"
             input-id="all"
-            value="all"
+            :value="PROPERTY_FILTER_STATUS_ALL"
             @update:model-value="onFilterUpdate"
         />
         <label
@@ -25,7 +25,7 @@
         <RadioButton
             v-model="propertyStore.filter.propertyStatus"
             input-id="free"
-            value="free"
+            :value="PROPERTY_FILTER_STATUS_FREE"
             @update:model-value="onFilterUpdate"
         />
         <label
@@ -38,7 +38,7 @@
         <RadioButton
             v-model="propertyStore.filter.propertyStatus"
             input-id="bought"
-            value="bought"
+            :value="PROPERTY_FILTER_STATUS_BOUGHT"
             @update:model-value="onFilterUpdate"
         />
         <label
@@ -71,8 +71,8 @@
           class="mb-2"
       >
         <Checkbox
-            class="mr-2"
             v-model="propertyStore.filter.teams"
+            class="mr-2"
             name="team"
             :value="team.uuid"
             :input-id="team.uuid"
@@ -116,12 +116,17 @@ import {faHome} from '@fortawesome/free-solid-svg-icons';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {computed} from 'vue';
+import {
+  PROPERTY_FILTER_STATUS_ALL,
+  PROPERTY_FILTER_STATUS_BOUGHT,
+  PROPERTY_FILTER_STATUS_FREE
+} from '../../../../lib/constants/propertyStoreFilters';
 
 const teamStore     = useTeamsStore();
 const propertyStore = usePropertyStore();
 
 const teamCheckboxDisabled = computed(() => {
-  return propertyStore.filter.propertyStatus === 'free';
+  return propertyStore.filter.propertyStatus === PROPERTY_FILTER_STATUS_FREE;
 })
 
 function onFilterUpdate() {

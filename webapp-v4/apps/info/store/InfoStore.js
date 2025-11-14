@@ -9,6 +9,7 @@ import axios from 'axios';
 import FerropolyApiError from '../../../lib/FerropolyApiError';
 import {DateTime} from 'luxon';
 import {last} from 'lodash';
+import {usePropertyStore} from '../../../lib/store/PropertyStore';
 
 export const useInfoStore = defineStore('Info', {
   state:   () => ({
@@ -19,7 +20,6 @@ export const useInfoStore = defineStore('Info', {
       {label: 'Spielregeln', route: 'rules'},
     ],
     dataLoaded:      false,
-    pricelist:       [],
     gameInfo:        {
       date:        null,
       start:       '',
@@ -46,6 +46,13 @@ export const useInfoStore = defineStore('Info', {
     }
   },
   actions: {
+    /**
+     * Fetches and processes data for a specific game using its game identifier.
+     *
+     * @param {string} gameId - The unique identifier of the game whose data is being fetched.
+     * @return {Promise<void>} A Promise that resolves once the game data has been fetched and processed,
+     * or rejects with an error if the operation fails.
+     */
     async fetchData(gameId) {
       try {
         this.gameId = gameId;
@@ -65,15 +72,18 @@ export const useInfoStore = defineStore('Info', {
         this.rules.changelog = resp.data.rules.changelog;
         this.rules.released  = resp.data.rules.released;
 
-        this.pricelist  = resp.data.pricelist;
+        const propertyStore = usePropertyStore();
+        await propertyStore.init(gameId, resp.data.pricelist);
+
+        // Clean up the data concerting the game; we don't need it here, even for admins
+        for (const property of [...propertyStore.properties.values()]) {
+          property.gamedata = {owner: null, boughtTs: null, buildings: 0, buildingEnabled: false}
+        }
         this.dataLoaded = true;
       }
-
       catch (err) {
         this.apiError = new FerropolyApiError(err);
       }
-
-
     }
   }
 })
