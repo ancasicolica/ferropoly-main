@@ -5,11 +5,15 @@
 -->
 
 <template>
-  <div>ServiceRoot.vue</div>
+  <div>
+    <call-active-warning-banner />
+    ServiceRoot.vue
+  </div>
 </template>
 
 <script setup>
 
+import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 </script>
 
 <style scoped lang="scss">

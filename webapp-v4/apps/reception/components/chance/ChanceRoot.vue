@@ -5,11 +5,15 @@
 -->
 
 <template>
-  <div>ChanceRoot.vue</div>
+  <div>
+    <call-active-warning-banner />
+    ChanceRoot.vue
+  </div>
 </template>
 
 <script setup>
 
+import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 </script>
 
 <style scoped lang="scss">

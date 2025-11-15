@@ -6,13 +6,14 @@
 
 <template>
   <div>
+    <call-active-warning-banner />
     <div class="flex flex-row w-full h-full">
       <div class="flex-1 min-w-0">
-      <ferropoly-map
-          ref="mapRef"
-          :map-options="mapOptions"
-          @map="onNewMap"
-      />
+        <ferropoly-map
+            ref="mapRef"
+            :map-options="mapOptions"
+            @map="onNewMap"
+        />
       </div>
       <div class="w-90 flex-shrink-0">
         <map-filters />
@@ -28,6 +29,7 @@ import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
 import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import MapFilters from './MapFilters.vue';
+import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 
 const propertyStore = usePropertyStore();
 const mapMarkers    = getMapMarkerInstance();
@@ -62,7 +64,7 @@ const onNewMap = async function (_map) {
     getMapMarkerInstance().setMap(map);
 
     await propertyStore.update();
-   // mapMarkers.applyFilter(map);
+    // mapMarkers.applyFilter(map);
   } else {
     console.warn('Map initialization skipped - propertyStore not ready or timeout reached');
   }

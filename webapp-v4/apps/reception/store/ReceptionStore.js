@@ -9,9 +9,9 @@ import axios from 'axios';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
-    gameId: '',
-    menuBarElements: [
-      {label: 'Übersicht', route:'dashboard'},
+    gameId:             '',
+    menuBarElements:    [
+      {label: 'Übersicht', route: 'dashboard'},
       {label: 'Anruf behandeln', route: 'call'},
       {label: 'Karte', route: 'map'},
       {label: 'Bilder', route: 'pictures'},
@@ -26,7 +26,9 @@ export const useReceptionStore = defineStore('Reception', {
         ]
       },
     ],
-    socketConnected: false
+    socketConnected:    false,
+    teamInCall:         null,
+    chancelleryEnabled: true
   }),
   getters: {},
   actions: {
