@@ -32,15 +32,13 @@ router.get('/:gameId', async function (req, res) {
     let gp    = gamedata.gameplay;
     let teams = Array.from(gamedata.teams.values());
 
-
-
     // The team is only returned if the requesting user is a player
     let team = _.find(_.values(teams), function (t) {
       if (t.data.teamLeader.email === user) {
         return true;
       }
       return _.find(t.data.members, function (m) {
-        return m === user;
+        return m.login === user;
       });
     });
 

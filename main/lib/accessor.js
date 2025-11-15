@@ -110,7 +110,7 @@ module.exports = {
     }
 
     if (_.find(team.data.members, function (m) {
-      return m === userId;
+      return m.login === userId;
     })) {
       return {};
     }

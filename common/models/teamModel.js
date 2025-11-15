@@ -242,7 +242,7 @@ async function getMyTeams(email, callback) {
     .find({
       $or: [
         {'data.teamLeader.email': email},
-        {'data.members': email}
+        {'data.members.login': email}
       ]
     })
     .exec();

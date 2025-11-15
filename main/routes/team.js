@@ -41,20 +41,8 @@ router.get('/edit/:gameId/:teamId', async function (req, res) {
  * @param teamId
  */
 async function getFullMemberList(gameId, teamId) {
-  let retVal = [];
-
-  const team  = await teams.getTeam(gameId, teamId);
-  let members = _.get(team, 'data.members', []);
-
-  for (let member of members) {
-    const user = await users.getUserByMailAddress(member);
-    if (user) {
-      retVal.push({login: member, personalData: user.personalData})
-    } else {
-      retVal.push({login: member});
-    }
-  }
-  return retVal;
+  const team = await teams.getTeam(gameId, teamId);
+  return _.get(team, 'data.members', []);
 }
 
 /**
@@ -95,11 +83,17 @@ router.post('/members/:gameId/:teamId', (req, res) => {
         const team        = await teams.getTeam(req.params.gameId, req.params.teamId);
         team.data.members = team.data.members || [];
 
-        // Add only if not already in team
+        // Add only if not already in the team
         if (!_.find(team.data.members, m => {
-          return (m === req.body.newMemberLogin);
+          return (m.login === req.body.newMemberLogin);
         })) {
-          team.data.members.push(req.body.newMemberLogin);
+
+          const user = await users.getUserByMailAddress(req.body.newMemberLogin);
+          if (user) {
+            team.data.members.push({login: req.body.newMemberLogin, personalData: user.personalData});
+          } else {
+            team.data.members.push({login: req.body.newMemberLogin});
+          }
         }
 
         await teams.updateTeam(team);
@@ -131,7 +125,7 @@ router.delete('/members/:gameId/:teamId', async (req, res) => {
     const team        = await teams.getTeam(req.params.gameId, req.params.teamId);
     team.data.members = team.data.members || [];
     _.remove(team.data.members, (m) => {
-      return m === req.body.memberToDelete;
+      return m.login === req.body.memberToDelete;
     });
 
     await teams.updateTeam(team);

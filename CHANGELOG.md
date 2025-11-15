@@ -1,5 +1,10 @@
 # Changelog Ferropoly Spiel
 
+* Grosser Umbau auf Vue 3, PrimeVue und Tailwind CSS.
+* Karten in Info: mehr Infos für Teams vor dem Spiel (Gruppen, Darstellung)
+* BREAKING: Team Members werden mit Name gespeichert -> Anpassung Teams Schema
+
+
 ## v3.5.2 9.6.25
 * Bugfix in Marketplace (Variable undefined)
 
