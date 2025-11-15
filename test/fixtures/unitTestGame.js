@@ -41,7 +41,7 @@ const createGame = async function (gameId = 'unit-test', options = {}) {
   const team0 = await teamModel.createTeam({
     data: {
       name:       'Team 0',
-      members:    ['team10@ferropoly.ch'],
+      members:    [{login: 'team10@ferropoly.ch'}],
       teamLeader: {email: 'team0@ferropoly.ch'}
     }
   }, gameId);
