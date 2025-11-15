@@ -5,8 +5,9 @@
 -->
 
 <template>
-  <div ref="containerRef"
-       class="pricelist-container"
+  <div
+      ref="containerRef"
+      class="pricelist-container"
   >
     <ScrollPanel :style="{ height: scrollPanelHeight }">
       <data-table
@@ -48,7 +49,11 @@
             header="Kaufpreis"
         >
           <template #body="{data}">
-            <span>{{ formatPrice(data.pricelist.price) }}</span>
+            <span
+                class="property-group-link"
+                @click="onPriceSelected(data.pricelist.price)"
+            >
+              {{ formatPrice(data.pricelist.price) }}</span>
           </template>
         </column>
       </data-table>
@@ -63,7 +68,11 @@ import Column from 'primevue/column';
 import {formatPrice} from '../../../../common/lib/formatters';
 import {computed, ref, onMounted, onUnmounted} from 'vue';
 import ScrollPanel from 'primevue/scrollpanel';
-import {PROPERTY_FILTER_GROUP_NONE, PROPERTY_FILTER_UUID_NONE} from '../../../../lib/constants/propertyStoreFilters';
+import {
+  PROPERTY_FILTER_GROUP_NONE,
+  PROPERTY_FILTER_PRICE_NONE,
+  PROPERTY_FILTER_UUID_NONE
+} from '../../../../lib/constants/propertyStoreFilters';
 
 const propertyStore = usePropertyStore();
 
@@ -97,12 +106,22 @@ onUnmounted(() => {
 const onPropertyGroupSelected = (propertyGroup) => {
   propertyStore.filter.propertyGroup = propertyGroup;
   propertyStore.filter.propertyUuid  = PROPERTY_FILTER_UUID_NONE;
+  propertyStore.filter.price         = PROPERTY_FILTER_PRICE_NONE;
   propertyStore.updateFilter();
 };
 
 // Handler for property selection
 const onPropertySelected = (uuid) => {
   propertyStore.filter.propertyUuid  = uuid;
+  propertyStore.filter.propertyGroup = PROPERTY_FILTER_GROUP_NONE;
+  propertyStore.filter.price         = PROPERTY_FILTER_PRICE_NONE;
+  propertyStore.updateFilter();
+};
+
+// Handler for price selection
+const onPriceSelected = (price) => {
+  propertyStore.filter.price         = price;
+  propertyStore.filter.propertyUuid  = PROPERTY_FILTER_UUID_NONE;
   propertyStore.filter.propertyGroup = PROPERTY_FILTER_GROUP_NONE;
   propertyStore.updateFilter();
 };

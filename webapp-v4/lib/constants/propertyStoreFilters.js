@@ -37,7 +37,13 @@ export const PROPERTY_FILTER_STATUS_BOUGHT = 'bought';
 export const PROPERTY_FILTER_GROUP_NONE = null;
 
 /**
- * Property filter for a uuid of a property
+ * Property filter for an uuid of a property
  * @type {null}
  */
 export const PROPERTY_FILTER_UUID_NONE = null;
+
+/**
+ * Property filter for a price of a property
+ * @type {null}
+ */
+export const PROPERTY_FILTER_PRICE_NONE = null;

@@ -16,7 +16,7 @@ import {get, assign, isString, findIndex} from 'lodash';
 import axios from 'axios';
 import {MARKER_MODE_INFO} from '../constants/markerMode';
 import {
-  PROPERTY_FILTER_GROUP_NONE,
+  PROPERTY_FILTER_GROUP_NONE, PROPERTY_FILTER_PRICE_NONE,
   PROPERTY_FILTER_STATUS_ALL, PROPERTY_FILTER_STATUS_BOUGHT,
   PROPERTY_FILTER_STATUS_FREE, PROPERTY_FILTER_STATUS_NONE, PROPERTY_FILTER_UUID_NONE
 } from '../constants/propertyStoreFilters';
@@ -34,7 +34,8 @@ export const usePropertyStore = defineStore('Property', {
       propertyStatus: PROPERTY_FILTER_STATUS_ALL,
       teams:          [],
       propertyGroup:  PROPERTY_FILTER_GROUP_NONE,
-      propertyUuid:   PROPERTY_FILTER_UUID_NONE
+      propertyUuid:   PROPERTY_FILTER_UUID_NONE,
+      price:   PROPERTY_FILTER_PRICE_NONE
     },
   }),
   getters: {},
@@ -150,6 +151,11 @@ export const usePropertyStore = defineStore('Property', {
           // Filtering by property uuid
           for (const property of this.properties.values()) {
             property.visibleOnMap = property.uuid === this.filter.propertyUuid;
+          }
+        } else if (this.filter.price) {
+          // Filtering by property price
+          for (const property of this.properties.values()) {
+            property.visibleOnMap = property.pricelist.price === this.filter.price;
           }
         } else {
           // ALL (really all) properties on the map
