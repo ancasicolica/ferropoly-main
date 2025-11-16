@@ -76,18 +76,18 @@ const callingTeam  = ref(null);
 const receptionStore = useReceptionStore();
 
 const onTeamCalling = (team) => {
-  console.log('team is calling', team);
+  receptionStore.startTeamCall(team, true);
+  return;
+  console.log('team is calling', team.value);
   callingTeam.value = team;
 }
 
 const onNormalCallConfirmed = () => {
-  receptionStore.teamInCall = callingTeam.value;
-  receptionStore.chancelleryEnabled = true;
+  receptionStore.startTeamCall(callingTeam.value, true);
   callingTeam.value = null;
 }
 const onEditCallConfirmed   = () => {
-  receptionStore.teamInCall = callingTeam.value;
-  receptionStore.chancelleryEnabled = false;
+  receptionStore.startTeamCall(callingTeam.value, false);
   callingTeam.value = null;
 }
 const onCancel              = () => {

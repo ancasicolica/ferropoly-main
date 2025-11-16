@@ -32,11 +32,22 @@ export const useReceptionStore = defineStore('Reception', {
   }),
   getters: {},
   actions: {
+    /**
+     * Fetches static data for a given game ID.
+     *
+     * @param {string} gameId - The unique identifier of the game for which static data needs to be fetched.
+     * @return {Promise<Object>} A promise that resolves to the static data of the specified game.
+     */
     async fetchStaticData(gameId) {
       this.gameId = gameId;
       const resp  = await axios.get(`/static/${gameId}`);
       console.log(resp.data);
       return resp.data;
+    },
+    startTeamCall(team, chancelleryEnabled) {
+      this.teamInCall = team;
+      this.chancelleryEnabled = chancelleryEnabled;
+      console.log('Start call', team, chancelleryEnabled);
     }
   }
 })

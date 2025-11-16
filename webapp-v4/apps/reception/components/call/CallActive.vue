@@ -31,7 +31,7 @@
       </TabList>
       <TabPanels>
         <TabPanel value="0">
-          <p>Kaufi kaufi</p>
+          <buy-root />
         </TabPanel>
         <TabPanel value="1">
           <p>Was hab i?</p>
@@ -57,6 +57,7 @@ import TabPanel from 'primevue/tabpanel';
 
 import {useReceptionStore} from '../../store/ReceptionStore';
 import {computed} from 'vue';
+import BuyRoot from './buy-tab/BuyRoot.vue';
 
 const receptionStore = useReceptionStore();
 
