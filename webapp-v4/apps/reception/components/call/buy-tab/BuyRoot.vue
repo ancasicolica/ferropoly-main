@@ -5,11 +5,15 @@
 -->
 
 <template>
-  <div id="root-element" class="grid grid-cols-2" ref="containerRef" :style="{ height: panelHeight }">
-
+  <div
+      id="root-element"
+      class="grid grid-cols-2 gap-2"
+      ref="containerRef"
+      :style="{ height: panelHeight }"
+  >
     <buy-property />
 
-    <div class="grid grid-cols-2">
+    <div class="grid grid-cols-2 gap-2">
       <buy-buildings />
       <do-gambling />
       <call-log class="col-span-2" />
@@ -26,15 +30,15 @@ import CallLog from './CallLog.vue';
 import {onMounted, onUnmounted, ref} from 'vue';
 
 // Reference to the container element
-const containerRef      = ref(null);
-const panelHeight = ref('200px');
+const containerRef = ref(null);
+const panelHeight  = ref('200px');
 
 // Function to calculate the height
 const calculateHeight = () => {
   if (containerRef.value) {
-    const rect              = containerRef.value.getBoundingClientRect();
-    const availableHeight   = window.innerHeight - rect.top - 20; // 20px bottom margin
-    panelHeight.value = `${Math.max(200, availableHeight)}px`; // Minimum 200px
+    const rect            = containerRef.value.getBoundingClientRect();
+    const availableHeight = window.innerHeight - rect.top - 20; // 20px bottom margin
+    panelHeight.value     = `${Math.max(200, availableHeight)}px`; // Minimum 200px
   }
 };
 // Add resize listener
@@ -51,7 +55,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-#root-element {
-  background-color: #c57fd0;
-}
+
 </style>

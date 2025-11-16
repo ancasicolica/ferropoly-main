@@ -16,7 +16,6 @@
       <Button
           label="Anruf beenden"
           severity="info"
-          rounded
           aria-label="End call"
           class="end-call-button"
           @click="handleEndCall"

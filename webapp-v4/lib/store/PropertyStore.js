@@ -12,7 +12,7 @@
 
 import {defineStore} from 'pinia';
 import {getMapMarkerInstance} from '../MapMarkers';
-import {get, assign, isString, findIndex} from 'lodash';
+import {get, assign, isString, findIndex,} from 'lodash';
 import axios from 'axios';
 import {MARKER_MODE_INFO} from '../constants/markerMode';
 import {
@@ -20,6 +20,7 @@ import {
   PROPERTY_FILTER_STATUS_ALL, PROPERTY_FILTER_STATUS_BOUGHT,
   PROPERTY_FILTER_STATUS_FREE, PROPERTY_FILTER_STATUS_NONE, PROPERTY_FILTER_UUID_NONE
 } from '../constants/propertyStoreFilters';
+import {createNormalizedString} from '../searchString';
 
 export const usePropertyStore = defineStore('Property', {
   state:   () => ({
@@ -58,6 +59,7 @@ export const usePropertyStore = defineStore('Property', {
           buildings:       0,
           buildingEnabled: false
         };
+        prop.searchText = createNormalizedString(prop.location.name);
         this.properties.set(prop.uuid, prop);
       }
       await getMapMarkerInstance().init();
