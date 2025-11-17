@@ -19,7 +19,7 @@
       </span>
       <span
           v-if="entry.amount"
-      >; Betrag: {{ entry.amount }} CHF </span>
+      >; Betrag: {{ amount }} CHF </span>
     </Message>
   </div>
 </template>
@@ -29,7 +29,7 @@
 import Message from 'primevue/message';
 import {computed} from 'vue';
 import {LOG_TYPE_FAIL, LOG_TYPE_INFO, LOG_TYPE_SUCCESS} from '../../../lib/ReceptionLogEntry';
-import {formatTime} from '../../../../../common/lib/formatters';
+import {formatPrice, formatTime} from '../../../../../common/lib/formatters';
 
 const props = defineProps({
   entry: {
@@ -51,6 +51,10 @@ const severity = computed(() => {
     default:
       return 'secondary';
   }
+})
+
+const amount = computed(()=> {
+return formatPrice(props.entry.amount);
 })
 
 const timestamp = computed(() => {
