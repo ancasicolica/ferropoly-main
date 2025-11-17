@@ -6,9 +6,13 @@
 
 <template>
   <div style="width: 100%">
-    <Panel style="width: 100%">
+    <Panel
+        style="width: 100%"
+        :pt="{header:{style:{'padding-top': '4px','padding-bottom': '4px'}}}">
       <template #header>
-        <h3> {{ team.data.name }} </h3>
+        <div class="panel-header">
+          <h3> {{ team.data.name }} </h3>
+        </div>
       </template>
       <template #icons>
         <div
@@ -64,7 +68,7 @@ const cssVars = computed(() => {
 
 const emit = defineEmits(['team-calling']);
 
-const onClickCall = ()=> {
+const onClickCall = () => {
   emit('team-calling', props.team);
 }
 </script>
@@ -72,5 +76,10 @@ const onClickCall = ()=> {
 <style scoped lang="scss">
 #color-tag {
   color: var(--team-color);
+}
+
+.p-panel-header {
+  padding-bottom: 2px;
+  padding-top: 2px;
 }
 </style>

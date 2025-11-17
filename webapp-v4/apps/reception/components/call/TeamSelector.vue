@@ -5,12 +5,12 @@
 -->
 
 <template>
-  <div class="flex flex-wrap items-stretch">
+  <div class="flex flex-wrap items-stretch gap-2">
 
     <team-card
         v-for="team in teams"
         :key="team.uuid"
-        class="flex-[0_0_16rem] ml-1 mr-1 mb-2 flex"
+        class="flex-[0_0_22rem] flex"
         :team="team"
         @team-calling="onTeamCalling"
     />
