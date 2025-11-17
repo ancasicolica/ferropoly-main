@@ -6,6 +6,8 @@
 
 import {defineStore} from 'pinia'
 import axios from 'axios';
+import {getAuthToken} from '../../../common/adapters/authToken';
+import {ReceptionLogEntry} from '../lib/ReceptionLogEntry';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
@@ -27,10 +29,17 @@ export const useReceptionStore = defineStore('Reception', {
       },
     ],
     socketConnected:    false,
-    teamInCall:         null,
-    chancelleryEnabled: true
+    activeCall: {
+      team: null,
+      chancelleryEnabled: true,
+      messageLog: [],
+    }
   }),
-  getters: {},
+  getters: {
+    callActive(state) {
+      return state.activeCall.team !== null;
+    }
+  },
   actions: {
     /**
      * Fetches static data for a given game ID.
@@ -44,10 +53,34 @@ export const useReceptionStore = defineStore('Reception', {
       console.log(resp.data);
       return resp.data;
     },
-    startTeamCall(team, chancelleryEnabled) {
-      this.teamInCall = team;
-      this.chancelleryEnabled = chancelleryEnabled;
+    addCallLog(options) {
+      this.activeCall.messageLog.unshift(new ReceptionLogEntry(options));
+    },
+    async startTeamCall(team, chancelleryEnabled) {
+      const self = this;
+      self.activeCall.team               = team;
+      self.activeCall.chancelleryEnabled = chancelleryEnabled;
+      self.addCallLog({message: 'Anruf gestartet'});
+      if (chancelleryEnabled) {
+        try {
+          const authToken = await getAuthToken()
+          const resp = await axios.post(`/chancellery/play/${this.gameId}/${team.uuid}`, {authToken});
+          console.log('Chancellery', resp.data);
+          self.addCallLog({
+            title: 'Chance/Kanzlei',
+            message: resp.data?.result.infoText,
+            amount: resp.data?.result.amount
+          });
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
       console.log('Start call', team, chancelleryEnabled);
+    },
+    finishCall() {
+      this.activeCall.team = null;
+      this.activeCall.messageLog = [];
     }
   }
 })

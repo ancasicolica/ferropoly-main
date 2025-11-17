@@ -1,5 +1,5 @@
 <!---
-
+  Root element for the Buy Tab
   Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
   Created: 16.11.2025
 -->
@@ -7,16 +7,19 @@
 <template>
   <div
       id="root-element"
-      class="grid grid-cols-2 gap-2"
       ref="containerRef"
+      class="flex gap-2"
       :style="{ height: panelHeight }"
   >
+    <div class="w-[600px] min-w-[400px]">
     <buy-property />
-
-    <div class="grid grid-cols-2 gap-2">
-      <buy-buildings />
-      <do-gambling />
-      <call-log class="col-span-2" />
+    </div>
+    <div class="flex flex-col gap-2 grow min-w-[500px]">
+      <div class="grid grid-cols-2 gap-2">
+        <buy-buildings />
+        <do-gambling />
+      </div>
+      <call-log class="flex-1 min-h-0" />
     </div>
   </div>
 </template>

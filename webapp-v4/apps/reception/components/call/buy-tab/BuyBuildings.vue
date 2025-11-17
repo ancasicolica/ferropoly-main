@@ -5,15 +5,20 @@
 -->
 
 <template>
-  <div>BuyBuildings.vue</div>
+  <div>
+    <Panel header="Häuserbau">
+      <Button label="Überall Häuser bauen"
+              severity="secondary" />
+      <p>Einzelne Häuser können unter "Besitz" gebaut werden.</p>
+    </Panel>
+  </div>
 </template>
 
 <script setup>
-
+import Panel from 'primevue/panel';
+import Button from 'primevue/button';
 </script>
 
 <style scoped lang="scss">
-div {
-  background-color: #5bc0de;
-}
+
 </style>

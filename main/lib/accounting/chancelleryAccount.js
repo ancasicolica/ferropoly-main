@@ -14,6 +14,7 @@ const teamAccount            = require('./teamAccount');
 const _                      = require('lodash');
 const chancelleryActions     = require('../../../components/checkin-datastore/lib/chancellery/actions');
 const {DateTime}             = require('luxon');
+const chancelleryTexts       = require('../../lib/ChancelleryTexts.json');
 const logger                 = require('../../../common/lib/logger').getLogger('chancelleryAccount');
 let ferroSocket;
 let jackpotFull              = {};
@@ -115,7 +116,7 @@ async function playChancellery(gameplay, team, callback) {
   let max         = gameplay.gameParams.chancellery.maxLottery || 5000;
   let retVal      = {};
   retVal.amount   = Math.floor((Math.random() * (max - min + 1) + min) / 1000) * 1000;
-  retVal.infoText = 'Chance/Kanzlei: ';
+  retVal.infoText = '';
 
   let actionRand = _.random(0, jackpotFull[gameplay.internal.gameId] ? 1.2 : 1, true);
   if (actionRand > (gameplay.gameParams.chancellery.probabilityWin + gameplay.gameParams.chancellery.probabilityLoose)) {
@@ -142,9 +143,9 @@ async function playChancellery(gameplay, team, callback) {
   } else {
     if (actionRand < gameplay.gameParams.chancellery.probabilityLoose) {
       retVal.amount *= (-1);
-      retVal.infoText += ' Verlust';
+      retVal.infoText = _.sample(chancelleryTexts.loose);
     } else {
-      retVal.infoText += 'Gewinn';
+      retVal.infoText = _.sample(chancelleryTexts.win);
     }
     await bookChancelleryEvent(gameplay, team, retVal);
     return retVal;

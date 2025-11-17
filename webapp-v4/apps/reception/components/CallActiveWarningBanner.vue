@@ -22,7 +22,7 @@ import {computed} from 'vue';
 const receptionStore = useReceptionStore();
 
 const callActive = computed(() => {
-  return receptionStore.teamInCall !== null
+  return receptionStore.callActive;
 })
 </script>
 

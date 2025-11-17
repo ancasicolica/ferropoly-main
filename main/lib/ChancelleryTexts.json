@@ -1,0 +1,26 @@
+{
+  "win": [
+    "Lotto Gewinn",
+    "Gewinn Sportwette",
+    "Bonus für gute Arbeit",
+    "Erbschaft vom reichen Onkel",
+    "Erbschaft von der reichen Tante",
+    "Bonus für das Jubiläum",
+    "Dividende aus Aktienportfolio"
+  ],
+  "loose": [
+    "Ohne Billet im Zug erwischt",
+    "Selbstbehalt Versicherung für den Schaden an der Lokomotive",
+    "Miete für das Büro",
+    "Miete für die Tiefgarage",
+    "Kauf neuer Bahnabos",
+    "Schutzgeld für Mafia",
+    "Schweigegeld für *******",
+    "Spende an das Rote Kreuz",
+    "Rechnung für Strassenarbeiten vor dem Büro",
+    "Steuern",
+    "Schmiergeld an Schiedsrichter für Gewinn der Sportwette",
+    "Diebstahl aus der Kasse",
+    "Neue Arbeitskleidung"
+  ]
+}

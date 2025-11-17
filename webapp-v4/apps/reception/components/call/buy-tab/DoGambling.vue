@@ -5,15 +5,24 @@
 -->
 
 <template>
-  <div>DoGambling.vue</div>
+  <div>
+    <Panel
+        header="Gambling"
+        style="height: 100%"
+    >
+      <Button
+          label="Überall Häuser bauen"
+          severity="secondary"
+      />
+    </Panel>
+  </div>
 </template>
 
 <script setup>
-
+import Panel from 'primevue/panel';
+import Button from 'primevue/button';
 </script>
 
 <style scoped lang="scss">
-div {
-  background-color: #ded35b;
-}
+
 </style>

@@ -6,11 +6,11 @@
 
 <template>
   <div>
-    <div v-if="!receptionStore.teamInCall">
+    <div v-if="!receptionStore.callActive">
       <h1>Anrufendes Team auswählen</h1>
       <team-selector @team-calling="onTeamCalling" />
     </div>
-    <div v-if="receptionStore.teamInCall">
+    <div v-if="receptionStore.callActive">
       <call-active />
     </div>
     <Dialog
@@ -91,7 +91,7 @@ const onEditCallConfirmed   = () => {
   callingTeam.value = null;
 }
 const onCancel              = () => {
-  receptionStore.teamInCall = null;
+  receptionStore.finishCall();
   callingTeam.value = null;
 }
 </script>

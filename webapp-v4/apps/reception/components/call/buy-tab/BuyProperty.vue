@@ -178,7 +178,7 @@ const onClickBuy = function (prop) {
   confirm.require({
     group:       'headless',
     header:      'Ort kaufen',
-    message:     `Bitte bestätige, dass das Team "${receptionStore.teamInCall.name}" das Grundstück "${prop.location.name}" kaufen will.`,
+    message:     `Bitte bestätige, dass das Team "${receptionStore.activeCall.team.name}" das Grundstück "${prop.location.name}" kaufen will.`,
     rejectProps: {
       label:    'Abbrechen',
       severity: 'secondary'

@@ -60,15 +60,15 @@ import BuyRoot from './buy-tab/BuyRoot.vue';
 
 const receptionStore = useReceptionStore();
 
-const teamName = computed(()=> receptionStore.teamInCall.name);
+const teamName = computed(()=> receptionStore.activeCall.team.name);
 
 const cssVars = computed(() => {
-  return {'--team-color': receptionStore.teamInCall.color};
+  return {'--team-color': receptionStore.activeCall.team.color};
 })
 
 // Handler for ending the call
 const handleEndCall = () => {
-  receptionStore.teamInCall = null;
+  receptionStore.finishCall();
 }
 
 
