@@ -3,7 +3,7 @@
 * Grosser Umbau auf Vue 3, PrimeVue und Tailwind CSS.
 * Karten in Info: mehr Infos für Teams vor dem Spiel (Gruppen, Darstellung)
 * BREAKING: Team Members werden mit Name gespeichert -> Anpassung Teams Schema
-
+* Info in der Reception, wenn mit Bildschirmen < 1024 Pixel Auflösung gespielt werden will
 
 ## v3.5.2 9.6.25
 * Bugfix in Marketplace (Variable undefined)
