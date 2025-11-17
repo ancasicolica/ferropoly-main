@@ -7,7 +7,10 @@
 <template>
   <div>
     <!-- The dialog for warnings using a too low screen resolution -->
-    <Dialog v-model:visible="dialogVisible" modal >
+    <Dialog
+        v-model:visible="dialogVisible"
+        modal
+    >
       <template #container="{ closeCallback }">
         <div class="flex flex-col items-center p-8 bg-surface-0 dark:bg-surface-900 rounded">
           <div
@@ -19,7 +22,8 @@
             />
           </div>
           <span class="font-bold text-2xl block mb-2 mt-6">Houston, we have a problem...</span>
-          <p class="mb-0">Die Auflösung deines Bildschirms ist zu klein - die Spielauswertung ist ausgelegt für Bildschirme mit
+          <p class="mb-0">Die Auflösung deines Bildschirms ist zu klein - die Spielauswertung ist ausgelegt für
+            Bildschirme mit
             &#8805; 1024 Pixel, mit dem Handy lässt sich das Spiel sehr schlecht administrieren.</p>
           <div class="flex items-center gap-2 mt-6">
             <Button
@@ -49,7 +53,7 @@
 
 import MenuBar from '../../../common/components/MenuBar.vue';
 import {useReceptionStore} from '../store/ReceptionStore';
-import {last, split,get} from 'lodash';
+import {last, split, get} from 'lodash';
 import {getReceptionSocket} from '../lib/ReceptionSocket';
 import {useTeamsStore} from '../../../lib/store/TeamsStore';
 import {usePropertyStore} from '../../../lib/store/PropertyStore';
@@ -58,11 +62,13 @@ import Dialog from 'primevue/dialog';
 import {faDisplay} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Button from 'primevue/button';
+import {useGameplayStore} from '../../../lib/store/GameplayStore';
 
-const receptionStore = useReceptionStore();
+const receptionStore  = useReceptionStore();
 const receptionSocket = getReceptionSocket();
-const teamsStore = useTeamsStore();
-const propertyStore = usePropertyStore();
+const teamsStore      = useTeamsStore();
+const propertyStore   = usePropertyStore();
+const gameplayStore   = useGameplayStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -77,6 +83,7 @@ receptionStore.fetchStaticData(gameId)
         gameId:    gameId
       });
       teamsStore.setTeams(staticData.teams);
+      gameplayStore.init(staticData.gameplay);
       await propertyStore.init(gameId, staticData.pricelist);
     })
     .catch(err => {
@@ -85,16 +92,13 @@ receptionStore.fetchStaticData(gameId)
 
 const dialogVisible = ref(false);
 
-onMounted(()=> {
+onMounted(() => {
   console.log('window.screen.width', window.screen.width);
   if (window.screen.width < 1024) {
     dialogVisible.value = true;
   }
 })
 
-const closeCallback = function() {
-  dialogVisible.value = false;
-}
 </script>
 
 <style scoped lang="scss">

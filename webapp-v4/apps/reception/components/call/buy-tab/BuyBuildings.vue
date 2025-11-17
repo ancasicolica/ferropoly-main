@@ -6,9 +6,16 @@
 
 <template>
   <div>
-    <Panel header="Häuserbau">
-      <Button label="Überall Häuser bauen"
-              severity="secondary" />
+    <Panel
+        :pt="{header:{style:{'padding-top': '4px','padding-bottom': '4px'}}}"
+    >
+      <template #header>
+        <h3> Häuserbau </h3>
+      </template>
+      <Button
+          label="Überall Häuser bauen"
+          severity="secondary"
+      />
       <p>Einzelne Häuser können unter "Besitz" gebaut werden.</p>
     </Panel>
   </div>

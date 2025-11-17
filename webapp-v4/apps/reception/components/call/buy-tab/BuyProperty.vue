@@ -38,9 +38,12 @@
     </ConfirmDialog>
     <!-- Panel starts here -->
     <Panel
-        header="Liegenschaft kaufen"
+        :pt="{header:{style:{'padding-top': '4px','padding-bottom': '4px'}}}"
         style="height: 100%"
     >
+      <template #header>
+        <h3> Liegenschaft kaufen </h3>
+      </template>
       <div class="search-container">
         <IconField class="search-field">
           <InputIcon class="pi pi-search" />

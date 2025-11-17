@@ -6,7 +6,13 @@
 
 <template>
   <div>
-    <Panel header="Anruf-Log">
+    <Panel
+        :pt="{header:{style:{'padding-top': '4px','padding-bottom': '4px'}}}"
+        style="height: 100%"
+    >
+      <template #header>
+        <h3> Anruf-Log </h3>
+      </template>
       <scroll-panel
           ref="containerRef"
           :style="{ height: panelHeight }"

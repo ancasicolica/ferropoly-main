@@ -19,7 +19,7 @@
         <buy-buildings />
         <do-gambling />
       </div>
-      <call-log class="flex-1 min-h-0" />
+      <call-log class="flex-1 " />
     </div>
   </div>
 </template>
