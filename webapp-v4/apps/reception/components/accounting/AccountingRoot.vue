@@ -7,9 +7,16 @@
 <template>
   <div>
     <call-active-warning-banner />
-    <Tabs :value="teamsStore.teams[0].uuid" scrollable>
+    <Tabs
+        :value="teamsStore.teams[0]?.uuid"
+        scrollable
+    >
       <TabList>
-        <Tab v-for="team in teamsStore.teams" :key="team.uuid" :value="team.uuid">
+        <Tab
+            v-for="team in teamsStore.teams"
+            :key="team.uuid"
+            :value="team.uuid"
+        >
           {{ team.name }}
           <span
               id="color-tag"
@@ -19,8 +26,15 @@
         </Tab>
       </TabList>
       <TabPanels>
-        <TabPanel v-for="team in teamsStore.teams" :key="team.uuid" :value="team.uuid">
-          <p class="m-0">{{ team.name }}</p>
+        <TabPanel
+            v-for="team in teamsStore.teams"
+            :key="team.uuid"
+            :value="team.uuid"
+        >
+          <team-account
+              :entries="entries"
+              :team-id="team.uuid"
+          />
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -36,10 +50,16 @@ import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
+import TeamAccount from './TeamAccount.vue';
+import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import {computed} from 'vue';
 
 const teamsStore = useTeamsStore();
+const teamAccountStore = useTeamAccountStore();
 
-const cssVars = function(color) {
+const entries = computed(()=>[...teamAccountStore.records.values()]);
+
+const cssVars = function (color) {
   return {'--team-color': color};
 };
 

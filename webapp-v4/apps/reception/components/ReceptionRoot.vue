@@ -63,12 +63,14 @@ import {faDisplay} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Button from 'primevue/button';
 import {useGameplayStore} from '../../../lib/store/GameplayStore';
+import {useTeamAccountStore} from '../../../lib/store/TeamAccountStore';
 
 const receptionStore  = useReceptionStore();
 const receptionSocket = getReceptionSocket();
 const teamsStore      = useTeamsStore();
 const propertyStore   = usePropertyStore();
 const gameplayStore   = useGameplayStore();
+const teamAccountStore = useTeamAccountStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -85,6 +87,7 @@ receptionStore.fetchStaticData(gameId)
       teamsStore.setTeams(staticData.teams);
       gameplayStore.init(staticData.gameplay);
       await propertyStore.init(gameId, staticData.pricelist);
+      await teamAccountStore.loadTeamAccountEntries(gameId);
     })
     .catch(err => {
       console.error(err);
