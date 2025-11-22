@@ -6,7 +6,7 @@
 
 import {io} from 'socket.io-client';
 import EventEmitter from '../common/lib/eventEmitter'
-
+import {useTeamAccountStore} from './store/TeamAccountStore';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -89,6 +89,12 @@ class FerropolySocket extends EventEmitter {
         }
       },
       'admin-teamAccount'       : msg => {
+        if (msg.cmd === 'onTransaction') {
+          useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId);
+        }
+        else {
+          console.warn('Unhandled command for admin-teamAccount', msg);
+        }
         // self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'updateTeamAccountEntries', teamId: msg.data.teamId});
       },

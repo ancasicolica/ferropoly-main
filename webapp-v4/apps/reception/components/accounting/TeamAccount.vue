@@ -20,17 +20,16 @@
         paginator-position="top"
         :rows="rowsPerPage"
         class="flex-auto"
-        @rowExpand="onRowExpand"
-        @rowCollapse="onRowCollapse"
-    >
+     >
       <Column
           expander
           style="width: 5rem"
       >
         <template #body="{data, rowTogglerCallback}">
+
           <span
               v-if="data.transaction.parts.length > 0"
-              class="pi pi-chevron-right"
+              class="pi pi-info-circle"
               @click="rowTogglerCallback"
           />
         </template>
@@ -38,7 +37,7 @@
 
       <Column
           field="timestamp"
-          header="Time"
+          header="Zeit"
       >
         <template #body="slotProps">
           {{ formatTime(slotProps.data.timestamp) }}
@@ -46,7 +45,7 @@
       </Column>
       <Column
           field="transaction.info"
-          header="Description"
+          header="Beschreibung"
       >
         <template #body="slotProps">
           {{ slotProps.data.transaction.info }}
@@ -54,7 +53,7 @@
       </Column>
       <Column
           field="transaction.amount"
-          header="Amount"
+          header="Betrag"
       >
         <template #body="slotProps">
           {{ formatPrice(slotProps.data.transaction.amount) }}
@@ -62,7 +61,7 @@
       </Column>
       <Column
           field="balance"
-          header="Balance"
+          header="Saldo"
       >
         <template #body="slotProps">
           {{ formatPrice(slotProps.data.balance) }}
@@ -116,12 +115,7 @@ const props              = defineProps({
     default:  () => []
   }
 })
-const onRowExpand        = (event) => {
-  console.log('expand')
-};
-const onRowCollapse      = (event) => {
-  console.log('collapse')
-};
+
 const teamAccountEntries = computed(() => props.entries.filter(entry => entry.teamId === props.teamId));
 
 const calculateRows = () => {

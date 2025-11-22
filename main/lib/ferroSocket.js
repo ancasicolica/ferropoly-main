@@ -95,7 +95,7 @@ class FerroSocket extends EventEmitter {
               self.registerChannels(socket);
               self.emitGameMessagesAfterConnect(data.gameId, socket);
             })
-            .catch(err => {
+            .catch(() => {
 
               // Admin verification failed, is it a player?
               accessor.verifyPlayer(data.user, data.gameId, data.teamId)
@@ -313,13 +313,10 @@ class FerroSocket extends EventEmitter {
   /**
    * Emits all game messages to a single socket after connecting
    */
-  emitGameMessagesAfterConnect(gameId, socket) {
-    gameLogModel.getLogEntries(gameId, null, DateTime.now().minus({minutes: 30}), null, (err, entries) => {
-      if (err) {
-        return logger.error(`${gameId}: error in emitGameMessagesAfterConnect`, err);
-      }
-
-      entries.forEach(e => {
+  async emitGameMessagesAfterConnect(gameId, socket) {
+    try {
+      const entries = await gameLogModel.getLogEntries(gameId, null, DateTime.now().minus({minutes: 30}), null);
+      for (const e of entries) {
         let message = {
           title:     e.saveTitle,
           message:   e.message,
@@ -331,8 +328,11 @@ class FerroSocket extends EventEmitter {
           message.title = e.title;
         }
         socket.emit('game-log', message);
-      });
-    })
+      }
+    }
+    catch (err) {
+      logger.error(`${gameId}: error in emitGameMessagesAfterConnect`, err);
+    }
   };
 }
 

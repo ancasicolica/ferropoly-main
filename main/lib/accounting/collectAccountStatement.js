@@ -19,25 +19,23 @@ const {DateTime} = require('luxon');
 module.exports = async function (gameId, teamId = undefined, start = undefined, end = undefined) {
 
   let teamBalance = {};
-  let tsStart     = start ?  DateTime.fromISO(start) : undefined;
-  let tsEnd       = end ?  DateTime.fromISO(end) : undefined;
+  let tsStart     = start ?  DateTime.fromISO(start).toJSDate() : DateTime.fromISO('2020-01-01T00:00:00Z').toJSDate();
+  let tsEnd       = end ?  DateTime.fromISO(end).toJSDate() : DateTime.fromISO('2525-01-01T00:00:00Z').toJSDate();
 
-  data = await teamAccount.getAccountStatement(gameId, teamId, tsStart, tsEnd);
+  const data = await teamAccount.getAccountStatement(gameId, teamId, tsStart, tsEnd);
 
   for (let i = 0; i < data.length; i++) {
-
-    if (!(tsStart || tsEnd)) {
-      // The balance is only available if ALL data is requested. Otherwise, it does not make sense!
-      if (_.isUndefined(teamBalance[data[i].teamId])) {
-        teamBalance[data[i].teamId] = 0;
-      }
-      teamBalance[data[i].teamId] += data[i].transaction.amount;
-      data[i].balance = teamBalance[data[i].teamId];
+    if (_.isUndefined(teamBalance[data[i].teamId])) {
+      // If we don't have the team balance, get it at the starting point (including the starting point)
+      const balanceAtStart = await teamAccount.getBalance(gameId, data[i].teamId, tsStart);
+      teamBalance[data[i].teamId] = balanceAtStart.asset;
     }
+    teamBalance[data[i].teamId] += data[i].transaction.amount;
+    data[i].balance = teamBalance[data[i].teamId];
 
     //  data[i].transaction = _.omit(data[i].transaction, 'origin');
     data[i] = _.omit(data[i], ['gameId', '__v']);
   }
-  return {accountData: data};
 
+  return {accountData: data, teamBalance};
 }

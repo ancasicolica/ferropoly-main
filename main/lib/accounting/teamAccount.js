@@ -261,13 +261,10 @@ async function chargeToAnotherTeam(options, callback) {
  * Gets the balance, at a given time or now
  * @param gameId
  * @param teamId
- * @param callback
+ * @param atTime
  */
-async function getBalance(gameId, teamId, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in getBalance');
-    return callback(new Error('no callback'));
-  }
+async function getBalance(gameId, teamId, atTime='2525-01-01T00:00:00Z') {
+
   if (typeof (gameId) !== 'string') {
     throw new Error('gameId must be a string');
   }
@@ -275,7 +272,7 @@ async function getBalance(gameId, teamId, callback) {
     throw new Error('teamId must be a string');
   }
 
-  const value = await teamAccountTransaction.getBalance(gameId, teamId);
+  const value = await teamAccountTransaction.getBalance(gameId, teamId, atTime);
   return {asset: value.asset, count: value.count};
 }
 

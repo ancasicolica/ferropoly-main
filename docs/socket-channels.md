@@ -18,7 +18,8 @@ These channels are used for data being exclusive for the admins, no need to the 
 
 Events server -> client
 
-* onTransaction: a transaction was made on a teams account
+* onTransaction: a transaction was made on a teams account.
+  * data: the teamAccountTransaction object
 
 
 ### admin-propertyAccount

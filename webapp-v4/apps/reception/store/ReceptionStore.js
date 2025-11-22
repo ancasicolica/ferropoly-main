@@ -77,7 +77,7 @@ export const useReceptionStore = defineStore('Reception', {
           const resp      = await axios.post(`/chancellery/play/${self.gameId}/${team.uuid}`, {authToken});
           console.log('Chancellery', resp.data);
           self.addCallLog({
-            title:   'Chance/Kanzlei',
+            title:   undefined,
             message: resp.data?.result.infoText,
             amount:  resp.data?.result.amount
           });

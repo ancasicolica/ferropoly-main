@@ -120,7 +120,7 @@ async function playChancellery(gameplay, team, callback) {
 
   let actionRand = _.random(0, jackpotFull[gameplay.internal.gameId] ? 1.2 : 1, true);
   if (actionRand > (gameplay.gameParams.chancellery.probabilityWin + gameplay.gameParams.chancellery.probabilityLoose)) {
-    retVal.infoText = 'Parkplatzgewinn';
+    retVal.infoText = 'Chance/Kanzlei: Parkplatzgewinn';
     retVal.jackpot  = true;
     const info      = await getBalance(gameplay.internal.gameId);
 
@@ -143,9 +143,9 @@ async function playChancellery(gameplay, team, callback) {
   } else {
     if (actionRand < gameplay.gameParams.chancellery.probabilityLoose) {
       retVal.amount *= (-1);
-      retVal.infoText = _.sample(chancelleryTexts.loose);
+      retVal.infoText = 'Chance/Kanzlei: ' + _.sample(chancelleryTexts.loose);
     } else {
-      retVal.infoText = _.sample(chancelleryTexts.win);
+      retVal.infoText = 'Chance/Kanzlei: ' + _.sample(chancelleryTexts.win);
     }
     await bookChancelleryEvent(gameplay, team, retVal);
     return retVal;
@@ -162,7 +162,7 @@ async function gamble(gameplay, team, amount, callback) {
 
   let retVal = {
     amount:   amount,
-    infoText: 'Chance/Kanzlei (Gambling)'
+    infoText: amount > 0 ? 'Chance/Kanzlei: Gambling gewonnen' : 'Chance/Kanzlei: Gambling verloren'
   };
   await bookChancelleryEvent(gameplay, team, retVal);
   return retVal;
