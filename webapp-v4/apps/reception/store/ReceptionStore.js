@@ -7,7 +7,9 @@
 import {defineStore} from 'pinia'
 import axios from 'axios';
 import {getAuthToken} from '../../../common/adapters/authToken';
-import {LOG_TYPE_FAIL, ReceptionLogEntry} from '../lib/ReceptionLogEntry';
+import {LOG_TYPE_FAIL, LOG_TYPE_INFO, LOG_TYPE_SUCCESS, ReceptionLogEntry} from '../lib/ReceptionLogEntry';
+import {get} from 'lodash';
+import {formatPrice} from '../../../common/lib/formatters';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
@@ -98,7 +100,8 @@ export const useReceptionStore = defineStore('Reception', {
     /**
      * Runs gambling for the current team in the call
      * @param amount
-     */ async gamble(amount) {
+     */
+    async gamble(amount) {
       const self = this;
       try {
         const authToken = await getAuthToken()
@@ -114,6 +117,42 @@ export const useReceptionStore = defineStore('Reception', {
       catch (err) {
         console.error(err);
         self.addCallLog({title: 'Fehler bei Abfrage', message: err.message, type: LOG_TYPE_FAIL});
+      }
+    },
+    async buyProperty(teamId, propertyId) {
+      const self = this;
+      try {
+        const authToken = await getAuthToken();
+        const resp      = await axios.post(`/marketplace/buyProperty/${self.gameId}/${teamId}/${propertyId}`,
+          {authToken});
+        console.log(resp.data);
+        const res   = resp.data.result;
+        if (res.owner) {
+          // belongs to another team
+          self.addCallLog({
+            title:   'Kauf nicht möglich',
+            message: `${get(res, 'property.location.name', 'unbekanntes Ort')} ist bereits verkauft, Mietzins ${formatPrice(res.amount)} CHF.`,
+            type:    LOG_TYPE_FAIL
+          });
+        } else if (res.amount === 0) {
+          // our own
+          self.addCallLog({
+            title:   'Kauf nicht möglich',
+            message: `${get(res, 'property.location.name', 'unbekanntes Ort')} gehört bereits der anrufenden Gruppe.`,
+            type:    LOG_TYPE_INFO
+          });
+        } else {
+          // bought !!!
+          self.addCallLog({
+            title:   'Kauf erfolgreich',
+            message: `${get(res, 'property.location.name', 'unbekanntes Ort')} wurde für ${formatPrice(res.amount)} CHF gekauft. `,
+            type:    LOG_TYPE_SUCCESS
+          });
+        }
+      }
+      catch (err) {
+        console.error(err);
+        self.addCallLog({title: 'Fehler bei Kauf', message: err.message, type: LOG_TYPE_FAIL});
       }
     }
   }

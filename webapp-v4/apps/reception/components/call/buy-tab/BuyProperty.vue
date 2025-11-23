@@ -190,10 +190,10 @@ const onClickBuy = function (prop) {
       label: 'Ja, kaufen'
     },
     accept:      () => {
-      console.log('gekauft');
+      receptionStore.buyProperty(receptionStore.activeCall.team.uuid, prop.uuid);
     },
     reject:      () => {
-      console.log('abbruch');
+      console.log('Panic, do not buy!');
     }
   });
 }
