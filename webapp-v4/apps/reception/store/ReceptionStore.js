@@ -119,6 +119,15 @@ export const useReceptionStore = defineStore('Reception', {
         self.addCallLog({title: 'Fehler bei Abfrage', message: err.message, type: LOG_TYPE_FAIL});
       }
     },
+    /**
+     * Attempts to purchase a property in the marketplace for a specific team.
+     * Logs the outcome of the operation, whether successful, failed, or already owned.
+     *
+     * @param {string} teamId - The unique identifier for the team attempting to buy the property.
+     * @param {string} propertyId - The unique identifier for the property being purchased.
+     *
+     * @return {Promise<void>} A promise that resolves when the operation is complete and relevant logs are recorded.
+     */
     async buyProperty(teamId, propertyId) {
       const self = this;
       try {
@@ -153,6 +162,42 @@ export const useReceptionStore = defineStore('Reception', {
       catch (err) {
         console.error(err);
         self.addCallLog({title: 'Fehler bei Kauf', message: err.message, type: LOG_TYPE_FAIL});
+      }
+    },
+    /**
+     * Builds houses for a team in the marketplace and logs the results.
+     *
+     * @param {number|string} teamId - The ID of the team for which houses are to be built.
+     * @return {Promise<void>} A Promise that resolves once the operation is complete.
+     */
+    async buildHouses(teamId) {
+      const self = this;
+      try {
+        const authToken = await getAuthToken();
+        const resp      = await axios.post(`/marketplace/buildHouses/${self.gameId}/${teamId}`,
+          {authToken});
+        const res      = resp.data.result;
+        if (res.amount === 0) {
+          self.addCallLog({
+            title:   'Häuserbau',
+            message: `Es konnten keine Häuser gebaut werden.`,
+            type:    LOG_TYPE_INFO
+          });
+        } else {
+          let msg = `Belastung: ${formatPrice(res.amount)}, Gebaute Häuser: `;
+          res.log.forEach(e => {
+            msg += `${e.propertyName} (${e.buildingNb} / ${formatPrice(e.amount)}) `;
+          })
+          self.addCallLog({
+            title:   'Häuserbau',
+            message: msg,
+            type:    LOG_TYPE_SUCCESS
+          });
+        }
+      }
+      catch (err) {
+        console.error(err);
+        self.addCallLog({title: 'Fehler beim Häuserbau', message: err.message, type: LOG_TYPE_FAIL});
       }
     }
   }

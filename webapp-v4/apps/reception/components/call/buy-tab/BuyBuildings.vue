@@ -15,6 +15,7 @@
       <Button
           label="Überall Häuser bauen"
           severity="secondary"
+          @click="buildHouses"
       />
       <p>Einzelne Häuser können unter "Besitz" gebaut werden.</p>
     </Panel>
@@ -24,6 +25,13 @@
 <script setup>
 import Panel from 'primevue/panel';
 import Button from 'primevue/button';
+import {useReceptionStore} from '../../../store/ReceptionStore';
+
+const receptionStore = useReceptionStore();
+const buildHouses = function() {
+  receptionStore.buildHouses(receptionStore.activeCall.team.uuid);
+};
+
 </script>
 
 <style scoped lang="scss">
