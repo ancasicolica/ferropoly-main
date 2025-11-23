@@ -67,6 +67,19 @@ export const usePropertyStore = defineStore('Property', {
       this.ready  = true;
       console.log('init done', this.properties);
     },
+     updateProperty(property) {
+       const p = this.properties.get(property.uuid);
+       if (p) {
+         console.log('ASSIGNING', p, p.gamedata, property.gamedata);
+         p.gamedata = property.gamedata;
+         console.log('RESULTING IN', p, this.properties.get(property.uuid));
+         this.updateFilter();
+         console.log(`${property.location.name} updated`, p.gamedata);
+       }
+       else {
+         console.warn('updateProperty: property not found', property);
+       }
+    },
     /**
      * Updates the property store elements for the gamedata (ownership, building enabled, ...)
      * @param options
@@ -101,7 +114,6 @@ export const usePropertyStore = defineStore('Property', {
         .finally(() => {
           this.updateFilter();
         })
-
     },
     /**
      * Updates the visibility of properties on the map based on the current filter criteria.

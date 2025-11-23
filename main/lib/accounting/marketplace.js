@@ -563,7 +563,7 @@ class Marketplace extends EventEmitter {
 
     if (ferroSocket) {
       // Inform clients that the can build again
-      ferroSocket.emitToGame(gameId, 'general', {message: 'Die Mieten wurden ausbezahlt'});
+      ferroSocket.emitToGame(gameId, 'general', {cmd:'rentsPaid', message: 'Die Mieten wurden ausbezahlt'});
     }
   }
   ;

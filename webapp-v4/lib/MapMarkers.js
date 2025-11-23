@@ -35,7 +35,7 @@ class MapMarkers extends EventEmitter {
   constructor() {
     super();
 
-    this.propertyStore = usePropertyStore();
+    this.propertyStore = null;
     this.markers       = new Map();
     this.bounds        = {
       north: 0,
@@ -61,6 +61,7 @@ class MapMarkers extends EventEmitter {
     const self     = this;
     const instance = await mapLoader.getInstance();
 
+    this.propertyStore  = usePropertyStore();
     self.googleInstance = instance;
     console.log('Api loaded, creating default markers');
     console.log('PropertyStore has', this.propertyStore.properties.size, 'properties');
@@ -156,36 +157,45 @@ class MapMarkers extends EventEmitter {
 
     console.log('APPLY FILTER called', map);
 
-    let visibleCount = 0;
+    let visibleCount   = 0;
+    let removedMarkers = 0;
+    let addedMarkers   = 0;
     for (const marker of self.markers) {
       const prop = self.propertyStore.properties.get(marker[0]);
       // console.log(marker, prop);
       if (prop) {
         if (prop.visibleOnMap) {
+          // Display marker on map
           const oldMarker = this.markers.get(prop.uuid)
           if (oldMarker) {
+            oldMarker.map = null;
             oldMarker.remove();
+            removedMarkers++;
           }
 
           // IMPORTANT: Set content BEFORE adding to map!
           const newMarker = this.createMarker(prop, {showAsCategory, markerMode});
           newMarker.map   = map;
           this.markers.set(prop.uuid, newMarker);
+          addedMarkers++;
           visibleCount++;
           if (self.propertyStore.debugOutput) {
             console.log(`  ✓ Marker ${prop.location.name} set to visible`);
           }
         } else {
+          // Hide marker on map
           if (self.propertyStore.debugOutput) {
             console.log(`  ○ Marker ${prop.location.name} hidden (visibleOnMap=false)`);
           }
+          marker[1].map = null;
           marker[1].remove();
+          removedMarkers++;
         }
       } else {
         console.warn('No fit for marker in properties', marker);
       }
     }
-    console.log(`APPLY FILTER complete: ${visibleCount} markers visible`);
+    console.log(`APPLY FILTER complete: ${visibleCount} markers visible. added:${addedMarkers} removed:${removedMarkers}`);
   }
 
   /**
@@ -369,6 +379,7 @@ let instance = null;
 
 function getMapMarkerInstance() {
   if (!instance) {
+    console.log('Creating MapMarker Instance');
     instance = new MapMarkers();
   }
   return instance;

@@ -7,6 +7,7 @@
 import {io} from 'socket.io-client';
 import EventEmitter from '../common/lib/eventEmitter'
 import {useTeamAccountStore} from './store/TeamAccountStore';
+import {usePropertyStore} from './store/PropertyStore';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -45,24 +46,27 @@ class FerropolySocket extends EventEmitter {
 
   /**
    * Returns the handlers
-   * @returns {{disconnect: disconnect, checkinStore: checkinStore, identify: identify, 'admin-teamAccount': admin-teamAccount, 'admin-chancelleryAccount': admin-chancelleryAccount, initialized: initialized, 'admin-properties': admin-properties, welcome: welcome, connect: connect, 'admin-rents-paid': admin-rents-paid, 'admin-propertyAccount': admin-propertyAccount, 'admin-marketplace': admin-marketplace}}
+   * @returns {{disconnect: disconnect, checkinStore: checkinStore, identify: identify, 'admin-teamAccount':
+   *   admin-teamAccount, 'admin-chancelleryAccount': admin-chancelleryAccount, initialized: initialized,
+   *   'admin-properties': admin-properties, welcome: welcome, connect: connect, 'admin-rents-paid': admin-rents-paid,
+   *   'admin-propertyAccount': admin-propertyAccount, 'admin-marketplace': admin-marketplace}}
    */
   getHandlers() {
     let self = this;
     return {
-      'identify'                : () => {
+      'identify':                 () => {
         console.log('identify', self.options);
         self.socket.emit('identify', {
-          user     : self.options.user,
-          teamId   : self.options.teamId,
+          user:      self.options.user,
+          teamId:    self.options.teamId,
           authToken: self.options.authToken,
-          gameId   : self.options.gameId
+          gameId:    self.options.gameId
         })
       },
-      'welcome'                 : () => {
+      'welcome':                  () => {
         console.log('Welcome!');
       },
-      'initialized'             : (msg) => {
+      'initialized':              (msg) => {
         if (msg.isPlayer) {
           console.log('PLAYER socket initialized');
         }
@@ -71,7 +75,7 @@ class FerropolySocket extends EventEmitter {
         }
         self.emit('connected');
       },
-      'checkinStore'            : msg => {
+      'checkinStore':             msg => {
         if (msg.type === 'buildingAllowedAgain') {
           // self.store.dispatch({type: 'propertyRegister/buildingAllowedAgain'});
         } else if (msg.type === 'setChancelleryAsset') {
@@ -88,17 +92,22 @@ class FerropolySocket extends EventEmitter {
           console.warn('Checkin store...?', msg);
         }
       },
-      'admin-teamAccount'       : msg => {
+      'admin-teamAccount':        msg => {
         if (msg.cmd === 'onTransaction') {
-          useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId);
-        }
-        else {
+          useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId)
+            .catch(err => {
+              console.error(err)
+            });
+        } else {
           console.warn('Unhandled command for admin-teamAccount', msg);
         }
         // self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'updateTeamAccountEntries', teamId: msg.data.teamId});
       },
-      'admin-propertyAccount'   : msg => {
+      'admin-propertyAccount':    msg => {
+        if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought') {
+          usePropertyStore().updateProperty(msg.property)
+        }
         //  self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'propertyRegister/updatePropertyInPricelist', property: msg.property});
       },
@@ -106,24 +115,34 @@ class FerropolySocket extends EventEmitter {
         //  self.store.dispatch({type: 'fetchRankingList'});
         //   self.store.dispatch({type: 'updateChancellery'});
       },
-      'admin-properties'        : () => {
+      'admin-properties':         () => {
         //   self.store.dispatch({type: 'fetchRankingList'});
       },
-      'admin-marketplace'       : () => {
+      'admin-marketplace':        () => {
         //   self.store.dispatch({type: 'fetchRankingList'});
       },
-      'admin-rents-paid'        : () => {
+      'admin-rents-paid':         () => {
         //   self.store.dispatch({type: 'updateProperties'});
       },
-      'game-log'                : (msg) => {
+      'game-log':                 (msg) => {
         //   self.store.dispatch({type: 'gameLog/pushEntry', logEntry: msg})
       },
-      'player-position'         : (msg) => {
+      'player-position':          (msg) => {
         //   self.store.dispatch({type: 'travelLog/updateGpsPosition', entry: msg});
       },
-      'pic'                     : (msg) => {
+      'pic':                      (msg) => {
         console.log('new pic', msg);
         //  self.store.dispatch({type: 'updatePictureList', info: msg});
+      },
+      'general': (msg) => {
+        if (msg.cmd === 'rentsPaid') {
+          usePropertyStore().update().catch(err=> {
+            console.error(err);
+          });
+        }
+        else {
+          console.log('not handled in general socket', msg);
+        }
       }
     };
   }
