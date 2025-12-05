@@ -39,7 +39,11 @@ export const usePropertyStore = defineStore('Property', {
       price:   PROPERTY_FILTER_PRICE_NONE
     },
   }),
-  getters: {},
+  getters: {
+    pricelist: (state) => {
+      return [...state.properties.values()];
+    }
+  },
   actions: {
     /**
      * Initializes the properties and sets up the required map markers.
