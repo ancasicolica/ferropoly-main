@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <call-active-warning-banner/>
+    <call-active-warning-banner />
 
     <div
         ref="tableContainer"
