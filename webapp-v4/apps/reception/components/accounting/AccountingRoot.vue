@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <call-active-warning-banner />
+    <call-active-warning-banner/>
     <Tabs
         :value="teamsStore.teams[0]?.uuid"
         scrollable
@@ -35,6 +35,8 @@
               :entries="entries"
               :team-id="team.uuid"
               :paginator-enabled="receptionStore.paginationEnabled"
+              :sort-order="sortOrder"
+              @update:sort-order="onSortOrderUpdated"
           />
         </TabPanel>
       </TabPanels>
@@ -53,18 +55,24 @@ import TabPanel from 'primevue/tabpanel';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import TeamAccount from './TeamAccount.vue';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
+import {getItem, setInt} from '../../../../common/lib/localStorage';
 
-const teamsStore = useTeamsStore();
+const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
-const receptionStore = useReceptionStore();
-const entries = computed(()=>[...teamAccountStore.records.values()]);
+const receptionStore   = useReceptionStore();
+const entries          = computed(() => [...teamAccountStore.records.values()]);
+const sortOrder        = ref(getItem('accountingSortOrder', 1))
 
-const cssVars = function (color) {
+const cssVars          = function (color) {
   return {'--team-color': color};
 };
 
+const onSortOrderUpdated = (_sortOrder) => {
+  sortOrder.value = _sortOrder;
+  setInt('accountingSortOrder', sortOrder.value);
+}
 </script>
 
 <style scoped lang="scss">

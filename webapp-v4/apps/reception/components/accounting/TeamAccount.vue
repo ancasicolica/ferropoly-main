@@ -21,6 +21,9 @@
           paginator-position="top"
           :rows="rowsPerPage"
           class="flex-auto"
+          sort-field="timestamp"
+          :sort-order="sortOrder"
+          @update:sort-order="onSortOrder"
       >
         <Column
             expander
@@ -48,7 +51,6 @@
         <Column
             field="transaction.info"
             header="Beschreibung"
-            :sortable="true"
         >
           <template #body="slotProps">
             {{ slotProps.data.transaction.info }}
@@ -57,7 +59,6 @@
         <Column
             field="transaction.amount"
             header="Betrag"
-            :sortable="true"
         >
           <template #body="slotProps">
             {{ formatPrice(slotProps.data.transaction.amount) }}
@@ -66,7 +67,6 @@
         <Column
             field="balance"
             header="Saldo"
-            :sortable="true"
         >
           <template #body="slotProps">
             {{ formatPrice(slotProps.data.balance) }}
@@ -108,15 +108,23 @@ import {formatPrice, formatTime} from '../../../../common/lib/formatters';
 const expandedRows   = ref({});
 const tableContainer = ref(null);
 const rowsPerPage    = ref(10);
-let resizeObserver   = null;
+
+const emit = defineEmits(['update:sort-order']);
+
+const onSortOrder = function (value) {
+  emit('update:sort-order', value);
+};
+
+
+let resizeObserver = null;
 
 const props = defineProps({
-  teamId:  {
+  teamId:           {
     type:     String,
     required: true,
     default:  ''
   },
-  entries: {
+  entries:          {
     type:     Array,
     required: true,
     default:  () => []
@@ -125,6 +133,11 @@ const props = defineProps({
     type:     Boolean,
     required: false,
     default:  false
+  },
+  sortOrder:        {
+    type:     Number,
+    required: false,
+    default:  1
   }
 })
 
