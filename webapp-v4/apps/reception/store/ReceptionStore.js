@@ -36,7 +36,8 @@ export const useReceptionStore = defineStore('Reception', {
       chancelleryEnabled: true,
       messageLog:         [],
     },
-    paginationEnabled: false
+    paginationEnabled: false,
+    accountingTeamId:  null,
   }),
   getters: {
     callActive(state) {

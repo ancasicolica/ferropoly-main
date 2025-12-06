@@ -8,6 +8,7 @@
   <div>
     <call-active-warning-banner/>
     <Tabs
+        v-model:value="accountingTeamId"
         :value="teamsStore.teams[0]?.uuid"
         scrollable
     >
@@ -65,7 +66,7 @@ const receptionStore   = useReceptionStore();
 const entries          = computed(() => [...teamAccountStore.records.values()]);
 const sortOrder        = ref(getItem('accountingSortOrder', 1))
 
-const cssVars          = function (color) {
+const cssVars = function (color) {
   return {'--team-color': color};
 };
 
@@ -73,6 +74,18 @@ const onSortOrderUpdated = (_sortOrder) => {
   sortOrder.value = _sortOrder;
   setInt('accountingSortOrder', sortOrder.value);
 }
+
+const accountingTeamId = computed({
+  set: (newValue) => {
+    receptionStore.accountingTeamId = newValue;
+  },
+  get: () => {
+    if (!receptionStore.accountingTeamId) {
+      return teamsStore.teams[0]?.uuid;
+    }
+    return receptionStore.accountingTeamId;
+  }
+})
 </script>
 
 <style scoped lang="scss">
