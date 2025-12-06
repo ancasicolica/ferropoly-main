@@ -21,6 +21,7 @@ import {
   PROPERTY_FILTER_STATUS_FREE, PROPERTY_FILTER_STATUS_NONE, PROPERTY_FILTER_UUID_NONE
 } from '../constants/propertyStoreFilters';
 import {createNormalizedString} from '../searchString';
+import {useTeamsStore} from './TeamsStore';
 
 export const usePropertyStore = defineStore('Property', {
   state:   () => ({
@@ -36,7 +37,7 @@ export const usePropertyStore = defineStore('Property', {
       teams:          [],
       propertyGroup:  PROPERTY_FILTER_GROUP_NONE,
       propertyUuid:   PROPERTY_FILTER_UUID_NONE,
-      price:   PROPERTY_FILTER_PRICE_NONE
+      price:          PROPERTY_FILTER_PRICE_NONE
     },
   }),
   getters: {
@@ -59,11 +60,12 @@ export const usePropertyStore = defineStore('Property', {
         prop.visibleOnMap = true;
         prop.gamedata     = {
           owner:           null,
+          ownerName:       null,
           boughtTs:        null,
           buildings:       0,
-          buildingEnabled: false
+          buildingEnabled: false,
         };
-        prop.searchText = createNormalizedString(prop.location.name);
+        prop.searchText   = createNormalizedString(prop.location.name);
         this.properties.set(prop.uuid, prop);
       }
       await getMapMarkerInstance().init();
@@ -71,18 +73,24 @@ export const usePropertyStore = defineStore('Property', {
       this.ready  = true;
       console.log('init done', this.properties);
     },
-     updateProperty(property) {
-       const p = this.properties.get(property.uuid);
-       if (p) {
-         console.log('ASSIGNING', p, p.gamedata, property.gamedata);
-         p.gamedata = property.gamedata;
-         console.log('RESULTING IN', p, this.properties.get(property.uuid));
-         this.updateFilter();
-         console.log(`${property.location.name} updated`, p.gamedata);
-       }
-       else {
-         console.warn('updateProperty: property not found', property);
-       }
+    /**
+     * Updates an existing property within the properties map based on the provided property object.
+     *
+     * @param {Object} property - The property object to be updated. Must include a `uuid` to locate the property in the map and a `gamedata` field for updating.
+     * @return {void} This method does not return a value.
+     */
+    updateProperty(property) {
+      const p = this.properties.get(property.uuid);
+      if (p) {
+        console.log('ASSIGNING', p, p.gamedata, property.gamedata);
+        p.gamedata = property.gamedata;
+        p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
+        console.log('RESULTING IN', p, this.properties.get(property.uuid));
+        this.updateFilter();
+        console.log(`${property.location.name} updated`, p.gamedata);
+      } else {
+        console.warn('updateProperty: property not found', property);
+      }
     },
     /**
      * Updates the property store elements for the gamedata (ownership, building enabled, ...)
@@ -105,9 +113,17 @@ export const usePropertyStore = defineStore('Property', {
               const p = this.properties.get(prop.uuid);
               if (p) {
                 assign(p.gamedata, prop.gamedata);
-                if (p.gamedata.owner && self.debugOutput) {
-                  console.log('owned', p);
+                if (p.gamedata.owner) {
+                  if (self.debugOutput) {
+                    console.log('owned', p);
+                  }
+                  p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
                 }
+                else {
+                  p.gamedata.ownerName = null;
+                }
+              } else {
+                console.warn('Property not found in store', prop);
               }
             }
           }

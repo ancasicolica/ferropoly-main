@@ -87,11 +87,13 @@ receptionStore.fetchStaticData(gameId)
       teamsStore.setTeams(staticData.teams);
       gameplayStore.init(staticData.gameplay);
       await propertyStore.init(gameId, staticData.pricelist);
+      await propertyStore.update();
       await teamAccountStore.loadTeamAccountEntries(gameId);
     })
     .catch(err => {
       console.error(err);
     });
+
 
 const dialogVisible = ref(false);
 

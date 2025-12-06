@@ -31,9 +31,9 @@
           <div> {{ slotProps.data.pricelist.propertyGroup }}</div>
         </template>
       </Column>
-      <Column field="gamedata.owner" sortable header="Besitzer">
+      <Column field="gamedata.ownerName" sortable header="Besitzer">
         <template #body="slotProps">
-          <div> {{ slotProps.data.gamedata.owner }}</div>
+          <div> {{ slotProps.data.gamedata.ownerName }}</div>
         </template>
       </Column>
       <Column field="gamedata.buildings" sortable header="Status">
@@ -49,13 +49,19 @@
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';
-import {onBeforeUnmount, onMounted, ref} from 'vue';                   // optional
+import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {useTeamsStore} from '../store/TeamsStore';
+
 const tableContainer = ref(null);
 const rowsPerPage = ref(10);
+const teamsStore = useTeamsStore();
 let resizeObserver = null;
 
+/**
+ * Represents a list of properties.
+ * The variable 'properties' is required and must be defined as an array.
+ * By default, if no value is provided, it initializes to an empty array.
+ */
 const props = defineProps({
   properties: {
     type:     Array,
@@ -64,6 +70,25 @@ const props = defineProps({
   }
 })
 
+const idToTeamName = function(id) {
+  if (!id) {
+    return '';
+  }
+  return teamsStore.idToTeamName(id);
+}
+
+/**
+ * A function to calculate the maximum number of rows that can fit within a given container,
+ * based on the height of the container and pre-defined constraints for header, paginator, padding, and row height.
+ *
+ * Preconditions:
+ * - Must be invoked only when `tableContainer.value` is defined.
+ * - The layout and sizing assumptions (e.g., space taken by headers, paddings, and row height) must remain consistent.
+ *
+ * Side-effects:
+ * - Modifies the value of `rowsPerPage`.
+ * - Outputs a log statement with calculation details.
+ */
 const calculateRows = () => {
   if (!tableContainer.value) return;
 
