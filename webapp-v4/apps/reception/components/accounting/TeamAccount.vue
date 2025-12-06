@@ -10,83 +10,89 @@
       class="flex flex-col"
       style="height: calc(100vh - 12rem)"
   >
-    <DataTable
-        v-model:expanded-rows="expandedRows"
-        data-key="_id"
-        size="small"
-        :value="teamAccountEntries"
-        striped-rows
-        paginator
-        paginator-position="top"
-        :rows="rowsPerPage"
-        class="flex-auto"
-     >
-      <Column
-          expander
-          style="width: 5rem"
+    <ScrollPanel style="height: 100%">
+      <DataTable
+          v-model:expanded-rows="expandedRows"
+          data-key="_id"
+          size="small"
+          :value="teamAccountEntries"
+          striped-rows
+          :paginator="props.paginatorEnabled"
+          paginator-position="top"
+          :rows="rowsPerPage"
+          class="flex-auto"
       >
-        <template #body="{data, rowTogglerCallback}">
+        <Column
+            expander
+            style="width: 5rem"
+        >
+          <template #body="{data, rowTogglerCallback}">
 
           <span
               v-if="data.transaction.parts.length > 0"
               class="pi pi-info-circle"
               @click="rowTogglerCallback"
           />
-        </template>
-      </Column>
+          </template>
+        </Column>
 
-      <Column
-          field="timestamp"
-          header="Zeit"
-      >
-        <template #body="slotProps">
-          {{ formatTime(slotProps.data.timestamp) }}
-        </template>
-      </Column>
-      <Column
-          field="transaction.info"
-          header="Beschreibung"
-      >
-        <template #body="slotProps">
-          {{ slotProps.data.transaction.info }}
-        </template>
-      </Column>
-      <Column
-          field="transaction.amount"
-          header="Betrag"
-      >
-        <template #body="slotProps">
-          {{ formatPrice(slotProps.data.transaction.amount) }}
-        </template>
-      </Column>
-      <Column
-          field="balance"
-          header="Saldo"
-      >
-        <template #body="slotProps">
-          {{ formatPrice(slotProps.data.balance) }}
-        </template>
-      </Column>
-      <template #expansion="slotProps">
-        <div class="flex flex-col items-center">
-          <div
-              v-for="t in slotProps.data.transaction.parts"
-              :key="t.uuid"
-              class="flex flex-row"
-          >
+        <Column
+            field="timestamp"
+            header="Zeit"
+            :sortable="true"
+        >
+          <template #body="slotProps">
+            {{ formatTime(slotProps.data.timestamp) }}
+          </template>
+        </Column>
+        <Column
+            field="transaction.info"
+            header="Beschreibung"
+            :sortable="true"
+        >
+          <template #body="slotProps">
+            {{ slotProps.data.transaction.info }}
+          </template>
+        </Column>
+        <Column
+            field="transaction.amount"
+            header="Betrag"
+            :sortable="true"
+        >
+          <template #body="slotProps">
+            {{ formatPrice(slotProps.data.transaction.amount) }}
+          </template>
+        </Column>
+        <Column
+            field="balance"
+            header="Saldo"
+            :sortable="true"
+        >
+          <template #body="slotProps">
+            {{ formatPrice(slotProps.data.balance) }}
+          </template>
+        </Column>
+        <template #expansion="slotProps">
+          <div class="flex flex-col items-center">
             <div
-                class="grid grid-cols-3 gap-4"
-                style="width: 600px"
+                v-for="t in slotProps.data.transaction.parts"
+                :key="t.uuid"
+                class="flex flex-row"
             >
-              <div> {{ t.propertyName }}</div>
-              <div v-if="t.buildingNb > 0 && t.buildingNb < 5"> {{ t.buildingNb }}. Haus</div>
-              <div v-if="t.buildingNb > 4"> Hotel</div>
-              <div> {{ formatPrice(t.amount) }}</div>
+              <div
+                  class="grid grid-cols-3 gap-4"
+                  style="width: 600px"
+              >
+                <div> {{ t.propertyName }}</div>
+                <div v-if="t.buildingNb > 0 && t.buildingNb < 5"> {{ t.buildingNb }}. Haus</div>
+                <div v-if="t.buildingNb > 4"> Hotel</div>
+                <div> {{ formatPrice(t.amount) }}</div>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
+        </template>
+      </DataTable>
+    </ScrollPanel>
   </div>
 </template>
 
@@ -94,16 +100,17 @@
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import ScrollPanel from 'primevue/scrollpanel';
 
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import {formatPrice, formatTime} from '../../../../common/lib/formatters';
 
-const expandedRows = ref({});
+const expandedRows   = ref({});
 const tableContainer = ref(null);
-const rowsPerPage = ref(10);
-let resizeObserver = null;
+const rowsPerPage    = ref(10);
+let resizeObserver   = null;
 
-const props              = defineProps({
+const props = defineProps({
   teamId:  {
     type:     String,
     required: true,
@@ -113,19 +120,26 @@ const props              = defineProps({
     type:     Array,
     required: true,
     default:  () => []
+  },
+  paginatorEnabled: {
+    type:     Boolean,
+    required: false,
+    default:  false
   }
 })
 
 const teamAccountEntries = computed(() => props.entries.filter(entry => entry.teamId === props.teamId));
 
 const calculateRows = () => {
-  if (!tableContainer.value) return;
+  if (!tableContainer.value) {
+    return;
+  }
   const containerHeight = tableContainer.value.clientHeight;
   // Estimate: Header (~50px) + Paginator (~60px) + Padding (~20px) = 130px non-row space
   const availableHeight = containerHeight - 130;
   // Estimate: Row height ~40px for small size
-  const calculatedRows = Math.floor(availableHeight / 40);
-  rowsPerPage.value = Math.max(1, calculatedRows);
+  const calculatedRows  = Math.floor(availableHeight / 40);
+  rowsPerPage.value     = Math.max(1, calculatedRows);
 };
 
 onMounted(() => {

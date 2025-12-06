@@ -13,8 +13,8 @@ import {formatPrice} from '../../../common/lib/formatters';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
-    gameId:          '',
-    menuBarElements: [
+    gameId:            '',
+    menuBarElements:   [
       {label: 'Übersicht', route: 'dashboard'},
       {label: 'Anruf behandeln', route: 'call'},
       {label: 'Karte', route: 'map'},
@@ -30,12 +30,13 @@ export const useReceptionStore = defineStore('Reception', {
         ]
       },
     ],
-    socketConnected: false,
-    activeCall:      {
+    socketConnected:   false,
+    activeCall:        {
       team:               null,
       chancelleryEnabled: true,
       messageLog:         [],
-    }
+    },
+    paginationEnabled: false
   }),
   getters: {
     callActive(state) {
@@ -135,7 +136,7 @@ export const useReceptionStore = defineStore('Reception', {
         const resp      = await axios.post(`/marketplace/buyProperty/${self.gameId}/${teamId}/${propertyId}`,
           {authToken});
         console.log(resp.data);
-        const res   = resp.data.result;
+        const res = resp.data.result;
         if (res.owner) {
           // belongs to another team
           self.addCallLog({
@@ -176,7 +177,7 @@ export const useReceptionStore = defineStore('Reception', {
         const authToken = await getAuthToken();
         const resp      = await axios.post(`/marketplace/buildHouses/${self.gameId}/${teamId}`,
           {authToken});
-        const res      = resp.data.result;
+        const res       = resp.data.result;
         if (res.amount === 0) {
           self.addCallLog({
             title:   'Häuserbau',

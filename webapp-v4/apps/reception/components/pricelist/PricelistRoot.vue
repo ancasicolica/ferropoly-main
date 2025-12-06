@@ -6,19 +6,24 @@
 
 <template>
   <div>
-    <call-active-warning-banner />
+    <call-active-warning-banner/>
 
     <div
         ref="tableContainer"
-          style=" background-color: red"
+        style=" background-color: red"
         class="flex flex-row w-full h-full"
     >
       <div class="flex-6 min-w-0">
-        <game-pricelist :properties="properties" />
+        <ScrollPanel style="height: 100%">
+          <game-pricelist
+              :properties="properties"
+              :paginator-enabled="receptionStore.paginationEnabled"
+          />
+        </ScrollPanel>
       </div>
       <div class="flex-4">
-      xxx
-    </div>
+        xxx
+      </div>
 
 
     </div>
@@ -31,21 +36,25 @@
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import GamePricelist from '../../../../lib/components/GamePricelist.vue';
 
+import ScrollPanel from 'primevue/scrollpanel';
+
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
 
 const propertyStore = usePropertyStore();
+const receptionStore = useReceptionStore();
 
-const properties = computed(() => propertyStore.pricelist);
-let resizeObserver = null;
+const properties     = computed(() => propertyStore.pricelist);
+let resizeObserver   = null;
 const tableContainer = ref(null);
 
 // Funktion zur Berechnung der verbleibenden Höhe
 const adjustHeight = () => {
   if (tableContainer.value) {
-    const rect = tableContainer.value.getBoundingClientRect();
+    const rect                        = tableContainer.value.getBoundingClientRect();
     // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
-    const remainingHeight = window.innerHeight - rect.top;
+    const remainingHeight             = window.innerHeight - rect.top;
     // Setzt die Höhe (verhindert negative Werte)
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
@@ -61,9 +70,9 @@ onMounted(() => {
   // ResizeObserver überwacht nun den Body, um Layout-Verschiebungen
   // (z.B. Banner wird größer/kleiner) zu erkennen.
   resizeObserver = new ResizeObserver(() => {
-   adjustHeight();
+    adjustHeight();
   });
-  
+
   resizeObserver.observe(document.body);
 });
 

@@ -34,6 +34,7 @@
           <team-account
               :entries="entries"
               :team-id="team.uuid"
+              :paginator-enabled="receptionStore.paginationEnabled"
           />
         </TabPanel>
       </TabPanels>
@@ -53,10 +54,11 @@ import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import TeamAccount from './TeamAccount.vue';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import {computed} from 'vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
 
 const teamsStore = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
-
+const receptionStore = useReceptionStore();
 const entries = computed(()=>[...teamAccountStore.records.values()]);
 
 const cssVars = function (color) {

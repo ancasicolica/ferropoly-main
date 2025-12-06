@@ -14,7 +14,7 @@
         :value="properties"
         class="p-datatable-striped"
         size="small"
-        paginator
+        :paginator="props.paginatorEnabled"
         :rows="rowsPerPage"
     >
       <Column
@@ -98,13 +98,11 @@
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
-import {useTeamsStore} from '../store/TeamsStore';
 import {faHouse, faHotel} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const tableContainer = ref(null);
 const rowsPerPage    = ref(10);
-const teamsStore     = useTeamsStore();
 let resizeObserver   = null;
 
 /**
@@ -113,10 +111,15 @@ let resizeObserver   = null;
  * By default, if no value is provided, it initializes to an empty array.
  */
 const props = defineProps({
-  properties: {
+  properties:       {
     type:     Array,
     required: true,
     default:  () => []
+  },
+  paginatorEnabled: {
+    type:     Boolean,
+    required: false,
+    default:  false
   }
 })
 
@@ -132,7 +135,7 @@ const showThirdHouse      = function (buildings) {
 const showFourthHouse     = function (buildings) {
   return (buildings < 5) && (buildings > 3);
 }
-const showHotel     = function (buildings) {
+const showHotel           = function (buildings) {
   return (buildings === 5);
 }
 const showBuildingEnabled = function (gamedata) {
