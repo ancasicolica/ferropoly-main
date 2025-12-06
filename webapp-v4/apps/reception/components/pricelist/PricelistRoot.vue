@@ -14,7 +14,7 @@
         class="flex flex-row w-full h-full"
     >
       <div class="flex-6 min-w-0">
-        <game-pricelist :properties="properties"/>
+        <game-pricelist :properties="properties" />
       </div>
       <div class="flex-4">
       xxx

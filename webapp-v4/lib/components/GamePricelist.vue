@@ -13,32 +13,80 @@
     <DataTable
         :value="properties"
         class="p-datatable-striped"
-        size="small" paginator
+        size="small"
+        paginator
         :rows="rowsPerPage"
     >
-      <Column field="pricelist.position" sortable header="Pos.">
+      <Column
+          field="pricelist.position"
+          :sortable="true"
+          header="Pos."
+      >
         <template #body="slotProps">
           <div> {{ slotProps.data.pricelist.position + 1 }}</div>
         </template>
       </Column>
-      <Column field="location.name" sortable header="Ort">
+      <Column
+          field="location.name"
+          :sortable="true"
+          header="Ort"
+      >
         <template #body="slotProps">
           <div> {{ slotProps.data.location.name }}</div>
         </template>
       </Column>
-      <Column field="pricelist.propertyGroup" sortable header="Gruppe">
+      <Column
+          field="pricelist.propertyGroup"
+          :sortable="true"
+          header="Gruppe"
+      >
         <template #body="slotProps">
           <div> {{ slotProps.data.pricelist.propertyGroup }}</div>
         </template>
       </Column>
-      <Column field="gamedata.ownerName" sortable header="Besitzer">
+      <Column
+          field="gamedata.ownerName"
+          :sortable="true"
+          header="Besitzer"
+      >
         <template #body="slotProps">
           <div> {{ slotProps.data.gamedata.ownerName }}</div>
         </template>
       </Column>
-      <Column field="gamedata.buildings" sortable header="Status">
+      <Column
+          field="gamedata.buildings"
+          :sortable="true"
+          header="Status"
+      >
         <template #body="slotProps">
-          <div> {{ slotProps.data.gamedata.buildings }}</div>
+          <div>
+            <FontAwesomeIcon
+                v-if="showHotel(slotProps.data.gamedata.buildings)"
+                :icon="faHotel"
+            />
+            <FontAwesomeIcon
+                v-if="showFirstHouse(slotProps.data.gamedata.buildings)"
+                :icon="faHouse"
+            />
+            <FontAwesomeIcon
+                v-if="showSecondHouse(slotProps.data.gamedata.buildings)"
+                :icon="faHouse"
+            />
+            <FontAwesomeIcon
+                v-if="showThirdHouse(slotProps.data.gamedata.buildings)"
+                :icon="faHouse"
+            />
+            <FontAwesomeIcon
+                v-if="showFourthHouse(slotProps.data.gamedata.buildings)"
+                :icon="faHouse"
+            />
+            <FontAwesomeIcon
+                v-if="showBuildingEnabled(slotProps.data.gamedata)"
+                class="building-enabled"
+                :icon="faHouse"
+            />
+
+          </div>
         </template>
       </Column>
     </DataTable>
@@ -49,13 +97,15 @@
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {useTeamsStore} from '../store/TeamsStore';
+import {faHouse, faHotel} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const tableContainer = ref(null);
-const rowsPerPage = ref(10);
-const teamsStore = useTeamsStore();
-let resizeObserver = null;
+const rowsPerPage    = ref(10);
+const teamsStore     = useTeamsStore();
+let resizeObserver   = null;
 
 /**
  * Represents a list of properties.
@@ -70,11 +120,23 @@ const props = defineProps({
   }
 })
 
-const idToTeamName = function(id) {
-  if (!id) {
-    return '';
-  }
-  return teamsStore.idToTeamName(id);
+const showFirstHouse      = function (buildings) {
+  return (buildings < 5) && (buildings > 0);
+}
+const showSecondHouse     = function (buildings) {
+  return (buildings < 5) && (buildings > 1);
+}
+const showThirdHouse      = function (buildings) {
+  return (buildings < 5) && (buildings > 2);
+}
+const showFourthHouse     = function (buildings) {
+  return (buildings < 5) && (buildings > 3);
+}
+const showHotel     = function (buildings) {
+  return (buildings === 5);
+}
+const showBuildingEnabled = function (gamedata) {
+  return (gamedata.buildingEnabled && (gamedata.buildings < 5) && (gamedata.buildings > -1));
 }
 
 /**
@@ -90,16 +152,17 @@ const idToTeamName = function(id) {
  * - Outputs a log statement with calculation details.
  */
 const calculateRows = () => {
-  if (!tableContainer.value) return;
+  if (!tableContainer.value) {
+    return;
+  }
 
-  const rect = tableContainer.value.getBoundingClientRect();
   const containerHeight = tableContainer.value.clientHeight;
 
   // Estimate: Header (~50px) + Paginator (~64px) + Padding (~20px) = 130px non-row space
-  const availableHeight = containerHeight -37-56;
+  const availableHeight = containerHeight - 37 - 56;
   // Estimate: Row height ~24px for small size
-  const calculatedRows = Math.floor(availableHeight / 37);
-  rowsPerPage.value = Math.max(1, calculatedRows);
+  const calculatedRows  = Math.floor(availableHeight / 37);
+  rowsPerPage.value     = Math.max(1, calculatedRows);
 
   console.log(`Calculated ${rowsPerPage.value} rows for ${availableHeight}px height, containerHeight:${containerHeight}`);
 };
@@ -124,5 +187,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
+.building-enabled {
+  color: lightgrey;
+}
 
 </style>
