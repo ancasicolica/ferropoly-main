@@ -6,8 +6,7 @@
 
 <template>
   <div>
-    <call-active-warning-banner/>
-
+    <call-active-warning-banner />
     <div
         ref="tableContainer"
         class="flex flex-row w-full h-full"
@@ -16,6 +15,7 @@
         <ScrollPanel style="height: 100%">
           <game-pricelist
               :properties="properties"
+              :pictures="pictures"
               :paginator-enabled="receptionStore.paginationEnabled"
               @property-selected="onPropertySelected"
           />
@@ -24,13 +24,10 @@
       <div class="flex-4">
         <property-info-card
             :property="currentProperty"
+            :pictures="propertyPictures"
         />
-
       </div>
-
-
     </div>
-
   </div>
 </template>
 
@@ -38,16 +35,17 @@
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import GamePricelist from '../../../../lib/components/GamePricelist.vue';
-
 import ScrollPanel from 'primevue/scrollpanel';
 
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
 import PropertyInfoCard from '../../../../lib/components/PropertyInfoCard.vue';
+import {usePicBucketStore} from '../../../../lib/store/PicBucketStore';
 
 const propertyStore  = usePropertyStore();
 const receptionStore = useReceptionStore();
+const picBucketStore = usePicBucketStore();
 
 const properties      = computed(() => propertyStore.pricelist);
 let resizeObserver    = null;
@@ -66,9 +64,19 @@ const adjustHeight = () => {
 };
 
 const onPropertySelected = function (property) {
-  console.log(property);
   currentProperty.value = property;
 }
+
+const pictures = computed(() => {
+  return picBucketStore.pictures;
+})
+
+const propertyPictures = computed(()=> {
+  if (!currentProperty.value) {
+    return [];
+  }
+  return picBucketStore.getPicturesForProperty(currentProperty.value.uuid);
+})
 
 onMounted(() => {
   // Initiale Berechnung

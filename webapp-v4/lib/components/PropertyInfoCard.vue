@@ -59,9 +59,18 @@
           </div>
           <div class="grid grid-cols-10 gap-2">
             <div class="col-span-2 title">Kaufdatum</div>
-            <div class="col-span-3"> {{ formatTime(property.gamedata.boughtTs) }} </div>
+            <div class="col-span-3"> {{ formatTime(property.gamedata.boughtTs) }}</div>
             <div class="col-span-2 title">Bebaubar?</div>
-            <div class="col-span-3"> {{ booleanYesNo(property.gamedata.buildingEnabled) }} </div>
+            <div class="col-span-3"> {{ booleanYesNo(property.gamedata.buildingEnabled) }}</div>
+          </div>
+        </div>
+        <div v-if="pictures.length > 0" class="mt-2">
+          <h2>Bilder</h2>
+          <div class="flex flex-wrap">
+            <div v-for="p in pictures" :key="p.url" class="w-1/2">
+              <Image :src="p.url" width="100%" preview/>
+              <div>{{ p.filename }}</div>
+            </div>
           </div>
         </div>
       </template>
@@ -71,17 +80,35 @@
 
 <script setup>
 
+import Galleria from 'primevue/galleria';
+import Image from 'primevue/image';
 import PrimeCard from 'primevue/card';
 import {booleanYesNo, buildingStatus, formatAccessibility, formatPrice, formatTime} from '../../common/lib/formatters';
+import {computed} from 'vue';
 
 const props = defineProps({
   property: {
     type:     Object,
     required: true,
     default:  () => null
+  },
+  pictures: {
+    type:     Array,
+    required: true,
+    default:  () => []
   }
 })
 
+const images = computed(() => {
+  const retVal = [];
+  for (const p in props.pictures) {
+    retVal.push({
+      itemImageSrc:      p.url,
+      thumbnailImageSrc: p.thumbnail
+    })
+  }
+  return retVal;
+})
 </script>
 
 <style scoped lang="scss">

@@ -8,6 +8,7 @@ import {io} from 'socket.io-client';
 import EventEmitter from '../common/lib/eventEmitter'
 import {useTeamAccountStore} from './store/TeamAccountStore';
 import {usePropertyStore} from './store/PropertyStore';
+import {usePicBucketStore} from './store/PicBucketStore';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -132,7 +133,7 @@ class FerropolySocket extends EventEmitter {
       },
       'pic':                      (msg) => {
         console.log('new pic', msg);
-        //  self.store.dispatch({type: 'updatePictureList', info: msg});
+        usePicBucketStore().addPicture(msg);
       },
       'general': (msg) => {
         if (msg.cmd === 'rentsPaid') {

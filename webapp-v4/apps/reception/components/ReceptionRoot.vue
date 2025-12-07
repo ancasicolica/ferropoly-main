@@ -64,6 +64,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Button from 'primevue/button';
 import {useGameplayStore} from '../../../lib/store/GameplayStore';
 import {useTeamAccountStore} from '../../../lib/store/TeamAccountStore';
+import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
 
 const receptionStore  = useReceptionStore();
 const receptionSocket = getReceptionSocket();
@@ -71,6 +72,7 @@ const teamsStore      = useTeamsStore();
 const propertyStore   = usePropertyStore();
 const gameplayStore   = useGameplayStore();
 const teamAccountStore = useTeamAccountStore();
+const picBucketStore  = usePicBucketStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -89,6 +91,7 @@ receptionStore.fetchStaticData(gameId)
       await propertyStore.init(gameId, staticData.pricelist);
       await propertyStore.update();
       await teamAccountStore.loadTeamAccountEntries(gameId);
+      await picBucketStore.fetchPictures({gameId});
     })
     .catch(err => {
       console.error(err);

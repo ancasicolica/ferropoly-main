@@ -36,8 +36,12 @@
               class="property-group-link"
               @click="onPropertySelected(data)"
           >
-            {{ data.location.name }}
+            {{ data.location.name }} &nbsp;
           </span>
+          <FontAwesomeIcon
+              v-if="picturesAvailable(data.uuid)"
+              :icon="faCamera"
+          />
         </template>
       </Column>
       <Column
@@ -103,7 +107,7 @@
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
-import {faHouse, faHotel} from '@fortawesome/free-solid-svg-icons';
+import {faHouse, faHotel, faCamera} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const tableContainer = ref(null);
@@ -127,6 +131,11 @@ const props = defineProps({
     type:     Boolean,
     required: false,
     default:  false
+  },
+  pictures: {
+    type:     Array,
+    required: true,
+    default:  () => []
   }
 })
 
@@ -147,6 +156,10 @@ const showHotel           = function (buildings) {
 }
 const showBuildingEnabled = function (gamedata) {
   return (gamedata.buildingEnabled && (gamedata.buildings < 5) && (gamedata.buildings > -1));
+}
+
+const picturesAvailable = function (propertyId) {
+  return props.pictures.some(picture => picture.propertyId === propertyId);
 }
 
 /**
