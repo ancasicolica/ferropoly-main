@@ -31,8 +31,13 @@
           :sortable="true"
           header="Ort"
       >
-        <template #body="slotProps">
-          <div> {{ slotProps.data.location.name }}</div>
+        <template #body="{data}">
+          <span
+              class="property-group-link"
+              @click="onPropertySelected(data)"
+          >
+            {{ data.location.name }}
+          </span>
         </template>
       </Column>
       <Column
@@ -105,6 +110,8 @@ const tableContainer = ref(null);
 const rowsPerPage    = ref(10);
 let resizeObserver   = null;
 
+const emit = defineEmits(['property-selected']);
+
 /**
  * Represents a list of properties.
  * The variable 'properties' is required and must be defined as an array.
@@ -170,6 +177,10 @@ const calculateRows = () => {
   console.log(`Calculated ${rowsPerPage.value} rows for ${availableHeight}px height, containerHeight:${containerHeight}`);
 };
 
+const onPropertySelected = function (data) {
+  emit('property-selected', data);
+}
+
 onMounted(() => {
   calculateRows();
   resizeObserver = new ResizeObserver(() => {
@@ -194,4 +205,14 @@ onBeforeUnmount(() => {
   color: lightgrey;
 }
 
+.property-group-link {
+  color: #3b82f6; // blue color
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    color: #2563eb; // darker blue on hover
+  }
+}
 </style>

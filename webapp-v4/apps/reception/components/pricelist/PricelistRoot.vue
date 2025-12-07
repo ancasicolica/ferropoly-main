@@ -6,11 +6,10 @@
 
 <template>
   <div>
-    <call-active-warning-banner />
+    <call-active-warning-banner/>
 
     <div
         ref="tableContainer"
-        style=" background-color: red"
         class="flex flex-row w-full h-full"
     >
       <div class="flex-6 min-w-0">
@@ -18,11 +17,15 @@
           <game-pricelist
               :properties="properties"
               :paginator-enabled="receptionStore.paginationEnabled"
+              @property-selected="onPropertySelected"
           />
         </ScrollPanel>
       </div>
       <div class="flex-4">
-        xxx
+        <property-info-card
+            :property="currentProperty"
+        />
+
       </div>
 
 
@@ -41,13 +44,15 @@ import ScrollPanel from 'primevue/scrollpanel';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
+import PropertyInfoCard from '../../../../lib/components/PropertyInfoCard.vue';
 
-const propertyStore = usePropertyStore();
+const propertyStore  = usePropertyStore();
 const receptionStore = useReceptionStore();
 
-const properties     = computed(() => propertyStore.pricelist);
-let resizeObserver   = null;
-const tableContainer = ref(null);
+const properties      = computed(() => propertyStore.pricelist);
+let resizeObserver    = null;
+const tableContainer  = ref(null);
+const currentProperty = ref(null);
 
 // Funktion zur Berechnung der verbleibenden Höhe
 const adjustHeight = () => {
@@ -59,6 +64,11 @@ const adjustHeight = () => {
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
 };
+
+const onPropertySelected = function (property) {
+  console.log(property);
+  currentProperty.value = property;
+}
 
 onMounted(() => {
   // Initiale Berechnung
