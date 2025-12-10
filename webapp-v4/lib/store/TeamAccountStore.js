@@ -37,10 +37,22 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
         this.lastValidTimestamp = accountData[accountData.length - 1].timestamp;
 
         // Update balances for all teams
-        const entries = [...this.records.values()].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+        // Optimization: Find the latest entry per team in one pass O(N) 
+        // instead of sorting the whole array O(N log N).
+        const latestEntriesByTeam = new Map();
+
+        for (const record of this.records.values()) {
+          const currentBest = latestEntriesByTeam.get(record.teamId);
+          // ISO timestamps can be compared directly as strings, which is much faster than localeCompare
+          if (!currentBest || record.timestamp > currentBest.timestamp) {
+            latestEntriesByTeam.set(record.teamId, record);
+          }
+        }
+
         const teamsStore = useTeamsStore();
         for (const team of teamsStore.teams) {
-          const lastTeamEntry = entries.findLast(e => e.teamId === team.uuid);
+          const lastTeamEntry = latestEntriesByTeam.get(team.uuid);
+          
           if (lastTeamEntry) {
             self.balances.set(team.uuid, {teamId: team.uuid, balance: lastTeamEntry.balance, teamName: team.name});
           }
