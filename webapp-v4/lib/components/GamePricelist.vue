@@ -16,6 +16,8 @@
         size="small"
         :paginator="props.paginatorEnabled"
         :rows="rowsPerPage"
+        scrollable
+        scroll-height="flex"
     >
       <Column
           field="pricelist.position"

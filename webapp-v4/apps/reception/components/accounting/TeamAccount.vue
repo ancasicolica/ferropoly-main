@@ -23,6 +23,8 @@
           class="flex-auto"
           sort-field="timestamp"
           :sort-order="sortOrder"
+          scrollable
+          scroll-height="flex"
           @update:sort-order="onSortOrder"
       >
         <Column
