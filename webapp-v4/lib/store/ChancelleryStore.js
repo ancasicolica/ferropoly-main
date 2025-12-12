@@ -12,26 +12,28 @@ import {useTeamsStore} from './TeamsStore';
 
 export const useChancelleryStore = defineStore('Chancellery', {
   state:   () => ({
-    records:            new Map(),
+    records: new Map(),
+    balance: 0 // aka Parkplatz
   }),
   getters: {},
   actions: {
     async loadChancelleryEntries(gameId) {
       const teamsStore = useTeamsStore();
-      const self = this;
+      const self       = this;
       try {
-        const resp        = await axios.get(`/chancellery/account/statement/${gameId}`);
+        const resp    = await axios.get(`/chancellery/account/statement/${gameId}`);
         const entries = resp.data.entries;
         console.log('chancellery', entries);
 
         let balance = 0;
         for (const entry of entries) {
-          entry.timestamp = DateTime.fromISO(entry.timestamp).toJSDate();
+          entry.timestamp        = DateTime.fromISO(entry.timestamp).toJSDate();
           balance += entry.transaction.amount;
-          entry.balance = balance;
+          entry.balance          = balance;
           entry.transaction.team = teamsStore.idToTeamName(entry.transaction.origin.uuid);
           self.records.set(entry._id, entry);
         }
+        self.balance = balance;
         console.log('done')
       }
       catch (err) {
