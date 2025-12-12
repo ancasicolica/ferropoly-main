@@ -5,11 +5,7 @@
 -->
 <template>
   <div :class="cardClass">
-    <Panel
-        :header="title"
-        :toggleable="toggleable"
-        :class="cardClass"
-    >
+    <Panel :header="title" :toggleable="toggleable" :class="cardClass">
       <slot></slot>
       <template #icons>
         <slot name="controls"></slot>

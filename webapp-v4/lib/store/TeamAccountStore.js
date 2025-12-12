@@ -7,11 +7,12 @@
 import {defineStore} from 'pinia'
 import axios from 'axios';
 import {useTeamsStore} from './TeamsStore';
+import {DateTime} from 'luxon';
 
 export const useTeamAccountStore = defineStore('TeamAccount', {
   state:   () => ({
     records:            new Map(),
-    lastValidTimestamp: '2022-07-06T12:00',
+    lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00').toJSDate(),
     balances:           new Map() // Balances of the teams, teams.uuid is the key
   }),
   getters: {
@@ -23,7 +24,7 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
     async loadTeamAccountEntries(gameId, teamId = 'all') {
       const self = this;
       try {
-        let start         = this.lastValidTimestamp;
+        let start         = this.lastValidTimestamp.toISOString();
         const resp        = await axios.get(`/teamAccount/get/${gameId}/${teamId}/${start}`);
         const accountData = resp.data.accountData;
         console.log('accountData', accountData);
@@ -32,6 +33,7 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
           return;
         }
         for (const entry of accountData) {
+          entry.timestamp = DateTime.fromISO(entry.timestamp).toJSDate();
           self.records.set(entry._id, entry);
         }
         this.lastValidTimestamp = accountData[accountData.length - 1].timestamp;

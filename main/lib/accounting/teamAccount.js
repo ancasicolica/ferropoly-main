@@ -263,7 +263,7 @@ async function chargeToAnotherTeam(options, callback) {
  * @param teamId
  * @param atTime
  */
-async function getBalance(gameId, teamId, atTime='2525-01-01T00:00:00Z') {
+async function getBalance(gameId, teamId, atTime=DateTime.fromISO('2525-01-01T00:00:00Z').toJSDate()) {
 
   if (typeof (gameId) !== 'string') {
     throw new Error('gameId must be a string');
