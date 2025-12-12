@@ -27,11 +27,13 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
         let start         = this.lastValidTimestamp.toISOString();
         const resp        = await axios.get(`/teamAccount/get/${gameId}/${teamId}/${start}`);
         const accountData = resp.data.accountData;
-        console.log('accountData', accountData);
+
         if (!accountData || accountData.length === 0) {
-          console.warn('No account data (which is strange');
+          console.warn(`No account data (which is strange). Start was ${start}`, resp.data);
           return;
         }
+        console.log('accountData', accountData);
+
         for (const entry of accountData) {
           entry.timestamp = DateTime.fromISO(entry.timestamp).toJSDate();
           self.records.set(entry._id, entry);
@@ -54,11 +56,10 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
         const teamsStore = useTeamsStore();
         for (const team of teamsStore.teams) {
           const lastTeamEntry = latestEntriesByTeam.get(team.uuid);
-          
+
           if (lastTeamEntry) {
             self.balances.set(team.uuid, {teamId: team.uuid, balance: lastTeamEntry.balance, teamName: team.name});
-          }
-          else {
+          } else {
             self.balances.set(team.uuid, {teamId: team.uuid, balance: 0, teamName: team.name});
           }
         }

@@ -65,9 +65,12 @@ import Button from 'primevue/button';
 import {useGameplayStore} from '../../../lib/store/GameplayStore';
 import {useTeamAccountStore} from '../../../lib/store/TeamAccountStore';
 import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
+import {useChancelleryStore} from '../../../lib/store/ChancelleryStore';
+import {DateTime} from 'luxon';
 
 const receptionStore  = useReceptionStore();
 const receptionSocket = getReceptionSocket();
+const chancelleryStore = useChancelleryStore();
 const teamsStore      = useTeamsStore();
 const propertyStore   = usePropertyStore();
 const gameplayStore   = useGameplayStore();
@@ -79,7 +82,8 @@ let gameId     = last(elements);
 
 receptionStore.fetchStaticData(gameId)
     .then(async staticData => {
-      console.log('data loaded');
+      const start = DateTime.now();
+      console.log('Start loading data and socket connection');
       receptionSocket.initSocket({
         url:       staticData.socketUrl,
         authToken: staticData.authToken,
@@ -92,6 +96,9 @@ receptionStore.fetchStaticData(gameId)
       await propertyStore.update();
       await teamAccountStore.loadTeamAccountEntries(gameId);
       await picBucketStore.fetchPictures({gameId});
+      await chancelleryStore.loadChancelleryEntries(gameId);
+      const end = DateTime.now();
+      console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`);
     })
     .catch(err => {
       console.error(err);
