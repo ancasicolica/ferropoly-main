@@ -12,19 +12,22 @@ import {DateTime} from 'luxon';
 export const useTeamAccountStore = defineStore('TeamAccount', {
   state:   () => ({
     records:            new Map(),
-    lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00').toJSDate(),
+    lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00'),
     balances:           new Map() // Balances of the teams, teams.uuid is the key
   }),
   getters: {
     rankingList: (state) => {
       return [...state.balances.values()].sort((a, b) => b.balance - a.balance);
+    },
+    accountForTeam: (state) => (teamId) => {
+      return state.records.get(teamId);
     }
   },
   actions: {
     async loadTeamAccountEntries(gameId, teamId = 'all') {
       const self = this;
       try {
-        let start         = this.lastValidTimestamp.toISOString();
+        let start         = this.lastValidTimestamp.toISO();
         const resp        = await axios.get(`/teamAccount/get/${gameId}/${teamId}/${start}`);
         const accountData = resp.data.accountData;
 
@@ -35,36 +38,40 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
         console.log('accountData', accountData);
 
         for (const entry of accountData) {
-          entry.timestamp = DateTime.fromISO(entry.timestamp).toJSDate();
-          self.records.set(entry._id, entry);
+          entry.timestamp = DateTime.fromISO(entry.timestamp);
+
+          let account = self.records.get(entry.teamId);
+          if (!account) {
+            account = []
+            self.records.set(entry.teamId, account);
+          }
+          if (!account.findLast(e => e._id === entry._id)) {
+            account.push(entry);
+          }
+
+          if (this.lastValidTimestamp < entry.timestamp) {
+            this.lastValidTimestamp = entry.timestamp;
+          }
         }
-        this.lastValidTimestamp = accountData[accountData.length - 1].timestamp;
 
         // Update balances for all teams
-        // Optimization: Find the latest entry per team in one pass O(N) 
-        // instead of sorting the whole array O(N log N).
-        const latestEntriesByTeam = new Map();
+        const teamIds = self.records.keys();
 
-        for (const record of this.records.values()) {
-          const currentBest = latestEntriesByTeam.get(record.teamId);
-          // ISO timestamps can be compared directly as strings, which is much faster than localeCompare
-          if (!currentBest || record.timestamp > currentBest.timestamp) {
-            latestEntriesByTeam.set(record.teamId, record);
+        for (const teamId of teamIds) {
+          const teamAccount = self.records.get(teamId);
+          console.log('teamAccount BEFORE sorting', teamAccount)
+          teamAccount.sort((a, b) => a.timestamp - b.timestamp);
+          console.log('teamAccount AFTER sorting', teamAccount)
+          let balance = 0;
+          for (const entry of teamAccount) {
+            balance += entry.transaction.amount;
           }
+          self.balances.set(teamId, {teamId: teamId, balance: balance, teamName: useTeamsStore().idToTeamName(teamId)});
         }
 
-        const teamsStore = useTeamsStore();
-        for (const team of teamsStore.teams) {
-          const lastTeamEntry = latestEntriesByTeam.get(team.uuid);
-
-          if (lastTeamEntry) {
-            self.balances.set(team.uuid, {teamId: team.uuid, balance: lastTeamEntry.balance, teamName: team.name});
-          } else {
-            self.balances.set(team.uuid, {teamId: team.uuid, balance: 0, teamName: team.name});
-          }
-        }
       }
       catch (err) {
+        console.log(self, self.lastValidTimestamp);
         console.error(err);
       }
     }

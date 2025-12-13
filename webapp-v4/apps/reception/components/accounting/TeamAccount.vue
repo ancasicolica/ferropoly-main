@@ -106,6 +106,7 @@ import ScrollPanel from 'primevue/scrollpanel';
 
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import {formatPrice, formatTime} from '../../../../common/lib/formatters';
+import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 
 const expandedRows   = ref({});
 const tableContainer = ref(null);
@@ -126,11 +127,6 @@ const props = defineProps({
     required: true,
     default:  ''
   },
-  entries:          {
-    type:     Array,
-    required: true,
-    default:  () => []
-  },
   paginatorEnabled: {
     type:     Boolean,
     required: false,
@@ -143,7 +139,8 @@ const props = defineProps({
   }
 })
 
-const teamAccountEntries = computed(() => props.entries.filter(entry => entry.teamId === props.teamId));
+const teamAccountStore = useTeamAccountStore();
+const teamAccountEntries = computed(() => teamAccountStore.records.get(props.teamId));
 
 const calculateRows = () => {
   if (!tableContainer.value) {

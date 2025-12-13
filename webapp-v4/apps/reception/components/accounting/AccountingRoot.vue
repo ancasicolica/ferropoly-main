@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <call-active-warning-banner/>
+    <call-active-warning-banner />
     <Tabs
         v-model:value="accountingTeamId"
         :value="teamsStore.teams[0]?.uuid"
@@ -33,7 +33,6 @@
             :value="team.uuid"
         >
           <team-account
-              :entries="entries"
               :team-id="team.uuid"
               :paginator-enabled="receptionStore.paginationEnabled"
               :sort-order="sortOrder"
@@ -55,15 +54,12 @@ import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import TeamAccount from './TeamAccount.vue';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import {computed, ref} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
 import {getItem, setInt} from '../../../../common/lib/localStorage';
 
 const teamsStore       = useTeamsStore();
-const teamAccountStore = useTeamAccountStore();
 const receptionStore   = useReceptionStore();
-const entries          = computed(() => [...teamAccountStore.records.values()]);
 const sortOrder        = ref(getItem('accountingSortOrder', 1))
 
 const cssVars = function (color) {

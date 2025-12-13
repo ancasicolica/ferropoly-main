@@ -17,13 +17,9 @@ let ferroSocket;
  * @param teamId
  * @param gameId
  * @param amount
- * @param callback
+ * @param message
  */
-async function payInterest(teamId, gameId, amount, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in payInterest');
-    return callback(new Error('no callback'));
-  }
+async function payInterest(teamId, gameId, amount, message=null) {
   if (!_.isString(teamId) || !_.isString(gameId) || !_.isNumber(amount)) {
     logger.info('Bullshit params in payInterest', {teamId, gameId, amount});
     throw new Error('Parameter error in payInterest');
@@ -34,7 +30,7 @@ async function payInterest(teamId, gameId, amount, callback) {
   entry.teamId             = teamId;
   entry.transaction.amount = amount;
   entry.transaction.origin = {category: 'bank'};
-  entry.transaction.info   = 'Startgeld';
+  entry.transaction.info   = message || 'Startgeld';
   await teamAccountTransaction.book(entry);
   if (ferroSocket) {
     ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});

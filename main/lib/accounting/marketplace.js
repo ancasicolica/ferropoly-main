@@ -50,8 +50,8 @@ class Marketplace extends EventEmitter {
       this.scheduler.on('interest', async function (event) {
         try {
           marketLog(event.gameId, 'Marketplace: onInterest');
-          await self.payRents({gameId: event.gameId});
-          marketLog(event.gameId, 'Timed interests paid');
+          await self.payRents({gameId: event.gameId, message: event.message});
+          marketLog(event.gameId, `Timed interests paid: ${event.message}`);
           event.callback(null, event);
         }
         catch (err) {
@@ -249,8 +249,8 @@ class Marketplace extends EventEmitter {
     }
 
     const res = await gameCache.getGameData(gameId);
-    let gp   = res.gameplay;
-    let team = res.teams.get(teamId);
+    let gp    = res.gameplay;
+    let team  = res.teams.get(teamId);
 
     if (!gp || !team) {
       throw new Error('Gameplay error or team invalid');
@@ -410,19 +410,10 @@ class Marketplace extends EventEmitter {
    *
    * @param gameId
    * @param tolerance
-   * @param callback
+   * @param message
    */
-  async payInterests(gameId, tolerance, callback) {
+  async payInterests(gameId, tolerance = 0, message = null) {
     let self = this;
-    if (_.isFunction(tolerance)) {
-      callback  = tolerance;
-      tolerance = 0;
-    }
-
-    if (callback) {
-      logger.info('>>>>>>>>>> callback ist not supported in payInterests')
-      callback(new Error('no callback'));
-    }
 
     const res = await gameCache.getGameData(gameId)
 
@@ -434,7 +425,7 @@ class Marketplace extends EventEmitter {
     }
 
     for (const team of teams) {
-      await teamAccount.payInterest(team.uuid, gameId, gp.gameParams.interest);
+      await teamAccount.payInterest(team.uuid, gameId, gp.gameParams.interest, message);
     }
   }
 
@@ -525,6 +516,7 @@ class Marketplace extends EventEmitter {
     }
     let gameId    = options.gameId;
     let tolerance = options.tolerance || 0;
+    let message = options.message;
 
     if (!gameId) {
       throw new Error('no gameId supplied in payRents');
@@ -548,7 +540,7 @@ class Marketplace extends EventEmitter {
     // check negative asset and pay rent
     await self.checkNegativeAsset(gameId, tolerance);
 
-    await self.payInterests(gameId, tolerance);
+    await self.payInterests(gameId, tolerance, message);
 
     const nbAffected = await propWrap.allowBuilding(gameId)
     if (ferroSocket) {
@@ -563,10 +555,9 @@ class Marketplace extends EventEmitter {
 
     if (ferroSocket) {
       // Inform clients that the can build again
-      ferroSocket.emitToGame(gameId, 'general', {cmd:'rentsPaid', message: 'Die Mieten wurden ausbezahlt'});
+      ferroSocket.emitToGame(gameId, 'general', {cmd: 'rentsPaid', message: 'Die Mieten wurden ausbezahlt'});
     }
-  }
-  ;
+  };
 
   /**
    * Chancellery, every time a team calls (be sure that they are on the line,
