@@ -22,10 +22,10 @@ const teamColorsOriginal = [
  * @type {string[]}
  */
 const teamColors = [
-  '#0000FF', '#A52A2A', '#006400', '#FFD700',
-  '#FF0000', '#808000', '#CD853F', '#00FFFF',
-  '#CD5C5C', '#F0E68C', '#ADFF2F', '#DDA0DD',
-  '#87CEEB', '#000080', '#8B0000', '#FFA07A',
+  '#0000FF', '#FF0000', '#00FF00', '#FFFF00',
+  '#FF00FF', '#00FFFF', '#9999ff', '#ff9999',
+  '#99ff99', '#e8e845', '#777777', '#DDA0DD',
+  '#87CEEB', '#0dd7b7', '#8B0000', '#FFA07A',
   '#00FF00', '#FF00FF', '#4B0082', '#D2691E'
 ];
 
