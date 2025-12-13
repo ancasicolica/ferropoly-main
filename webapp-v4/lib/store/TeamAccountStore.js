@@ -59,9 +59,7 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
 
         for (const teamId of teamIds) {
           const teamAccount = self.records.get(teamId);
-          console.log('teamAccount BEFORE sorting', teamAccount)
           teamAccount.sort((a, b) => a.timestamp - b.timestamp);
-          console.log('teamAccount AFTER sorting', teamAccount)
           let balance = 0;
           for (const entry of teamAccount) {
             balance += entry.transaction.amount;
