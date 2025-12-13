@@ -1,24 +1,22 @@
 <!---
-  Chancellery view
+
   Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
-  Created: 08.11.2025
+  Created: 13.12.2025
 -->
 
 <template>
   <div>
-    <call-active-warning-banner />
-    <h1>Chance/Kanzlei</h1>
     <div
         ref="tableContainer"
         class="flex flex-row w-full h-full"
     >
-      <div class="flex flex-1 gap-4 min-h-0 overflow-hidden">
-        <div class="basis-128 shrink-0 min-h-0 overflow-hidden">
-          <chance-summary />
+      <div class="flex flex-1 gap-2 min-h-0">
+        <div class="basis-1/2 ">
+          <team-properties />
         </div>
 
-        <div class="flex-1 min-w-0 min-h-0">
-          <chance-account class="w-full h-full" />
+        <div class="basis-1/2 ">
+          <team-account class="w-full h-full" />
         </div>
       </div>
     </div>
@@ -26,10 +24,9 @@
 </template>
 
 <script setup>
+import TeamProperties from './TeamProperties.vue';
+import TeamAccount from './TeamAccount.vue';
 
-import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
-import ChanceSummary from './ChanceSummary.vue';
-import ChanceAccount from '../../../../lib/components/ChanceAccount.vue';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 
 let resizeObserver   = null;
@@ -40,7 +37,7 @@ const adjustHeight = () => {
   if (tableContainer.value) {
     const rect                        = tableContainer.value.getBoundingClientRect();
     // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
-    const remainingHeight             = window.innerHeight - rect.top;
+    const remainingHeight             = window.innerHeight - rect.top - 20;
     // Setzt die Höhe (verhindert negative Werte)
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }

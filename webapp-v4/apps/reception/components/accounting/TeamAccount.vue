@@ -34,7 +34,7 @@
           <template #body="{data, rowTogglerCallback}">
 
           <span
-              v-if="data.transaction.parts.length > 0"
+              v-if="data.transaction.parts && data.transaction.parts.length > 0"
               class="pi pi-info-circle"
               @click="rowTogglerCallback"
           />

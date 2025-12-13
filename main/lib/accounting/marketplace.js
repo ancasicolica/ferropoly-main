@@ -343,9 +343,8 @@ class Marketplace extends EventEmitter {
       amount: info.amount,
       info:   {info: 'Hausbau ' + property.location.name}
     })
-    return {amount: info.amount};
-  }
-  ;
+    return info;
+  };
 
   /**
    * Pays the initial assets of a game. This is usually done before the market opens

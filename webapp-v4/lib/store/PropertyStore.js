@@ -32,6 +32,7 @@ export const usePropertyStore = defineStore('Property', {
     markerGroupModus:      true,  // when true, property groups are displayed more special
     markerMode:            MARKER_MODE_INFO,
     gameId:                '',
+    propertiesVersion:     0, // increments whenever ownership-related data changes (used for memoized getters)
     filter:                {
       propertyStatus: PROPERTY_FILTER_STATUS_ALL,
       teams:          [],
@@ -43,6 +44,47 @@ export const usePropertyStore = defineStore('Property', {
   getters: {
     pricelist: (state) => {
       return [...state.properties.values()];
+    },
+
+    /**
+     * Returns all properties owned by the given teamId.
+     * Efficient for frequent calls: results are memoized per teamId and invalidated via propertiesVersion.
+     *
+     * Usage: store.propertiesByTeamId(teamId)
+     */
+    propertiesByTeamId: (state) => {
+      // Memoization cache lives in the getter closure
+      let lastVersion = -1;
+      const cacheByTeamId = new Map(); // teamId -> Array<property>
+
+      return (teamId) => {
+        if (!teamId) {
+          console.warn('No teamId supplied, no properties');
+          return [];
+        }
+
+        // Invalidate cache when underlying data changed
+        if (state.propertiesVersion !== lastVersion) {
+          cacheByTeamId.clear();
+          lastVersion = state.propertiesVersion;
+        }
+
+        const cached = cacheByTeamId.get(teamId);
+        if (cached) {
+          return cached;
+        }
+
+        // Build once per (version, teamId)
+        const result = [];
+        for (const prop of state.properties.values()) {
+          if (prop?.gamedata?.owner === teamId) {
+            result.push(prop);
+          }
+        }
+
+        cacheByTeamId.set(teamId, result);
+        return result;
+      };
     }
   },
   actions: {
@@ -68,11 +110,13 @@ export const usePropertyStore = defineStore('Property', {
         prop.searchText   = createNormalizedString(prop.location.name);
         this.properties.set(prop.uuid, prop);
       }
+      this.propertiesVersion++;
       await getMapMarkerInstance().init();
       this.gameId = gameId;
       this.ready  = true;
       console.log('init done', this.properties);
     },
+
     /**
      * Updates an existing property within the properties map based on the provided property object.
      *
@@ -82,16 +126,16 @@ export const usePropertyStore = defineStore('Property', {
     updateProperty(property) {
       const p = this.properties.get(property.uuid);
       if (p) {
-        console.log('ASSIGNING', p, p.gamedata, property.gamedata);
         p.gamedata = property.gamedata;
         p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
-        console.log('RESULTING IN', p, this.properties.get(property.uuid));
+        this.propertiesVersion++;
         this.updateFilter();
         console.log(`${property.location.name} updated`, p.gamedata);
       } else {
         console.warn('updateProperty: property not found', property);
       }
     },
+
     /**
      * Updates the property store elements for the gamedata (ownership, building enabled, ...)
      * @param options
@@ -127,6 +171,7 @@ export const usePropertyStore = defineStore('Property', {
               }
             }
           }
+          this.propertiesVersion++;
         })
         .catch(err => {
           console.warn('Most likely no access rights', err);

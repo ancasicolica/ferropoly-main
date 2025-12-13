@@ -9,7 +9,7 @@ import axios from 'axios';
 import {getAuthToken} from '../../../common/adapters/authToken';
 import {LOG_TYPE_FAIL, LOG_TYPE_INFO, LOG_TYPE_SUCCESS, ReceptionLogEntry} from '../lib/ReceptionLogEntry';
 import {get} from 'lodash';
-import {formatPrice} from '../../../common/lib/formatters';
+import {buildingStatus, formatPrice} from '../../../common/lib/formatters';
 
 export const useReceptionStore = defineStore('Reception', {
   state:   () => ({
@@ -190,6 +190,33 @@ export const useReceptionStore = defineStore('Reception', {
           res.log.forEach(e => {
             msg += `${e.propertyName} (${e.buildingNb} / ${formatPrice(e.amount)}) `;
           })
+          self.addCallLog({
+            title:   'Häuserbau',
+            message: msg,
+            type:    LOG_TYPE_SUCCESS
+          });
+        }
+      }
+      catch (err) {
+        console.error(err);
+        self.addCallLog({title: 'Fehler beim Häuserbau', message: err.message, type: LOG_TYPE_FAIL});
+      }
+    },
+    async buildHouse(teamId, propertyId) {
+      const self = this;
+      try {
+        const authToken = await getAuthToken();
+        const resp      = await axios.post(`/marketplace/buildHouse/${self.gameId}/${teamId}/${propertyId}`,
+          {authToken});
+        const res       = resp.data.result;
+        if (res.amount === 0) {
+          self.addCallLog({
+            title:   'Häuserbau',
+            message: `Das Haus in ${res.propertyName} konnte nicht gebaut werden.`,
+            type:    LOG_TYPE_INFO
+          });
+        } else {
+          let msg = `Hausbau in ${res.propertyName}, aktueller Zustand ${buildingStatus(res.buildingNb)}. Belastung: ${formatPrice(res.amount)}`;
           self.addCallLog({
             title:   'Häuserbau',
             message: msg,

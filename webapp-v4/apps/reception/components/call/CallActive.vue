@@ -33,7 +33,7 @@
           <buy-root />
         </TabPanel>
         <TabPanel value="1">
-          <p>Was hab i?</p>
+          <property-root></property-root>
         </TabPanel>
         <TabPanel value="2">
           <p>Pictures</p>
@@ -57,6 +57,7 @@ import TabPanel from 'primevue/tabpanel';
 import {useReceptionStore} from '../../store/ReceptionStore';
 import {computed} from 'vue';
 import BuyRoot from './buy-tab/BuyRoot.vue';
+import PropertyRoot from './property-tab/PropertyRoot.vue';
 
 const receptionStore = useReceptionStore();
 
