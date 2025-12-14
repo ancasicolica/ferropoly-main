@@ -6,7 +6,7 @@
 
 import {defineStore} from 'pinia'
 import {find, result, sortBy} from 'lodash';
-import {Team} from '../../../main/webapp/lib/team';
+import {Team} from '../Team.js';
 
 export const useTeamsStore = defineStore('Teams', {
   state:   () => ({

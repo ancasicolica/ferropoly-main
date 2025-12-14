@@ -6,28 +6,44 @@
 
 import {merge, get} from 'lodash';
 
-/*
-const teamColorsOriginal = [
-  'blue', 'brown', 'darkgreen', 'gold',
-  'red', 'olive', 'peru', 'cyan',
-  'indianred', 'khaki', 'greenyellow', 'plum',
-  'skyblue', 'navy', 'darkred', 'lightsalmon',
-  'lime', 'fuchsia', 'indigo', 'chocolate'
-];
-*/
-// We're using HEX Values as the apexcharts does not understand all HTML names :-(
+
 /**
  * Array of team colors.
  *
  * @type {string[]}
  */
-const teamColors = [
+const teamColorsORIGINAL = [
   '#0000FF', '#FF0000', '#00FF00', '#FFFF00',
   '#FF00FF', '#00FFFF', '#9999ff', '#ff9999',
   '#99ff99', '#e8e845', '#777777', '#DDA0DD',
   '#87CEEB', '#0dd7b7', '#8B0000', '#FFA07A',
   '#00FF00', '#FF00FF', '#4B0082', '#D2691E'
 ];
+
+const teamColors = [
+  '#1F77B4', // blue
+  '#FF7F0E', // orange
+  '#2CA02C', // green
+  '#D62728', // red
+  '#9467BD', // purple
+  '#8C564B', // brown
+  '#E377C2', // pink
+  '#7F7F7F', // gray
+  '#BCBD22', // olive
+  '#17BECF', // cyan
+  '#AEC7E8', // light blue
+  '#FFBB78', // light orange
+  '#98DF8A', // light green
+  '#FF9896', // light red
+  '#C5B0D5', // light purple
+  '#C49C94', // light brown
+  '#F7B6D2', // light pink
+  '#C7C7C7', // light gray
+  '#DBDB8D', // light olive
+  '#9EDAE5'  // light cyan
+];
+
+
 
 const MAX_TEAM_NB = 20;
 
