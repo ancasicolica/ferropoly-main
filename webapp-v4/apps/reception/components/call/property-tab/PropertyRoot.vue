@@ -15,7 +15,7 @@
           <team-properties />
         </div>
 
-        <div class="basis-1/2 ">
+        <div class="basis-1/2 min-w-0 min-h-0">
           <team-account class="w-full h-full" />
         </div>
       </div>
@@ -37,7 +37,7 @@ const adjustHeight = () => {
   if (tableContainer.value) {
     const rect                        = tableContainer.value.getBoundingClientRect();
     // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
-    const remainingHeight             = window.innerHeight - rect.top - 20;
+    const remainingHeight             = window.innerHeight - rect.top - 50;
     // Setzt die Höhe (verhindert negative Werte)
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }

@@ -12,6 +12,7 @@
     >
       <p class="mb-2">Anzahl Liegenschaften: {{ teamProperties.length }}</p>
       <DataTable
+          v-if="teamProperties.length > 0"
           :value="teamProperties"
           striped-rows
           size="small"

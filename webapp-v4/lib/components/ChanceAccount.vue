@@ -4,7 +4,7 @@
         title="Transaktionen"
         condensed
     >
-      <div ref="tableContainer" >
+      <div ref="tableContainer">
         <DataTable
             :value="records"
             striped-rows
@@ -79,7 +79,13 @@ const records = computed(() => {
 let resizeObserver   = null;
 const tableContainer = ref(null);
 
-// Funktion zur Berechnung der verbleibenden Höhe
+/**
+ * Adjusts the height of the referenced tableContainer element dynamically,
+ * ensuring it fits within the available vertical space in the viewport.
+ *
+ * Dependencies:
+ * - The function assumes `tableContainer` is a reactive reference to a DOM element (e.g., using Vue's ref or similar).
+ */
 const adjustHeight = () => {
   if (tableContainer.value) {
     const rect                        = tableContainer.value.getBoundingClientRect();
@@ -89,6 +95,8 @@ const adjustHeight = () => {
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
 };
+
+
 onMounted(() => {
   // Initiale Berechnung
   adjustHeight();

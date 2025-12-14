@@ -17,9 +17,6 @@
           size="small"
           :value="teamAccountEntries"
           striped-rows
-          :paginator="props.paginatorEnabled"
-          paginator-position="top"
-          :rows="rowsPerPage"
           class="flex-auto"
           sort-field="timestamp"
           :sort-order="sortOrder"
@@ -110,14 +107,12 @@ import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 
 const expandedRows   = ref({});
 const tableContainer = ref(null);
-const rowsPerPage    = ref(10);
 
 const emit = defineEmits(['update:sort-order']);
 
 const onSortOrder = function (value) {
   emit('update:sort-order', value);
 };
-
 
 let resizeObserver = null;
 
@@ -126,11 +121,6 @@ const props = defineProps({
     type:     String,
     required: true,
     default:  ''
-  },
-  paginatorEnabled: {
-    type:     Boolean,
-    required: false,
-    default:  false
   },
   sortOrder:        {
     type:     Number,
@@ -142,31 +132,44 @@ const props = defineProps({
 const teamAccountStore = useTeamAccountStore();
 const teamAccountEntries = computed(() => teamAccountStore.records.get(props.teamId));
 
-const calculateRows = () => {
-  if (!tableContainer.value) {
-    return;
+
+/**
+ * Adjusts the height of the referenced tableContainer element dynamically,
+ * ensuring it fits within the available vertical space in the viewport.
+ *
+ * Dependencies:
+ * - The function assumes `tableContainer` is a reactive reference to a DOM element (e.g., using Vue's ref or similar).
+ */
+const adjustHeight = () => {
+  if (tableContainer.value) {
+    const rect                        = tableContainer.value.getBoundingClientRect();
+    // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
+    const remainingHeight             = window.innerHeight - rect.top - 20;
+    // Setzt die Höhe (verhindert negative Werte)
+    tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
-  const containerHeight = tableContainer.value.clientHeight;
-  // Estimate: Header (~50px) + Paginator (~60px) + Padding (~20px) = 130px non-row space
-  const availableHeight = containerHeight - 130;
-  // Estimate: Row height ~40px for small size
-  const calculatedRows  = Math.floor(availableHeight / 40);
-  rowsPerPage.value     = Math.max(1, calculatedRows);
 };
 
 onMounted(() => {
-  calculateRows();
+  // Initiale Berechnung
+  adjustHeight();
+
+  // Bei Änderung der Fenstergröße neu berechnen
+  window.addEventListener('resize', adjustHeight);
+
+  // ResizeObserver überwacht nun den Body, um Layout-Verschiebungen
+  // (z.B. Banner wird größer/kleiner) zu erkennen.
   resizeObserver = new ResizeObserver(() => {
-    calculateRows();
+    adjustHeight();
   });
-  if (tableContainer.value) {
-    resizeObserver.observe(tableContainer.value);
-  }
+
+  resizeObserver.observe(document.body);
 });
 
 onBeforeUnmount(() => {
-  if (resizeObserver && tableContainer.value) {
-    resizeObserver.unobserve(tableContainer.value);
+  window.removeEventListener('resize', adjustHeight);
+  if (resizeObserver) {
+    resizeObserver.disconnect();
   }
 });
 

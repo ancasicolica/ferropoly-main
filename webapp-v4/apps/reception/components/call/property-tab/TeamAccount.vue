@@ -10,7 +10,10 @@
         title="Konto"
         condensed
     >
-
+      <team-account
+          :team-id="receptionStore.activeCall.team.uuid"
+          :sort-order="-1"
+      />
     </ferro-card>
 
   </div>
@@ -19,6 +22,10 @@
 <script setup>
 
 import FerroCard from '../../../../../common/components/FerroCard.vue';
+import TeamAccount from '../../accounting/TeamAccount.vue';
+import {useReceptionStore} from '../../../store/ReceptionStore';
+
+const receptionStore = useReceptionStore();
 
 </script>
 

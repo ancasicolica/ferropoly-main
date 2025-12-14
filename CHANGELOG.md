@@ -2,6 +2,10 @@
 
 * Grosser Umbau auf Vue 3, PrimeVue und Tailwind CSS.
 * Karten in Info: mehr Infos für Teams vor dem Spiel (Gruppen, Darstellung)
+* Reception
+  * nur noch wesentliche Funktionen zur Bearbeitung eines Anrufs in Reception, den Rest in die allgemeinen Views ausgelagert (Feedback Silvan)
+  * Neue Farben für Teams 
+  * Spielrunden werden nummeriert (kommt aus Editor, Wirkung in Spiel)
 * BREAKING: Team Members werden mit Name gespeichert -> Anpassung Teams Schema
 * Info in der Reception, wenn mit Bildschirmen < 1024 Pixel Auflösung gespielt werden will
 

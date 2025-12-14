@@ -25,8 +25,6 @@
       <TabList>
         <Tab value="0">Kaufen</Tab>
         <Tab value="1">Besitz</Tab>
-        <Tab value="2">Bilder</Tab>
-        <Tab value="3">Log</Tab>
       </TabList>
       <TabPanels>
         <TabPanel value="0">
@@ -34,12 +32,6 @@
         </TabPanel>
         <TabPanel value="1">
           <property-root></property-root>
-        </TabPanel>
-        <TabPanel value="2">
-          <p>Pictures</p>
-        </TabPanel>
-        <TabPanel value="3">
-          <p>Log</p>
         </TabPanel>
       </TabPanels>
     </Tabs>

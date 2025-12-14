@@ -34,7 +34,6 @@
         >
           <team-account
               :team-id="team.uuid"
-              :paginator-enabled="receptionStore.paginationEnabled"
               :sort-order="sortOrder"
               @update:sort-order="onSortOrderUpdated"
           />
