@@ -12,7 +12,7 @@
  */
 
 const propWrap            = require('../propertyWrapper');
-const propertyTransaction = require('./../../../common/models/accounting/propertyTransaction');
+const propertyTransaction = require('../../../common/models/accounting/propertyTransaction');
 const teamAccount         = require('./teamAccount');
 const logger              = require('../../../common/lib/logger').getLogger('propertyAccount');
 const _                   = require('lodash');
@@ -61,9 +61,13 @@ async function buyProperty(gameplay, property, team, callback) {
     amount: property.pricelist.price
   };
 
-  let pt         = new propertyTransaction.Model();
-  pt.gameId      = gameplay.internal.gameId;
-  pt.propertyId  = property.uuid;
+  let pt           = new propertyTransaction.Model();
+  pt.gameId        = gameplay.internal.gameId;
+  pt.propertyId    = property.uuid;
+  pt.sponsorTeamId = team.uuid;
+  pt.amount        = (-1) * retVal.amount;
+  pt.info          = 'Kauf';
+
   pt.transaction = {
     origin: {
       uuid:     team.uuid,
@@ -125,10 +129,14 @@ async function chargeRent(gp, property, teamId, callback) {
   const info = await teamAccount.chargeToAnotherTeam(options);
 
   // Add entry for property (income)
-  let pt         = new propertyTransaction.Model();
-  pt.gameId      = options.gameId;
-  pt.propertyId  = property.uuid;
-  pt.transaction = {
+  let pt             = new propertyTransaction.Model();
+  pt.gameId          = options.gameId;
+  pt.propertyId      = property.uuid;
+  pt.receivingTeamId = property.gamedata.owner;
+  pt.sponsorTeamId   = teamId;
+  pt.amount          = info.amount;
+  pt.info            = 'Miete';
+  pt.transaction     = {
     origin: {
       category: 'team'
     },
@@ -142,40 +150,59 @@ async function chargeRent(gp, property, teamId, callback) {
 }
 
 /**
- * Resets a property: deletes the owner and the saldo of the property, but does not manipulate
- * any user account
+ * Resets a property: deletes the owner and the saldo of the property and reverses all the bookings
  * @param gameId
  * @param property
  * @param reason
- * @param callback
  */
-async function resetProperty(gameId, property, reason, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in resetProperty');
-    return callback(new Error('no callback'));
-  }
-  const info = await getBalance(gameId, property.uuid);
+async function resetProperty(gameId, property, reason) {
 
   property.gamedata.buildingEnabled = false;
   property.gamedata.buildings       = 0;
   property.gamedata.owner           = undefined;
+  property.gamedata.boughtTs        = undefined;
 
   await propWrap.updateProperty(property);
-  let pt         = new propertyTransaction.Model();
-  pt.gameId      = gameId;
-  pt.propertyId  = property.uuid;
-  pt.transaction = {
-    origin: {
-      category: 'bank'
-    },
-    amount: (-1) * info.balance,
-    info:   'Manuell zurückgesetzt: ' + reason
-  };
 
-  await propertyTransaction.book(pt);
+  const transactions = await propertyTransaction.getEntries(gameId, property.uuid);
+
+  let count = 0;
+  for (const transaction of transactions) {
+    const ts = DateTime.fromJSDate(transaction.timestamp).toFormat('HH:mm:ss');
+    if (transaction.sponsorTeamId && transaction.stornoPossible) {
+      // A team spent money into the property - pay it back
+      await teamAccount.receiveFromBank(
+        transaction.sponsorTeamId,
+        gameId, Math.abs(transaction.amount),
+        `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`);
+      count++;
+    }
+    if (transaction.receivingTeamId && transaction.stornoPossible) {
+      // A team received money - get it back
+      await teamAccount.chargeToBank({
+        teamId: transaction.receivingTeamId,
+        gameId,
+        amount: Math.abs(transaction.amount),
+        info:   `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`
+      });
+      count++;
+    }
+
+    // Delete property transaction
+    await propertyTransaction.Model.deleteOne({_id: transaction._id});
+  }
 
   logger.info(`${gameId} : Property '${property.location.name}' reseted, reason: '${reason}'`);
 
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(gameId, 'admin-propertyAccount', {
+      cmd:      'propertyReset',
+      property: property
+    });
+
+  }
+
+  return {transactionNb: count};
 }
 
 
@@ -227,10 +254,13 @@ async function buyBuilding(gameplay, property, team, callback) {
   };
 
   // Save a property transaction
-  let pt         = new propertyTransaction.Model();
-  pt.gameId      = gameplay.internal.gameId;
-  pt.propertyId  = property.uuid;
-  pt.transaction = {
+  let pt           = new propertyTransaction.Model();
+  pt.gameId        = gameplay.internal.gameId;
+  pt.propertyId    = property.uuid;
+  pt.sponsorTeamId = team.uuid;
+  pt.amount        = retVal.amount;
+  pt.info          = 'Hausbau';
+  pt.transaction   = {
     origin: {
       uuid: team.uuid,
       type: 'team'
@@ -258,13 +288,10 @@ async function buyBuilding(gameplay, property, team, callback) {
  * getRentRegister
  * @param gameplay
  * @param registers
- * @param callback
+ * @param teamId
  */
-async function payInterest(gameplay, registers, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in payInterest');
-    return callback(new Error('no callback'));
-  }
+async function payInterest(gameplay, registers, teamId = null) {
+
   if (registers.length === 0) {
     // nothing to pay
     logger.debug(`${_.get(gameplay, 'internal.gameId')}: nothing to pay`, {gameId: _.get(gameplay, 'internal.gameId')});
@@ -275,10 +302,13 @@ async function payInterest(gameplay, registers, callback) {
 
   for (let entry of registers) {
     logger.debug(`${_.get(gameplay, 'internal.gameId')}: Book propertyAccount transaction for "${entry.propertyName}"`);
-    let pt         = new propertyTransaction.Model();
-    pt.gameId      = gameplay.internal.gameId;
-    pt.propertyId  = entry.uuid;
-    pt.transaction = {
+    let pt             = new propertyTransaction.Model();
+    pt.gameId          = gameplay.internal.gameId;
+    pt.propertyId      = entry.uuid;
+    pt.receivingTeamId = teamId;
+    pt.amount          = Math.abs(entry.amount); // interest is positive earning on the property
+    pt.info            = 'Zinsen ' + entry.propertyName;
+    pt.transaction     = {
       origin: {
         type: 'bank'
       },

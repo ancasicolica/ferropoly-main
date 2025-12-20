@@ -17,7 +17,7 @@ router.post('/buildHouses/:gameId/:teamId', function (req, res) {
   if (!req.body.authToken) {
     return res.status(403).send({message: 'No authtoken'});
   }
-  if (req.body.authToken !== req.session.authToken) {
+  if (req.body.authToken !== req.session?.authToken) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');
@@ -40,7 +40,7 @@ router.post('/buildHouse/:gameId/:teamId/:propertyId', function (req, res) {
   if (!req.body.authToken) {
     return res.status(403).send({message: 'No authtoken'});
   }
-  if (req.body.authToken !== req.session.authToken) {
+  if (req.body.authToken !== req.session?.authToken) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');
@@ -64,7 +64,7 @@ router.post('/buyProperty/:gameId/:teamId/:propertyId', function (req, res) {
   if (!req.body.authToken) {
     return res.status(403).send({message: 'No authtoken'});
   }
-  if (req.body.authToken !== req.session.authToken) {
+  if (req.body.authToken !== req.session?.authToken) {
     return res.status(403).send({message: 'No access granted'});
   }
   const user = _.get(req.session, 'passport.user', 'nobody');

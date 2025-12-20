@@ -490,7 +490,7 @@ class Marketplace extends EventEmitter {
     }
 
     const info = await propertyAccount.getRentRegister(gp, team)
-    await propertyAccount.payInterest(gp, info.register);
+    await propertyAccount.payInterest(gp, info.register, team.uuid);
     if (info.totalAmount > 0) {
       await teamAccount.receiveFromBank(info.teamId, gp.internal.gameId, info.totalAmount, {
         info:  'Grundstückzins',
@@ -515,7 +515,7 @@ class Marketplace extends EventEmitter {
     }
     let gameId    = options.gameId;
     let tolerance = options.tolerance || 0;
-    let message = options.message;
+    let message   = options.message;
 
     if (!gameId) {
       throw new Error('no gameId supplied in payRents');
@@ -655,26 +655,24 @@ class Marketplace extends EventEmitter {
 
   /**
    * Resets a property: removes the owner and buildings. Use only, if you have bought a property by mistake
-   * for a team. The affected teams account is not touched.
+   * for a team. New in 2025, the bookings for teams and property accounts are made
    *
    * @param gameId
    * @param propertyId
    * @param reason
-   * @param callback
    * @returns {*}
    */
-  async resetProperty(gameId, propertyId, reason, callback) {
-    if (callback) {
-      logger.info('>>>>>>>>>> callback ist not supported in resetProperty')
-      callback(new Error('no callback'));
-    }
-
+  async resetProperty(gameId, propertyId, reason) {
     if (!reason) {
       throw new Error('reason must be supplied');
     }
 
     const prop = await propWrap.getProperty(gameId, propertyId);
-    await propertyAccount.resetProperty(gameId, prop, reason);
+    if (!prop) {
+      logger.info(`${gameId} : Property ${propertyId} not found`);
+      return;
+    }
+    return await propertyAccount.resetProperty(gameId, prop, reason);
   }
 }
 

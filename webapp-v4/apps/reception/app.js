@@ -16,6 +16,7 @@ import PricelistRoot from './components/pricelist/PricelistRoot.vue';
 import RulesRoot from './components/rules/RulesRoot.vue';
 import StatisticsRoot from './components/statistics/StatisticsRoot.vue';
 import ServiceRoot from './components/service/ServiceRoot.vue';
+import StornoRoot from './components/storno/StornoRoot.vue';
 
 createWebApp( {
   routes: [
@@ -30,6 +31,7 @@ createWebApp( {
     {path: '/rules', name: 'rules', component: RulesRoot },
     {path: '/statistics', name: 'statistics', component: StatisticsRoot },
     {path: '/service', name: 'service', component: ServiceRoot },
+    {path: '/storno', name: 'storno', component: StornoRoot },
   ],
   components: [
     {name: 'reception-root', component: ReceptionRoot},

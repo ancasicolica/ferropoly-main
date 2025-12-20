@@ -22,6 +22,7 @@ import {
 } from '../constants/propertyStoreFilters';
 import {createNormalizedString} from '../searchString';
 import {useTeamsStore} from './TeamsStore';
+import {getAuthToken} from '../../common/adapters/authToken';
 
 export const usePropertyStore = defineStore('Property', {
   state:   () => ({
@@ -54,7 +55,7 @@ export const usePropertyStore = defineStore('Property', {
      */
     propertiesByTeamId: (state) => {
       // Memoization cache lives in the getter closure
-      let lastVersion = -1;
+      let lastVersion     = -1;
       const cacheByTeamId = new Map(); // teamId -> Array<property>
 
       return (teamId) => {
@@ -120,13 +121,14 @@ export const usePropertyStore = defineStore('Property', {
     /**
      * Updates an existing property within the properties map based on the provided property object.
      *
-     * @param {Object} property - The property object to be updated. Must include a `uuid` to locate the property in the map and a `gamedata` field for updating.
+     * @param {Object} property - The property object to be updated. Must include a `uuid` to locate the property in
+     *   the map and a `gamedata` field for updating.
      * @return {void} This method does not return a value.
      */
     updateProperty(property) {
       const p = this.properties.get(property.uuid);
       if (p) {
-        p.gamedata = property.gamedata;
+        p.gamedata           = property.gamedata;
         p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
         this.propertiesVersion++;
         this.updateFilter();
@@ -162,8 +164,7 @@ export const usePropertyStore = defineStore('Property', {
                     console.log('owned', p);
                   }
                   p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
-                }
-                else {
+                } else {
                   p.gamedata.ownerName = null;
                 }
               } else {
@@ -179,6 +180,27 @@ export const usePropertyStore = defineStore('Property', {
         .finally(() => {
           this.updateFilter();
         })
+    },
+    /**
+     * Resets a specific property for a given team (UNDO all bookings on it!)
+     *
+     * @param {string} teamId - The unique identifier of the team associated with the property to reset.
+     * @param {string} propertyId - The unique identifier of the property to be reset.
+     * @return {Promise<void>} A promise that resolves when the property reset process is complete.
+     */
+    async resetProperty(teamId, propertyId) {
+      console.log('Reset of a property requested', propertyId);
+      const self = this;
+      try {
+        const authToken = await getAuthToken();
+        const resp      = await axios.post(`/storno/${self.gameId}/${propertyId}`, {authToken, reason: 'Fehlbuchung'});
+        console.log(resp, resp.data);
+        return resp.data;
+      }
+      catch (err) {
+        console.error(err, err.response.data);
+        return null;
+      }
     },
     /**
      * Updates the visibility of properties on the map based on the current filter criteria.

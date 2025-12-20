@@ -106,7 +106,7 @@ class FerropolySocket extends EventEmitter {
         //  self.store.dispatch({type: 'updateTeamAccountEntries', teamId: msg.data.teamId});
       },
       'admin-propertyAccount':    msg => {
-        if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought') {
+        if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought' || msg.cmd === 'propertyReset') {
           usePropertyStore().updateProperty(msg.property)
         }
         //  self.store.dispatch({type: 'fetchRankingList'});
@@ -135,13 +135,12 @@ class FerropolySocket extends EventEmitter {
         console.log('new pic', msg);
         usePicBucketStore().addPicture(msg);
       },
-      'general': (msg) => {
+      'general':                  (msg) => {
         if (msg.cmd === 'rentsPaid') {
-          usePropertyStore().update().catch(err=> {
+          usePropertyStore().update().catch(err => {
             console.error(err);
           });
-        }
-        else {
+        } else {
           console.log('not handled in general socket', msg);
         }
       }

@@ -77,6 +77,7 @@ async function initMain() {
   app.use('/rules', require('./routes/rules'));
   app.use('/appinfo', infoRoute(settings));
   app.use('/gamecache/', require('./routes/gamecache'));
+
   // Define Strategy, login
   passport.use(authStrategy.googleStrategy);
   passport.use(authStrategy.localStrategy);
@@ -119,7 +120,7 @@ async function initMain() {
   app.use('/statistics', require('./routes/statistics'));
   app.use('/properties', require('./routes/properties'));
   app.use('/download', require('./routes/download'));
-
+  app.use('/storno', require('./routes/storno'));
   app.use('/teamAccount', require('./routes/teamAccount'));
   app.use('/propertyAccount', require('./routes/propertyAccount'));
   app.use('/chancellery', require('./routes/chancellery'));

@@ -26,7 +26,7 @@ export const useReceptionStore = defineStore('Reception', {
       {
         label: 'Diverses', eventParam: 'params',
         items: [{label: 'Spielregeln', route: 'rules'},
-                {label: 'Service', route: 'service'}
+                {label: 'Kauf Ort stornieren', route: 'storno'}
         ]
       },
     ],
@@ -77,7 +77,7 @@ export const useReceptionStore = defineStore('Reception', {
       self.addCallLog({message: 'Anruf gestartet'});
       if (chancelleryEnabled) {
         try {
-          const authToken = await getAuthToken()
+          const authToken = await getAuthToken();
           const resp      = await axios.post(`/chancellery/play/${self.gameId}/${team.uuid}`, {authToken});
           console.log('Chancellery', resp.data);
           self.addCallLog({
