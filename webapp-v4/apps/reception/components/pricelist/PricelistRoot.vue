@@ -71,7 +71,7 @@ const pictures = computed(() => {
   return picBucketStore.pictures;
 })
 
-const propertyPictures = computed(()=> {
+const propertyPictures = computed(() => {
   if (!currentProperty.value) {
     return [];
   }
