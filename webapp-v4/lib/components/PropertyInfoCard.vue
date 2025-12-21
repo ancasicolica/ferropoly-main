@@ -5,86 +5,57 @@
 -->
 
 <template>
-  <div>
-    <prime-card v-if="property">
-      <template #title>
-        <h1>{{ property.location.name }} </h1>
-      </template>
-      <template #content>
-        <div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title">Erreichbarkeit</div>
-            <div>{{ formatAccessibility(property.location.accessibility) }}</div>
-            <div class="col-span-2 title">Miete unbebaut</div>
-            <div>{{ formatPrice(property.pricelist.rents.noHouse) }}</div>
-          </div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title">Position in Preisliste</div>
-            <div>{{ property.pricelist.position + 1 }}</div>
-            <div class="col-span-2 title">Miete 1 Haus</div>
-            <div>{{ formatPrice(property.pricelist.rents.oneHouse) }}</div>
-          </div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title">Preisgruppe</div>
-            <div>{{ property.pricelist.propertyGroup }}</div>
-            <div class="col-span-2 title">Miete 2 Häuser</div>
-            <div>{{ formatPrice(property.pricelist.rents.twoHouses) }}</div>
-          </div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title">Kaufpreis</div>
-            <div>{{ formatPrice(property.pricelist.price) }}</div>
-            <div class="col-span-2 title">Miete 3 Häuser</div>
-            <div>{{ formatPrice(property.pricelist.rents.threeHouses) }}</div>
-          </div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title">Preis pro Haus</div>
-            <div>{{ formatPrice(property.pricelist.pricePerHouse) }}</div>
-            <div class="col-span-2 title">Miete 4 Häuser</div>
-            <div>{{ formatPrice(property.pricelist.rents.fourHouses) }}</div>
-          </div>
-          <div class="grid grid-cols-6 gap-2">
-            <div class="col-span-2 title"></div>
-            <div></div>
-            <div class="col-span-2 title">Miete Hotel</div>
-            <div>{{ formatPrice(property.pricelist.rents.hotel) }}</div>
-          </div>
-        </div>
-        <div v-if="property.gamedata.owner">
-          <h2>Besitz</h2>
-          <div class="grid grid-cols-10 gap-2">
-            <div class="col-span-2 title">Gehört Team</div>
-            <div class="col-span-3"> {{ property.gamedata.ownerName }}</div>
-            <div class="col-span-2 title">Baustatus</div>
-            <div class="col-span-3">{{ buildingStatus(property.gamedata.buildings) }}</div>
-          </div>
-          <div class="grid grid-cols-10 gap-2">
-            <div class="col-span-2 title">Kaufdatum</div>
-            <div class="col-span-3"> {{ formatTime(property.gamedata.boughtTs) }}</div>
-            <div class="col-span-2 title">Bebaubar?</div>
-            <div class="col-span-3"> {{ booleanYesNo(property.gamedata.buildingEnabled) }}</div>
-          </div>
-        </div>
-        <div v-if="pictures.length > 0" class="mt-2">
-          <h2>Bilder</h2>
-          <div class="flex flex-wrap">
-            <div v-for="p in pictures" :key="p.url" class="w-1/2">
-              <Image :src="p.url" width="100%" preview/>
-              <div>{{ p.filename }}</div>
-            </div>
-          </div>
-        </div>
-      </template>
-    </prime-card>
+  <div
+      ref="tableContainer"
+      class="flex flex-col ml-2 mr-2"
+      style="height: 80vh"
+  >
+    <h1>{{ property.location.name }} </h1>
+
+    <scroll-panel
+        v-if="property"
+        style="height: 100%"
+    >
+      <Tabs value="0">
+        <TabList>
+          <Tab value="0">Ortinfo</Tab>
+          <Tab value="1">Besitz</Tab>
+          <Tab value="2">Bilder</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel value="0">
+            <property-base-info :property="property" />
+          </TabPanel>
+          <TabPanel value="1">
+            <property-owner :property="property" />
+          </TabPanel>
+          <TabPanel value="2">
+            <property-pictures :pictures="pictures" />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+
+
+    </scroll-panel>
   </div>
 </template>
 
 <script setup>
+import ScrollPanel from 'primevue/scrollpanel';
 
-import Galleria from 'primevue/galleria';
-import Image from 'primevue/image';
-import PrimeCard from 'primevue/card';
-import {booleanYesNo, buildingStatus, formatAccessibility, formatPrice, formatTime} from '../../common/lib/formatters';
-import {computed} from 'vue';
+import PropertyBaseInfo from './PropertyBaseInfo.vue';
+import PropertyOwner from './PropertyOwner.vue';
+import PropertyPictures from './PropertyPictures.vue';
+
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+import {onBeforeUnmount, onMounted, ref} from 'vue';
+
+const tableContainer = ref(null);
+let resizeObserver   = null;
 
 const props = defineProps({
   property: {
@@ -99,16 +70,31 @@ const props = defineProps({
   }
 })
 
-const images = computed(() => {
-  const retVal = [];
-  for (const p in props.pictures) {
-    retVal.push({
-      itemImageSrc:      p.url,
-      thumbnailImageSrc: p.thumbnail
-    })
+const calculateSize = () => {
+  if (tableContainer.value) {
+    const rect                        = tableContainer.value.getBoundingClientRect();
+    // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
+    const remainingHeight             = window.innerHeight - rect.top;
+    // Setzt die Höhe (verhindert negative Werte)
+    tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
-  return retVal;
-})
+}
+onMounted(() => {
+  calculateSize();
+  resizeObserver = new ResizeObserver(() => {
+    calculateSize();
+  });
+  if (tableContainer.value) {
+    resizeObserver.observe(tableContainer.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver && tableContainer.value) {
+    resizeObserver.unobserve(tableContainer.value);
+  }
+});
+
 </script>
 
 <style scoped lang="scss">

@@ -23,6 +23,7 @@ import {
 import {createNormalizedString} from '../searchString';
 import {useTeamsStore} from './TeamsStore';
 import {getAuthToken} from '../../common/adapters/authToken';
+import {DateTime} from 'luxon';
 
 export const usePropertyStore = defineStore('Property', {
   state:   () => ({
@@ -108,6 +109,11 @@ export const usePropertyStore = defineStore('Property', {
           buildings:       0,
           buildingEnabled: false,
         };
+        prop.account      = {
+          transactions:       new Map(),  // all property account transactions
+          profit:             0,  // sum of all transactions
+          lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00') // last valid timestamp of the transactions
+        }
         prop.searchText   = createNormalizedString(prop.location.name);
         this.properties.set(prop.uuid, prop);
       }
@@ -133,6 +139,9 @@ export const usePropertyStore = defineStore('Property', {
         this.propertiesVersion++;
         this.updateFilter();
         console.log(`${property.location.name} updated`, p.gamedata);
+        this.updateTransactions(property.uuid).catch(err => {
+          console.error('Error while updating transactions', err);
+        })
       } else {
         console.warn('updateProperty: property not found', property);
       }
@@ -152,7 +161,7 @@ export const usePropertyStore = defineStore('Property', {
         url += `/${teamId}`;
       }
       axios.get(url)
-        .then(resp => {
+        .then(async resp => {
           console.log(resp.data);
           for (const prop of resp.data.properties) {
             if (prop.gamedata) {
@@ -172,6 +181,7 @@ export const usePropertyStore = defineStore('Property', {
               }
             }
           }
+          await self.updateTransactions();
           this.propertiesVersion++;
         })
         .catch(err => {
@@ -179,6 +189,48 @@ export const usePropertyStore = defineStore('Property', {
         })
         .finally(() => {
           this.updateFilter();
+        })
+    },
+    async updateTransactions(propertyId = 'all') {
+      const self  = this;
+      const entry = self.properties.get(propertyId);
+      let start   = '2022-07-06T12:00';
+      if (entry) {
+        start = entry.account.lastValidTimestamp.toISO();
+      }
+      const url = `/propertyAccount/getAccountStatement/${self.gameId}/${propertyId}/${start}`
+      axios.get(url).then(resp => {
+        console.log('Transactions', resp.data);
+        const updatedProperties = new Map();
+
+        for (const t of resp.data.register) {
+          const entry = self.properties.get(t.propertyId);
+          if (!entry) {
+            console.warn('Property for account entry not found', t);
+          } else {
+            entry.account.transactions.set(t._id, t);
+            entry.account.lastValidTimestamp = DateTime.fromISO(t.timestamp);
+            updatedProperties.set(t.propertyId, true);
+          }
+        }
+
+        updatedProperties.forEach((value, key) => {
+          console.log(`updating ${key}`);
+          const prop = self.properties.get(key);
+          if (!prop) {
+            return console.warn('property not found', key);
+          }
+          prop.account.profit = 0;
+          prop.account.transactions.forEach(transaction => {
+            prop.account.profit += transaction.amount;
+          })
+          console.log('profit', prop.account.profit);
+        })
+
+
+      })
+        .catch(err => {
+          console.error('updateTransactions failed', err);
         })
     },
     /**

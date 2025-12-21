@@ -13,7 +13,7 @@ const logger                  = require('../../common/lib/logger').getLogger('te
 function requestHandler(req, res) {
   try {
     if (!req.params.gameId) {
-      return res.send({status: 'error', message: 'No gameId supplied'});
+      return res.status(404).send({status: 'error', message: 'No gameId supplied'});
     }
     if (req.params.teamId === 'undefined' || req.params.teamId === 'all') {
       req.params.teamId = undefined;

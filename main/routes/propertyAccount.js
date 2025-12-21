@@ -12,7 +12,7 @@ const logger          = require('../../common/lib/logger').getLogger('routes:pro
 const accessor        = require('../lib/accessor');
 const propertyModel   = require('../../common/models/propertyModel');
 const _               = require('lodash');
-
+const {DateTime}      = require('luxon');
 /**
  * Get all account Info for a team
  */
@@ -33,8 +33,6 @@ router.get('/getRentRegister/:gameId/:teamId', function (req, res) {
           return res.status(400).send({status: 'error', message: 'Invalid params'});
         }
 
-        console.log('XXX', gp, team);
-
         const register = await propertyAccount.getRentRegister(gp, team);
         res.send(register);
       }
@@ -48,48 +46,49 @@ router.get('/getRentRegister/:gameId/:teamId', function (req, res) {
     })
 });
 
-/**
- * Retrieves the account statement for a specified game and optional property.
- *
- * @param {Object} req - The HTTP request object, containing session and user information.
- * @param {Object} res - The HTTP response object, used to send responses back to the client.
- * @param {string} gameId - The unique identifier for the game whose account statement is being requested.
- * @param {string} [propertyId] - The optional identifier for the property related to the account statement.
- * @return {void} Sends the account statement data or an error message in the HTTP response.
- */
-function getAccountStatement(req, res, gameId, propertyId = undefined) {
-  if (!gameId) {
-    return res.status(400).send({message: 'Missing parameters'});
+function accountStatementHandler(req, res) {
+  try {
+    if (!req.params.gameId) {
+      return res.status(404).send({status: 'error', message: 'No gameId supplied'});
+    }
+    if (req.params.propertyId === 'undefined' || req.params.propertyId === 'all') {
+      req.params.propertyId = undefined;
+    }
+    if (!req.params.start) {
+      req.params.start = undefined;
+    }
+    if (!req.params.end) {
+      req.params.end = undefined;
+    }
+
+    const gameId     = req.params.gameId;
+    const propertyId = req.params.propertyId;
+    const start      = req.params.start || '2020-01-01';
+    const end        = req.params.end || '2525-01-01';
+
+    const user = _.get(req.session, 'passport.user', 'nobody');
+    accessor.verify(user, gameId, accessor.admin)
+      .then(async () => {
+        const accountData = await propertyAccount.getAccountStatement(gameId, propertyId, DateTime.fromISO(start).toJSDate(), DateTime.fromISO(end).toJSDate());
+        res.send({register: accountData});
+      })
+      .catch(err => {
+        // This is not the admin. Refuse.
+        return res.status(403).send({message: err.message});
+      })
   }
-  const user = _.get(req.session, 'passport.user', 'nobody');
-  accessor.verify(user, gameId, accessor.admin)
-    .then(() => {
-      propertyAccount.getAccountStatement(gameId, propertyId)
-        .then(register => {
-          res.send({register: register});
-        })
-        .catch(err => {
-          return res.status(500).send({message: 'getAccountStatement error: ' + err.message});
-        });
-    })
-    .catch(err => {
-      return res.status(403).send({message: 'Access right error: ' + err.message});
-    })
+  catch (e) {
+    logger.error(e);
+    res.status(500).send({message: e.message});
+  }
 }
 
-/**
- * Get all account Info for a property
- */
-router.get('/getAccountStatement/:gameId/:propertyId', function (req, res) {
-  getAccountStatement(req, res, req.params.gameId, req.params.propertyId);
-});
+// New since 2025: these routes are only allowed for admins. Users will have their own route, preventing abuse.
+router.get('/getAccountStatement/:gameId/:propertyId/:start/:end', accountStatementHandler);
+router.get('/getAccountStatement/:gameId/:propertyId/:start', accountStatementHandler);
+router.get('/getAccountStatement/:gameId/:propertyId', accountStatementHandler);
+router.get('/getAccountStatement/:gameId', accountStatementHandler);
 
-/**
- * Get all account Info for a game
- */
-router.get('/getAccountStatement/:gameId', function (req, res) {
-  getAccountStatement(req, res, req.params.gameId);
-});
 
 /**
  * Get profitability of all properties
@@ -135,7 +134,7 @@ router.get('/propertyProfitability/:gameId/:teamId', function (req, res) {
         return res.status(500).send({message: 'propertyProfitability error: ' + err.message});
       }
     })
-    .catch(err=>{
+    .catch(err => {
       return res.status(403).send({message: 'Access right error: ' + err.message});
     });
 });

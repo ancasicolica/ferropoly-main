@@ -65,6 +65,22 @@
         </template>
       </Column>
       <Column
+          field="account.profit"
+          :sortable="true"
+          header="Profit"
+          header-class="text-right"
+      >
+        <template #body="{data}">
+          <div
+              v-if="data.gamedata.owner"
+              class="text-right"
+              :class="{ 'negative-amount': data.account.profit < 0 }"
+          >
+            {{ formatPrice(data.account.profit) }}
+          </div>
+        </template>
+      </Column>
+      <Column
           field="gamedata.buildings"
           :sortable="true"
           header="Status"
@@ -111,6 +127,7 @@ import Column from 'primevue/column';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {faHouse, faHotel, faCamera} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import {formatPrice} from '../../common/lib/formatters';
 
 const tableContainer = ref(null);
 const rowsPerPage    = ref(10);
@@ -189,7 +206,7 @@ const calculateRows = () => {
   const calculatedRows  = Math.floor(availableHeight / 37);
   rowsPerPage.value     = Math.max(1, calculatedRows);
 
-  console.log(`Calculated ${rowsPerPage.value} rows for ${availableHeight}px height, containerHeight:${containerHeight}`);
+  //console.log(`Calculated ${rowsPerPage.value} rows for ${availableHeight}px height, containerHeight:${containerHeight}`);
 };
 
 const onPropertySelected = function (data) {
@@ -229,5 +246,9 @@ onBeforeUnmount(() => {
     text-decoration: underline;
     color: #2563eb; // darker blue on hover
   }
+}
+
+.negative-amount {
+  color: red;
 }
 </style>

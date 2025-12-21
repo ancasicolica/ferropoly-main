@@ -360,36 +360,10 @@ async function getRentRegister(gameplay, team, callback) {
  *
  * @param gameId
  * @param propertyId , when undefined: all
- * @param p1
- * @param p2
- * @param p3
+ * @param tsStart
+ * @param tsEnd
  */
-async function getAccountStatement(gameId, propertyId, p1, p2, p3) {
-
-  let tsStart  = p1;
-  let tsEnd    = p2;
-  let callback = p3;
-
-  if (_.isFunction(p1)) {
-    callback = p1;
-    tsStart  = undefined;
-    tsEnd    = DateTime.now().toJSDate();
-
-  } else if (_.isFunction(p2)) {
-    callback = p2;
-    tsStart  = p2;
-    tsEnd    = DateTime.now().toJSDate();
-
-  }
-  if (!tsEnd) {
-    tsEnd = DateTime.now().toJSDate();
-  }
-
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in getAccountStatement');
-    return callback(new Error('no callback'));
-  }
-
+async function getAccountStatement(gameId, propertyId, tsStart = undefined, tsEnd = undefined) {
   return await propertyTransaction.getEntries(gameId, propertyId, tsStart, tsEnd);
 }
 
