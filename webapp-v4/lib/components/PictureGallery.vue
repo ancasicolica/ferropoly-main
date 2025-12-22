@@ -40,6 +40,7 @@
 
       </div>
       <div class="w-[400px] flex-none ml-4">
+        <picture-filter />
         <picture-info :picture="selectedPicture" />
       </div>
     </div>
@@ -55,18 +56,45 @@ import {usePicBucketStore} from '../store/PicBucketStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import GalleryPicture from './GalleryPicture.vue';
 import PictureInfo from './PictureInfo.vue';
+import PictureFilter from './PictureFilter.vue';
 
 const picBucketStore = usePicBucketStore();
 
+
 const pictures = computed(() => {
-  return picBucketStore.pictures;
+  let filtered = [...picBucketStore.pictures];
+
+  // 1. Filter by teamId
+  if (picBucketStore.filterTeamId) {
+    filtered = filtered.filter(p => p.teamId === picBucketStore.filterTeamId);
+  }
+
+  // 2. Filter by Search Query (teamName or locationName) - Case Insensitive
+  if (picBucketStore.searchQuery) {
+    const query = picBucketStore.searchQuery.toLowerCase();
+    filtered    = filtered.filter(p => {
+      const teamMatch     = p.teamName?.toLowerCase().includes(query);
+      const locationMatch = p.locationName?.toLowerCase().includes(query);
+      return teamMatch || locationMatch;
+    });
+  }
+
+  // 3. Sort by timestamp
+  filtered.sort((a, b) => {
+    const timeA = a.timestamp.toMillis();
+    const timeB = b.timestamp.toMillis();
+    return picBucketStore.sortAscending ? timeA - timeB : timeB - timeA;
+  });
+
+  return filtered;
 })
+
 
 const picturesAvailable = computed(() => {
   return picBucketStore.pictures && picBucketStore.pictures.length > 0;
 })
 
-const selectedPicture = ref(null);
+const selectedPicture   = ref(null);
 const onPictureSelected = (pic) => {
   console.log('pic selected', pic);
   selectedPicture.value = pic;

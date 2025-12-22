@@ -12,8 +12,11 @@ import {DateTime} from 'luxon';
 
 export const usePicBucketStore = defineStore('PicBucket', {
   state:   () => ({
-    pictures:        [],
-    gameId:          ''
+    pictures:     [],
+    gameId:       '',
+    filterTeamId: null,
+    searchQuery:  null,
+    sortAscending:    true
   }),
   getters: {
     getPicturesForProperty: (state) => (propertyId) => {
