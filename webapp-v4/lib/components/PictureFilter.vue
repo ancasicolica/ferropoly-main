@@ -51,7 +51,7 @@ import {computed} from 'vue';
 const picBucketStore = usePicBucketStore();
 const teamsStore     = useTeamsStore();
 const teams          = computed(() => {
-  const teams = teamsStore.teams;
+  const teams = [...teamsStore.teams];
   teams.unshift({uuid: null, name: 'Alle Teams'});
   return teams;
 })

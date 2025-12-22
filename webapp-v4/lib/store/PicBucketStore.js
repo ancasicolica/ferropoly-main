@@ -67,7 +67,7 @@ export const usePicBucketStore = defineStore('PicBucket', {
      * @return {void} This method does not return a value.
      */
     addPicture(pic) {
-      console.log('Adding picture into PicBucket Store', pic);
+      //console.log('Adding picture into PicBucket Store', pic);
       const teamsStore    = useTeamsStore();
       const propertyStore = usePropertyStore();
       pic.teamName        = teamsStore.idToTeamName(pic.teamId);

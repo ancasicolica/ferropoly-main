@@ -17,9 +17,9 @@
 <script setup>
 const props = defineProps({
   picture: {
-    type:     Object,
+    type:     [Object, null],
     required: true,
-    default:  () => {}
+    default:  null
   }
 })
 </script>

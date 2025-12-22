@@ -215,7 +215,7 @@ export const usePropertyStore = defineStore('Property', {
         }
 
         updatedProperties.forEach((value, key) => {
-          console.log(`updating ${key}`);
+          //console.log(`updating ${key}`);
           const prop = self.properties.get(key);
           if (!prop) {
             return console.warn('property not found', key);
@@ -224,7 +224,7 @@ export const usePropertyStore = defineStore('Property', {
           prop.account.transactions.forEach(transaction => {
             prop.account.profit += transaction.amount;
           })
-          console.log('profit', prop.account.profit);
+          //console.log('profit', prop.account.profit);
         })
 
 
