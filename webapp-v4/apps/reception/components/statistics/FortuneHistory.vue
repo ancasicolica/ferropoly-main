@@ -5,11 +5,14 @@
 -->
 
 <template>
-  <div>FortuneHistory.vue</div>
+  <div>
+    <HistoryGraph />
+  </div>
 </template>
 
 <script setup>
 
+import HistoryGraph from './HistoryGraph.vue';
 </script>
 
 <style scoped lang="scss">

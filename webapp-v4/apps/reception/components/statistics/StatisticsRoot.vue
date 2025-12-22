@@ -9,7 +9,7 @@
     <call-active-warning-banner />
 
 
-    <Tabs value="0">
+    <Tabs value="1">
       <TabList>
         <Tab value="0">Vermögen</Tab>
         <Tab value="1">Vermögensverlauf</Tab>

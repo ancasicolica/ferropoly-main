@@ -28,6 +28,8 @@ import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
+
+// SIZE HANDLING
 let resizeObserver     = null;
 const chartContainer   = ref(null);
 const chartHeight      = ref(200);
@@ -36,10 +38,9 @@ const chartWidth       = ref(400);
 const adjustSize = () => {
   if (chartContainer.value) {
     const rect                        = chartContainer.value.getBoundingClientRect();
-    const remainingHeight             = window.innerHeight - rect.top - 20;
+    const remainingHeight             = window.innerHeight - rect.top - 180;
     chartContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
     chartHeight.value                 = remainingHeight;
-
     const remainingWidth             = window.innerWidth - rect.left - 20;
     chartContainer.value.style.width = `${Math.max(0, remainingWidth)}px`;
     chartWidth.value                 = remainingWidth;
@@ -57,6 +58,8 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect();
   }
 })
+/// END SIZE HANDLING
+
 const chartData = computed(() => {
   const teams = teamsStore.teams;
 

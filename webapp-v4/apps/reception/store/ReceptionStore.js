@@ -38,6 +38,7 @@ export const useReceptionStore = defineStore('Reception', {
     },
     paginationEnabled: false,
     accountingTeamId:  null,
+    test: [12, 19, 3, 5, 2, 3]
   }),
   getters: {
     callActive(state) {

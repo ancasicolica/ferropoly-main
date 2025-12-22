@@ -5,11 +5,14 @@
 -->
 
 <template>
-  <div>IncomeStatistics.vue</div>
+  <div>
+    <income-graph />
+  </div>
 </template>
 
 <script setup>
 
+import IncomeGraph from './IncomeGraph.vue';
 </script>
 
 <style scoped lang="scss">
