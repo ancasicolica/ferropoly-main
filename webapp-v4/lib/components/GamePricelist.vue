@@ -8,7 +8,7 @@
   <div
       ref="tableContainer"
       class="flex flex-col"
-      style="height: 100%; background-color: #4d9be8;"
+      style="height: 100%;"
   >
     <DataTable
         :value="properties"

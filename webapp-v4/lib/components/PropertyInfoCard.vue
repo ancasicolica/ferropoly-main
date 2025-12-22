@@ -10,7 +10,7 @@
       class="flex flex-col ml-2 mr-2"
       style="height: 80vh"
   >
-    <h1>{{ property.location.name }} </h1>
+    <h1 v-if="property">{{ property.location.name }} </h1>
 
     <scroll-panel
         v-if="property"

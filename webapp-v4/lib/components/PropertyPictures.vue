@@ -7,7 +7,12 @@
 <template>
   <div>
     <div
-        v-if="pictures.length > 0"
+        v-if="!picturesAvailable"
+    >
+      Diesem Ort sind aktuell keine Bilder zugewiesen.
+    </div>
+    <div
+        v-if="picturesAvailable"
         class="mt-2"
     >
       <div class="flex flex-wrap">
@@ -41,16 +46,10 @@ const props = defineProps({
   }
 })
 
-const images = computed(() => {
-  const retVal = [];
-  for (const p in props.pictures) {
-    retVal.push({
-      itemImageSrc:      p.url,
-      thumbnailImageSrc: p.thumbnail
-    })
-  }
-  return retVal;
-})
+const picturesAvailable = computed(() => {
+  return (props.pictures && props.pictures.length > 0);
+});
+
 </script>
 
 <style scoped lang="scss">
