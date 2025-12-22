@@ -59,9 +59,9 @@ let resizeObserver   = null;
 
 const props = defineProps({
   property: {
-    type:     Object,
+    type:     [Object, null],
     required: true,
-    default:  () => null
+    default:  null
   },
   pictures: {
     type:     Array,

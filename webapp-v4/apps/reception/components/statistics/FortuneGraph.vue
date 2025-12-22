@@ -43,7 +43,7 @@ const adjustSize = () => {
     const remainingWidth             = window.innerWidth - rect.left - 20;
     chartContainer.value.style.width = `${Math.max(0, remainingWidth)}px`;
     chartWidth.value                 = remainingWidth;
-    console.log('resize', remainingHeight, chartHeight.value, chartWidth.value, chartContainer.value.style.width)
+    //console.log('resize', remainingHeight, chartHeight.value, chartWidth.value, chartContainer.value.style.width)
   }
 }
 
