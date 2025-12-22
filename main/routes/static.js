@@ -12,6 +12,7 @@ const gamecache        = require('../lib/gameCache');
 const _                = require('lodash');
 const pricelist        = require('../../common/lib/pricelist');
 const authTokenManager = require('../../common/lib/authTokenManager');
+const rulesModel       = require('../../common/models/rulesModel');
 const logger           = require('../../common/lib/logger').getLogger('static');
 const settings         = require('../settings');
 
@@ -48,6 +49,16 @@ router.get('/:gameId', async function (req, res) {
       pl = {};
     }
 
+    let rules = await rulesModel.getRules(gameId);
+    if (!rules) {
+      rules = {
+        changelog: [],
+        raw:       '',
+        released:  '<h1>Leider gab es einen Fehler beim Abholen der Spielregeln.</h1>',
+        version:   -1
+      };
+    }
+
     const token           = await authTokenManager.getNewTokenAsync({
       user:          user,
       proposedToken: req.session.authToken
@@ -63,11 +74,12 @@ router.get('/:gameId', async function (req, res) {
       teams:         _.values(teams),
       currentGameId: gameId,
       mapApiKey:     settings.maps.apiKey,
-      user:          user
+      user:          user,
+      rules:         rules
     });
   }
   catch (e) {
-    res.status(500).send({message:e.message});
+    res.status(500).send({message: e.message});
   }
 });
 

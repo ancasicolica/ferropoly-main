@@ -54,7 +54,7 @@ export const useReceptionStore = defineStore('Reception', {
     async fetchStaticData(gameId) {
       this.gameId = gameId;
       const resp  = await axios.get(`/static/${gameId}`);
-      console.log(resp.data);
+      console.log('Static data fetched', resp.data);
       return resp.data;
     },
     /**

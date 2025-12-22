@@ -7,6 +7,7 @@
 <template>
   <div>
     <!-- The dialog for warnings using a too low screen resolution -->
+    <!-- eslint-disable vue/no-v-model-argument -->
     <Dialog
         v-model:visible="dialogVisible"
         modal
@@ -67,15 +68,17 @@ import {useTeamAccountStore} from '../../../lib/store/TeamAccountStore';
 import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
 import {useChancelleryStore} from '../../../lib/store/ChancelleryStore';
 import {DateTime} from 'luxon';
+import {useRulesStore} from '../../../lib/store/RulesStore';
 
-const receptionStore  = useReceptionStore();
-const receptionSocket = getReceptionSocket();
+const receptionStore   = useReceptionStore();
+const receptionSocket  = getReceptionSocket();
 const chancelleryStore = useChancelleryStore();
-const teamsStore      = useTeamsStore();
-const propertyStore   = usePropertyStore();
-const gameplayStore   = useGameplayStore();
+const teamsStore       = useTeamsStore();
+const propertyStore    = usePropertyStore();
+const gameplayStore    = useGameplayStore();
 const teamAccountStore = useTeamAccountStore();
-const picBucketStore  = usePicBucketStore();
+const picBucketStore   = usePicBucketStore();
+const rulesStore       = useRulesStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -92,6 +95,7 @@ receptionStore.fetchStaticData(gameId)
       });
       teamsStore.setTeams(staticData.teams);
       gameplayStore.init(staticData.gameplay);
+      rulesStore.setRules(staticData.rules);
       await propertyStore.init(gameId, staticData.pricelist);
       await propertyStore.update();
       await teamAccountStore.loadTeamAccountEntries(gameId);
