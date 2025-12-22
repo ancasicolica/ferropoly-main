@@ -76,8 +76,6 @@ const callingTeam  = ref(null);
 const receptionStore = useReceptionStore();
 
 const onTeamCalling = (team) => {
-  receptionStore.startTeamCall(team, true);
-  return;
   console.log('team is calling', team.value);
   callingTeam.value = team;
 }

@@ -5,7 +5,7 @@
 -->
 
 <template>
-  <div class="flex flex-wrap items-stretch gap-2">
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] items-start gap-4">
 
     <team-card
         v-for="team in teams"

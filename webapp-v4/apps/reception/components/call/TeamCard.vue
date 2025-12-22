@@ -39,6 +39,7 @@
         </details>
         <Button
             label="Anruf bearbeiten"
+            size="small"
             @click="onClickCall"
         />
       </div>
