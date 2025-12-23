@@ -191,6 +191,13 @@ export const usePropertyStore = defineStore('Property', {
           this.updateFilter();
         })
     },
+    /**
+     * Updates transaction data for a specific property or all properties.
+     *
+     * @param {string} [propertyId='all'] - The ID of the property to update transactions for.
+     *                                      Use 'all' to update transactions for all properties.
+     * @return {Promise<void>} Resolves once the transaction data has been updated or completes with an error.
+     */
     async updateTransactions(propertyId = 'all') {
       const self  = this;
       const entry = self.properties.get(propertyId);

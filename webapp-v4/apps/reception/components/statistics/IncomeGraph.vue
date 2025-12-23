@@ -11,7 +11,7 @@
   >
     <Chart
         :key="containerKey"
-        type="line"
+        type="bar"
         :data="chartData"
         :options="chartOptions"
         :height="containerHeight"
@@ -23,12 +23,13 @@
 
 <script setup>
 import Chart from 'primevue/chart';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../../../lib/composables/useContainerResize';
+import {evaluatePropertyValueForTeam} from '../../../../lib/propertyLib';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
@@ -36,19 +37,19 @@ const teamAccountStore = useTeamAccountStore();
 const chartData = computed(() => {
   const teams = teamsStore.teams;
 
-  const datasets = [];
+  const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
+                    {label: 'Maximaler Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
+  const labels   = [];
   for (const team of teams) {
-    const records   = teamAccountStore.accountForTeam(team.uuid);
-    const teamEntry = [];
-    for (const record of records) {
-      teamEntry.push({x: record.timestamp.toISO(), y: record.balance});
-    }
-    datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
+    labels.push(team.name);
+    const info = evaluatePropertyValueForTeam(team.uuid);
+    datasets[0].data.push(info.sum);
+    datasets[1].data.push(info.max);
   }
 
-  console.log('dataset', datasets)
+  console.log('incoming dataset', datasets)
   return {
-    label:    'Einkommensverlauf',
+    labels:   labels,
     datasets: datasets
   };
 });
@@ -64,37 +65,21 @@ const chartOptions = computed(() => {
           color: 'black'
         }
       },
-      zoom:   {
-        zoom: {
-          wheel: {
-            enabled: true,
-          },
-          pinch: {
-            enabled: true
-          },
-          //mode: 'xy',
-          scaleMode: 'xy'
-        },
-        pan:  {
-          enabled: true,
-          mode:    'xy'
-        }
-      }
+
     },
     scales:              {
       x: {
-        type: 'time',
-        time: {
-          unit: 'minute'
-        }
+        stacked: true
       },
-      y: {}
+      y: {
+        stacked: true
+      }
     }
   };
 });
 
 // SIZE HANDLING
-const chartContainer = ref(null);
+const chartContainer                                  = ref(null);
 const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
 /// END SIZE HANDLING
 
