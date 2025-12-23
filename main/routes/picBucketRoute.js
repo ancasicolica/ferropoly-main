@@ -69,10 +69,6 @@ router.post('/confirm/:id', (req, res) => {
 router.post('/assign/:id', (req, res) => {
   const propertyId = req.body.propertyId;
 
-  if (!propertyId) {
-    return res.status(400).send({message: 'no property to assign'});
-  }
-
   picBucket.assignProperty(req.params.id, propertyId)
     .then(() => {
       res.send({});

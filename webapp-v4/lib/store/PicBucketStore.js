@@ -9,14 +9,16 @@ import axios from 'axios';
 import {useTeamsStore} from './TeamsStore';
 import {usePropertyStore} from './PropertyStore';
 import {DateTime} from 'luxon';
+import {assign, get} from 'lodash';
 
 export const usePicBucketStore = defineStore('PicBucket', {
   state:   () => ({
-    pictures:     [],
-    gameId:       '',
-    filterTeamId: null,
-    searchQuery:  null,
-    sortAscending:    true
+    pictures:                [],
+    gameId:                  '',
+    filterTeamId:            null,
+    searchQuery:             null,
+    sortAscending:           true,
+    activePicturePropertyId: null
   }),
   getters: {
     getPicturesForProperty: (state) => (propertyId) => {
@@ -61,6 +63,29 @@ export const usePicBucketStore = defineStore('PicBucket', {
       }
     },
     /**
+     * Assigns a property to a specified picture by updating its location data
+     * and making a request to the server.
+     *
+     * @param {Object} picture - The picture object to which the property will be assigned.
+     * @param {string} propertyId - The identifier of the property to be assigned.
+     * @return {Promise<void>} A promise that resolves once the property assignment process is complete.
+     */
+    async assignProperty(picture, propertyId) {
+      const picId         = get(picture, '_id', 'none');
+      const propertyStore = usePropertyStore();
+      try {
+        await axios.post(`/picbucket/assign/${picId}`, {propertyId});
+        const existingPic = this.pictures.find(e => e._id === picId);
+        if (!existingPic) {
+          return console.warn('pic not found', picture);
+        }
+        existingPic.locationName = propertyStore.properties.get(propertyId)?.location.name;
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+    /**
      * Adds a picture to the PicBucket Store.
      *
      * @param {Object} pic The picture object to be added to the store.
@@ -70,10 +95,21 @@ export const usePicBucketStore = defineStore('PicBucket', {
       //console.log('Adding picture into PicBucket Store', pic);
       const teamsStore    = useTeamsStore();
       const propertyStore = usePropertyStore();
-      pic.teamName        = teamsStore.idToTeamName(pic.teamId);
-      pic.locationName    = propertyStore.properties.get(pic.propertyId)?.location.name;
-      pic.timestamp       = DateTime.fromISO(pic.timestamp);
-      this.pictures.push(pic);
+
+      const existingPic = this.pictures.find(e => e._id === pic._id);
+      if (existingPic) {
+        assign(existingPic, pic)
+        existingPic.teamName     = teamsStore.idToTeamName(pic.teamId);
+        existingPic.locationName = propertyStore.properties.get(pic.propertyId)?.location.name;
+        existingPic.timestamp    = DateTime.fromISO(pic.timestamp);
+        console.log('Updated existing pic', existingPic);
+      } else {
+        pic.teamName     = teamsStore.idToTeamName(pic.teamId);
+        pic.locationName = propertyStore.properties.get(pic.propertyId)?.location.name;
+        pic.timestamp    = DateTime.fromISO(pic.timestamp);
+        this.pictures.push(pic);
+      }
     }
   }
+
 })

@@ -7,7 +7,7 @@
 <template>
   <div>
     <call-active-warning-banner />
-    <picture-gallery />
+    <picture-gallery :read-only="false" />
   </div>
 </template>
 

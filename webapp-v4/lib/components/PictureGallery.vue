@@ -29,6 +29,7 @@
               >
                 <gallery-picture
                     :picture="p"
+                    :selected="selectedPicture === p"
                     @picture-selected="onPictureSelected"
                 />
               </div>
@@ -41,7 +42,10 @@
       </div>
       <div class="w-[400px] flex-none ml-4">
         <picture-filter />
-        <picture-info :picture="selectedPicture" />
+        <picture-info
+            :picture="selectedPicture"
+            :read-only="props.readOnly"
+        />
       </div>
     </div>
 
@@ -59,6 +63,13 @@ import PictureInfo from './PictureInfo.vue';
 import PictureFilter from './PictureFilter.vue';
 
 const picBucketStore = usePicBucketStore();
+
+const props = defineProps({
+  readOnly: {
+    type:    Boolean,
+    default: true
+  }
+});
 
 
 const pictures = computed(() => {
@@ -97,7 +108,8 @@ const picturesAvailable = computed(() => {
 const selectedPicture   = ref(null);
 const onPictureSelected = (pic) => {
   console.log('pic selected', pic);
-  selectedPicture.value = pic;
+  selectedPicture.value                  = pic;
+  picBucketStore.activePicturePropertyId = pic.propertyId;
 }
 
 const tableContainer = ref(null);
