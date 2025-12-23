@@ -5,38 +5,99 @@
 -->
 
 <template>
-  <div class="flex w-full gap-2" style="height: 80vh">
-    <canvas id="myChart"></canvas>
+  <div
+      ref="chartContainer"
+      class="chart-container"
+  >
+    <Chart
+        :key="containerKey"
+        type="line"
+        :data="chartData"
+        :options="chartOptions"
+        :height="containerHeight"
+        :width="containerWidth"
+        :plugins="[zoomPlugin]"
+    />
   </div>
 </template>
 
 <script setup>
-import {Chart} from 'chart.js';
-import {onMounted} from 'vue';
-import {useReceptionStore} from '../../store/ReceptionStore';
-const receptionStore = useReceptionStore();
-onMounted(()=> {
-  const ctx = document.getElementById('myChart');
+import Chart from 'primevue/chart';
+import {computed} from 'vue';
+import {useTeamsStore} from '../../../../lib/store/TeamsStore';
+import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import 'chartjs-adapter-luxon';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import {useContainerResize} from '../../../../lib/composables/useContainerResize';
 
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-      datasets: [{
-        label: '# of Votes',
-        data: receptionStore.test,
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
+const teamsStore       = useTeamsStore();
+const teamAccountStore = useTeamAccountStore();
+
+const chartData = computed(() => {
+  const teams = teamsStore.teams;
+
+  const datasets = [];
+  for (const team of teams) {
+    const records   = teamAccountStore.accountForTeam(team.uuid);
+    const teamEntry = [];
+    for (const record of records) {
+      teamEntry.push({x: record.timestamp.toISO(), y: record.balance});
+    }
+    datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
+  }
+
+  console.log('dataset', datasets)
+  return {
+    label:    'Einkommensverlauf',
+    datasets: datasets
+  };
+});
+
+const chartOptions = computed(() => {
+  return {
+    maintainAspectRatio: true,
+    responsive:          false,
+    plugins:             {
+      legend: {
+        display: true,
+        labels:  {
+          color: 'black'
+        }
+      },
+      zoom:   {
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true
+          },
+          //mode: 'xy',
+          scaleMode: 'xy'
+        },
+        pan:  {
+          enabled: true,
+          mode:    'xy'
         }
       }
+    },
+    scales:              {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'minute'
+        }
+      },
+      y: {}
     }
-  });
-})
+  };
+});
+
+// SIZE HANDLING
+const chartContainer = ref(null);
+const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
+/// END SIZE HANDLING
+
 </script>
 
 <style scoped lang="scss">

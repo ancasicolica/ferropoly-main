@@ -10,11 +10,12 @@
       class="chart-container"
   >
     <Chart
+        :key="containerKey"
         type="bar"
         :data="chartData"
         :options="chartOptions"
-        :height="chartHeight"
-        :width="chartWidth"
+        :height="containerHeight"
+        :width="containerWidth"
     />
   </div>
 </template>
@@ -22,42 +23,17 @@
 <script setup>
 
 import Chart from 'primevue/chart';
-import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import {useContainerResize} from '../../../../lib/composables/useContainerResize';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 
 // SIZE HANDLING
-let resizeObserver     = null;
-const chartContainer   = ref(null);
-const chartHeight      = ref(200);
-const chartWidth       = ref(400);
-
-const adjustSize = () => {
-  if (chartContainer.value) {
-    const rect                        = chartContainer.value.getBoundingClientRect();
-    const remainingHeight             = window.innerHeight - rect.top - 180;
-    chartContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
-    chartHeight.value                 = remainingHeight;
-    const remainingWidth             = window.innerWidth - rect.left - 20;
-    chartContainer.value.style.width = `${Math.max(0, remainingWidth)}px`;
-    chartWidth.value                 = remainingWidth;
-    //console.log('resize', remainingHeight, chartHeight.value, chartWidth.value, chartContainer.value.style.width)
-  }
-}
-
-onMounted(() => {
-  adjustSize();
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', adjustSize);
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
-})
+const chartContainer = ref(null);
+const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
 /// END SIZE HANDLING
 
 const chartData = computed(() => {
@@ -71,8 +47,10 @@ const chartData = computed(() => {
   const dataValues = [];
   for (const team of teams) {
     const info = teamAccountStore.balances.get(team.uuid);
-    labels.push(info.teamName);
-    dataValues.push(info.balance);
+    if (info) {
+      labels.push(info.teamName);
+      dataValues.push(info.balance);
+    }
   }
 
   return {

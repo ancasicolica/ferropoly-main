@@ -9,14 +9,14 @@
     <call-active-warning-banner />
 
 
-    <Tabs value="1">
+    <Tabs :value="activeTab">
       <TabList>
         <Tab value="0">Vermögen</Tab>
         <Tab value="1">Vermögensverlauf</Tab>
         <Tab value="2">Einkommen</Tab>
         <Tab value="3">Orte</Tab>
       </TabList>
-      <TabPanels>
+      <TabPanels :key="activeTab">
         <TabPanel value="0">
           <FortuneStatistics />
         </TabPanel>
@@ -38,7 +38,7 @@
 <script setup>
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
-
+import { ref } from 'vue';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
@@ -49,6 +49,7 @@ import FortuneStatistics from './FortuneStatistics.vue';
 import IncomeStatistics from './IncomeStatistics.vue';
 import PropertyStatistics from './PropertyStatistics.vue';
 
+const activeTab = ref("0");
 </script>
 
 <style scoped lang="scss">

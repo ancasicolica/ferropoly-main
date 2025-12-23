@@ -10,11 +10,12 @@
       class="chart-container"
   >
     <Chart
+        :key="containerKey"
         type="line"
         :data="chartData"
         :options="chartOptions"
-        :height="chartHeight"
-        :width="chartWidth"
+        :height="containerHeight"
+        :width="containerWidth"
         :plugins="[zoomPlugin]"
     />
   </div>
@@ -22,11 +23,12 @@
 
 <script setup>
 import Chart from 'primevue/chart';
-import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {computed,  ref} from 'vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import {useContainerResize} from '../../../../lib/composables/useContainerResize';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
@@ -92,35 +94,10 @@ const chartOptions = computed(() => {
 });
 
 // SIZE HANDLING
-let resizeObserver   = null;
 const chartContainer = ref(null);
-const chartHeight    = ref(200);
-const chartWidth     = ref(400);
-
-const adjustSize = () => {
-  if (chartContainer.value) {
-    const rect                        = chartContainer.value.getBoundingClientRect();
-    const remainingHeight             = window.innerHeight - rect.top - 180;
-    chartContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
-    chartHeight.value                 = remainingHeight;
-    const remainingWidth              = window.innerWidth - rect.left - 80;
-    chartContainer.value.style.width  = `${Math.max(0, remainingWidth)}px`;
-    chartWidth.value                  = remainingWidth;
-    //console.log('resize', remainingHeight, chartHeight.value, chartWidth.value, chartContainer.value.style.width)
-  }
-}
-
-onMounted(() => {
-  adjustSize();
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', adjustSize);
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
-})
+const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
 /// END SIZE HANDLING
+
 </script>
 
 <style scoped lang="scss">
