@@ -38,13 +38,13 @@ const chartData = computed(() => {
   const teams = teamsStore.teams;
 
   const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
-                    {label: 'Maximaler Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
+                    {label: 'Zusätzlicher Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
   const labels   = [];
   for (const team of teams) {
     labels.push(team.name);
     const info = evaluatePropertyValueForTeam(team.uuid);
     datasets[0].data.push(info.sum);
-    datasets[1].data.push(info.max);
+    datasets[1].data.push(info.max - info.sum);
   }
 
   console.log('incoming dataset', datasets)
