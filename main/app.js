@@ -20,7 +20,7 @@ const passport     = require('passport');
 const flash        = require('connect-flash');
 const session      = require('express-session');
 const compression  = require('compression');
-const MongoStore   = require('connect-mongo');
+const {MongoStore}   = require('connect-mongo');
 const {DateTime} = require('luxon');
 const {v4: uuid}   = require('uuid');
 
