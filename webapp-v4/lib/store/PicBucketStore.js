@@ -62,13 +62,16 @@ export const usePicBucketStore = defineStore('PicBucket', {
         console.warn(err);
       }
     },
+
+
     /**
-     * Assigns a property to a specified picture by updating its location data
-     * and making a request to the server.
+     * Assigns a property to a given picture by making a POST request to the server and updates the local picture's
+     * location name.
      *
-     * @param {Object} picture - The picture object to which the property will be assigned.
-     * @param {string} propertyId - The identifier of the property to be assigned.
-     * @return {Promise<void>} A promise that resolves once the property assignment process is complete.
+     * @param {Object} picture The picture object containing its details.
+     * @param {string} propertyId The identifier of the property to assign to the picture.
+     * @return {Promise<Object>} A promise that resolves to an object containing the success status and a message
+     *   indicating the operation's result.
      */
     async assignProperty(picture, propertyId) {
       const picId         = get(picture, '_id', 'none');
@@ -77,12 +80,25 @@ export const usePicBucketStore = defineStore('PicBucket', {
         await axios.post(`/picbucket/assign/${picId}`, {propertyId});
         const existingPic = this.pictures.find(e => e._id === picId);
         if (!existingPic) {
-          return console.warn('pic not found', picture);
+          console.warn('pic not found', picture);
+          return {success: false, message: 'Das Bild konnte nicht aktualisiert werden: nicht gefunden.'};
         }
-        existingPic.locationName = propertyStore.properties.get(propertyId)?.location.name;
+
+        const locationName = propertyStore.properties.get(propertyId)?.location.name;
+        if (!locationName && propertyId) {
+          // not ready yet
+          return {success: null};
+        }
+        existingPic.locationName = locationName;
+
+        if (propertyId) {
+          return {success: true, message: `Das Bild wurde ${picture.locationName} zugewiesen.`};
+        }
+        return {success: true, message: `Die Ortsmarkierung des Bildes wurde gelöscht.`};
       }
       catch (err) {
         console.error(err);
+        return {success: false, message: `Problem beim Speichern der Daten: "${err.message}"`}
       }
     },
     /**

@@ -6,6 +6,7 @@
 
 <template>
   <div>
+    <Toast />
     <div v-if="picture">
       <h4>Bildinfos</h4>
       <compact-info title="Team">
@@ -16,6 +17,13 @@
       </compact-info>
       <compact-info title="Aufnahmedatum">
         {{ formatDateTime(picture.lastModifiedDate) }}
+        <div v-if="oldPicWarningActive">
+          <FontAwesomeIcon
+              class="warning"
+              :icon="faTriangleExclamation"
+          />
+          Dieses Bild sollte überprüft werden: das Aufnahmedatum liegt deutlich vor dem Upload-Datum.
+        </div>
       </compact-info>
       <compact-info title="Position bei Upload (GPS)">
         <a
@@ -25,6 +33,12 @@
           <FontAwesomeIcon :icon="faArrowUpRightFromSquare" />
           {{ formatPosition(picture.position) }}
         </a>
+      </compact-info>
+      <compact-info
+          v-if="address"
+          title="Adresse bei Upload"
+      >
+        {{ address }}
       </compact-info>
       <compact-info
           v-if="!readOnly"
@@ -39,7 +53,7 @@
             option-value="uuid"
             editable
             @update:model-value="onLocationChange"
-           />
+        />
         <div> {{ assignedProperty }}</div>
       </compact-info>
       <compact-info
@@ -62,8 +76,11 @@ import {formatDateTime, formatPosition} from '../../common/lib/formatters';
 import {computed, ref} from 'vue';
 import {usePropertyStore} from '../store/PropertyStore';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import {faArrowUpRightFromSquare} from '@fortawesome/free-solid-svg-icons';
+import {faArrowUpRightFromSquare, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
 import {usePicBucketStore} from '../store/PicBucketStore';
+import {useToast} from 'primevue/usetoast';
+import Toast from 'primevue/toast';
+import {getLocationText, pictureTooOldWarningActive} from '../pictureLib';
 
 const props = defineProps({
   picture:  {
@@ -78,8 +95,10 @@ const props = defineProps({
   }
 });
 
+const toast = useToast();
+
 const propertyStore    = usePropertyStore();
-const picBucketStore = usePicBucketStore();
+const picBucketStore   = usePicBucketStore();
 const assignedProperty = ref(null);
 
 const mapUrl = computed(() => {
@@ -90,11 +109,29 @@ const selectOptions = computed(() => {
   return [...propertyStore.properties.values()].sort((a, b) => a.searchText < b.searchText ? -1 : 1);
 });
 
+const address = computed(() => {
+  return getLocationText(props.picture);
+})
+
+const oldPicWarningActive = computed(() => {
+  return pictureTooOldWarningActive(props.picture);
+})
+
 const onLocationChange = async function () {
-  await picBucketStore.assignProperty(props.picture, picBucketStore.activePicturePropertyId);
-}
+  const result = await picBucketStore.assignProperty(props.picture, picBucketStore.activePicturePropertyId);
+  if (result.success) {
+    toast.add({severity: 'success', summary: result.message, life: 3000});
+  } else if (result.success === null) {
+    // nothing to do, pending
+  } else {
+    toast.add({severity: 'error', summary: result.message, life: 10000});
+  }
+};
+
 </script>
 
 <style scoped lang="scss">
-
+.warning {
+  color: orange;
+}
 </style>

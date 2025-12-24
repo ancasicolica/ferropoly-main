@@ -17,6 +17,13 @@
         @click="onClick"
     >
       {{ formatGameTime(picture.timestamp) }} {{ picture.teamName }}
+
+        <FontAwesomeIcon
+            v-if="oldPicWarningActive"
+            class="warning"
+            :icon="faTriangleExclamation"
+        />
+
     </div>
     <div class="location">{{ picture.locationName }}</div>
   </div>
@@ -26,6 +33,10 @@
 
 import Image from 'primevue/image';
 import {formatGameTime} from '../../common/lib/formatters';
+import {faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import {computed} from 'vue';
+import {pictureTooOldWarningActive} from '../pictureLib';
 
 const props = defineProps({
   picture:  {
@@ -41,6 +52,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['picture-selected']);
+
+const oldPicWarningActive = computed(() => {
+  return pictureTooOldWarningActive(props.picture);
+})
 
 const onClick = () => {
   emit('picture-selected', props.picture);
@@ -73,5 +88,9 @@ const onClick = () => {
 
 .location {
   font-style: italic;
+}
+
+.warning {
+  color: orange;
 }
 </style>

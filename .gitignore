@@ -57,3 +57,4 @@ checkin.min.js
 /main/public/js/test/*.*
 
 .env
+/main/public/build/*.*

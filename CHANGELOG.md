@@ -10,6 +10,7 @@
 * Profit der Orte kann dargestellt werden
 * BREAKING: Team Members werden mit Name gespeichert -> Anpassung Teams Schema
 * Info in der Reception, wenn mit Bildschirmen < 1024 Pixel Auflösung gespielt werden will
+* Darstellung der hochgeladenen Bilder verbessert, mit Viewer
 
 ## v3.5.2 9.6.25
 * Bugfix in Marketplace (Variable undefined)
