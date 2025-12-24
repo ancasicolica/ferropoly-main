@@ -20,7 +20,6 @@ const propertyAccountTransactionSchema = mongoose.Schema({
   receivingTeamId: String, // ID of the team receiving money from the property account (if any)
   amount:          {type: Number, default: 0},
   info:            String,  // Info about the transaction
-  stornoPossible:  {type: Boolean, default: true},  // Bookings not eligible for storno are market
 
   transaction: { // OBSOLETE - WILL BE REMOVED IN THE FUTURE
     origin: {
