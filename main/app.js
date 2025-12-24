@@ -77,7 +77,11 @@ async function initMain() {
   app.use('/rules', require('./routes/rules'));
   app.use('/appinfo', infoRoute(settings));
   app.use('/gamecache/', require('./routes/gamecache'));
-
+  // Serve robots.txt
+  app.get('/robots.txt', function (req, res) {
+    res.type('text/plain');
+    res.send('#Bloody crawlers stay away, there is nothing to see\nUser-agent: *\nDisallow: /');
+  });
   // Define Strategy, login
   passport.use(authStrategy.googleStrategy);
   passport.use(authStrategy.localStrategy);
