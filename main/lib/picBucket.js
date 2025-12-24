@@ -219,12 +219,26 @@ class PicBucket extends EventEmitter {
   }
 
 
-  async assignProperty(id, propertyId, callback) {
-    if (callback) {
-      logger.info('>>>>>>> Callback is not supported anymore in assignProperty');
-      return callback(new Error('Callback is not supported anymore in assignProperty'));
-    }
-    return await picBucketModel.Model.findOneAndUpdate({_id: id}, {propertyId: propertyId});
+  /**
+   * Updates a document in the database by assigning a property ID to it.
+   *
+   * @param {string} id - The unique identifier of the document to be updated.
+   * @param {string} propertyId - The property ID to assign to the document.
+   * @return {Promise<Object|null>} A promise that resolves to the updated document, or null if no document was found.
+   */
+  async assignProperty(id, propertyId) {
+    return await picBucketModel.assignProperty(id, propertyId);
+  }
+
+  /**
+   * Updates the hidden status of a specific item in the picture bucket.
+   *
+   * @param {string} id - The unique identifier of the item to update.
+   * @param {boolean} hidden - The new hidden status to set for the item.
+   * @return {Promise<boolean>} A promise that resolves to a boolean indicating whether the operation was successful.
+   */
+  async setHiddenStatus(id, hidden) {
+    return await picBucketModel.setHiddenStatus(id, hidden);
   }
 }
 

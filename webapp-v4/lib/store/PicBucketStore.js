@@ -18,7 +18,9 @@ export const usePicBucketStore = defineStore('PicBucket', {
     filterTeamId:            null,
     searchQuery:             null,
     sortAscending:           true,
-    activePicturePropertyId: null
+    showHidden:              false,
+    activePicturePropertyId: null,
+    activePictureHidden:     false
   }),
   getters: {
     getPicturesForProperty: (state) => (propertyId) => {
@@ -95,6 +97,35 @@ export const usePicBucketStore = defineStore('PicBucket', {
           return {success: true, message: `Das Bild wurde ${picture.locationName} zugewiesen.`};
         }
         return {success: true, message: `Die Ortsmarkierung des Bildes wurde gelöscht.`};
+      }
+      catch (err) {
+        console.error(err);
+        return {success: false, message: `Problem beim Speichern der Daten: "${err.message}"`}
+      }
+    },
+    /**
+     * Updates the visibility status of a given picture by sending a request to the server.
+     *
+     * @param {Object} picture - The picture object containing information about the picture.
+     * @param {boolean} hidden - The desired hidden status for the picture (true to hide, false to unhide).
+     * @return {Promise<Object>} A promise that resolves to an object containing the success status and message.
+     */
+    async setHiddenStatus(picture, hidden) {
+      const picId = get(picture, '_id', 'none');
+      try {
+        await axios.post(`/picbucket/hide/${picId}`, {hidden})
+        const existingPic = this.pictures.find(e => e._id === picId);
+        if (!existingPic) {
+          console.warn('pic not found', picture);
+          return {success: false, message: 'Das Bild konnte nicht aktualisiert werden: nicht gefunden.'};
+        }
+        existingPic.hidden = hidden;
+
+        if (hidden) {
+          return {success: true, message: `Das Bild wurde ausgeblendet.`};
+        } else {
+          return {success: true, message: `Das Bild wird wieder eingeblendet.`};
+        }
       }
       catch (err) {
         console.error(err);

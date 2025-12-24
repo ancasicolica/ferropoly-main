@@ -78,6 +78,21 @@ router.post('/assign/:id', (req, res) => {
     })
 });
 
+/**
+ * hides / unhides a picture
+ */
+router.post('/hide/:id', (req, res) => {
+  const hidden = req.body.hidden;
+
+  picBucket.setHiddenStatus(req.params.id, hidden)
+    .then(() => {
+      res.send({});
+    })
+    .catch(err => {
+      return res.status(500).send({message: err.message});
+    })
+});
+
 
 /**
  * Returns ALL images for a game, for admins only during the game, afterwards public (done in accessor)

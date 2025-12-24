@@ -18,11 +18,17 @@
     >
       {{ formatGameTime(picture.timestamp) }} {{ picture.teamName }}
 
-        <FontAwesomeIcon
-            v-if="oldPicWarningActive"
-            class="warning"
-            :icon="faTriangleExclamation"
-        />
+      <FontAwesomeIcon
+          v-if="oldPicWarningActive"
+          class="warning"
+          :icon="faTriangleExclamation"
+      />
+
+      <FontAwesomeIcon
+          v-if="picHidden"
+          class="hidden"
+          :icon="faEyeSlash"
+      />
 
     </div>
     <div class="location">{{ picture.locationName }}</div>
@@ -33,7 +39,7 @@
 
 import Image from 'primevue/image';
 import {formatGameTime} from '../../common/lib/formatters';
-import {faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
+import {faEyeSlash, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {computed} from 'vue';
 import {pictureTooOldWarningActive} from '../pictureLib';
@@ -55,6 +61,10 @@ const emit = defineEmits(['picture-selected']);
 
 const oldPicWarningActive = computed(() => {
   return pictureTooOldWarningActive(props.picture);
+})
+
+const picHidden = computed(() => {
+  return !!props.picture.hidden;
 })
 
 const onClick = () => {
@@ -92,5 +102,9 @@ const onClick = () => {
 
 .warning {
   color: orange;
+}
+
+.hidden {
+  color: red;
 }
 </style>

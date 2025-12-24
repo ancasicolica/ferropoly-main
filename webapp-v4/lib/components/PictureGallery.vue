@@ -41,10 +41,12 @@
 
       </div>
       <div class="w-[400px] flex-none ml-4">
-        <picture-filter />
+        <picture-filter
+            :read-only="readOnly"
+        />
         <picture-info
             :picture="selectedPicture"
-            :read-only="props.readOnly"
+            :read-only="readOnly"
         />
       </div>
     </div>
@@ -97,6 +99,11 @@ const pictures = computed(() => {
     return picBucketStore.sortAscending ? timeA - timeB : timeB - timeA;
   });
 
+  // 4. hide hidden pics
+  if (!picBucketStore.showHidden) {
+    filtered = filtered.filter(p => !p.hidden)
+  }
+
   return filtered;
 })
 
@@ -105,11 +112,13 @@ const picturesAvailable = computed(() => {
   return picBucketStore.pictures && picBucketStore.pictures.length > 0;
 })
 
-const selectedPicture   = ref(null);
+const selectedPicture = ref(null);
+
 const onPictureSelected = (pic) => {
   console.log('pic selected', pic);
   selectedPicture.value                  = pic;
   picBucketStore.activePicturePropertyId = pic.propertyId;
+  picBucketStore.activePictureHidden     = !!pic.hidden;  // cool, didn't know this before: make value to bool even when it's undefined
 }
 
 const tableContainer = ref(null);

@@ -62,9 +62,28 @@
       >
         {{ picture.locationName }}
       </compact-info>
+      <compact-info
+          v-if="!readOnly"
+          title="Admin-Tools"
+      >
+        <div>
+          <Checkbox
+              v-model="picBucketStore.activePictureHidden"
+              binary
+              input-id="hidden"
+              @update:model-value="onHiddenChanged"
+          />
+          <label
+              for="hidden"
+              class="ml-2"
+          >
+            Bild ausblenden
+          </label>
+        </div>
+      </compact-info>
     </div>
     <div v-else>
-      Um Infos zu einem Bild zu erhalten, clicke auf den Titel des Bildes (Zeitpunkt und Teamname).gg
+      Um Infos zu einem Bild zu erhalten, clicke auf den Titel des Bildes (Zeitpunkt und Teamname).
     </div>
   </div>
 </template>
@@ -72,6 +91,7 @@
 <script setup>
 import CompactInfo from './CompactInfo.vue';
 import Select from 'primevue/select';
+import Checkbox from 'primevue/checkbox';
 import {formatDateTime, formatPosition} from '../../common/lib/formatters';
 import {computed, ref} from 'vue';
 import {usePropertyStore} from '../store/PropertyStore';
@@ -116,6 +136,17 @@ const address = computed(() => {
 const oldPicWarningActive = computed(() => {
   return pictureTooOldWarningActive(props.picture);
 })
+
+const onHiddenChanged = async function() {
+  const result = await picBucketStore.setHiddenStatus(props.picture, picBucketStore.activePictureHidden);
+  if (result.success) {
+    toast.add({severity: 'success', summary: result.message, life: 3000});
+  } else if (result.success === null) {
+    // nothing to do, pending
+  } else {
+    toast.add({severity: 'error', summary: result.message, life: 10000});
+  }
+}
 
 const onLocationChange = async function () {
   const result = await picBucketStore.assignProperty(props.picture, picBucketStore.activePicturePropertyId);

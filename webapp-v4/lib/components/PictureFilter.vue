@@ -33,6 +33,18 @@
       />
       <label for="sort-order">Aufsteigende Reihenfolge</label>
     </div>
+    <div
+        v-if="!readOnly"
+        class="flex items-center gap-2 mt-2"
+    >
+      <Checkbox
+          v-model="picBucketStore.showHidden"
+          binary
+          size="small"
+          input-id="how-hidden"
+      />
+      <label for="how-hidden">Ausgeblendete Bilder anzeigen</label>
+    </div>
     <div class="separator mt-2 mb-4" />
 
 
@@ -55,6 +67,13 @@ const teams          = computed(() => {
   teams.unshift({uuid: null, name: 'Alle Teams'});
   return teams;
 })
+
+const props = defineProps({
+  readOnly: {
+    type:    Boolean,
+    default: true
+  }
+});
 </script>
 
 <style scoped lang="scss">
