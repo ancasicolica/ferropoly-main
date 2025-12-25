@@ -78,13 +78,13 @@ class Scheduler extends EventEmitter {
    */
   handleEventCallback(err, event) {
     if (err) {
-      logger.warn('Error in event handler callback', err);
+      logger.warn('Error in event handler callback', {event, err});
       return;
     }
     eventRepo.saveAfterHandling(event).then(() => {
-      logger.debug('Event handling finished');
+      logger.debug(`${event.gameId}: Event handling "${event.type}" finished. Message:" "${event.message}"`, {id: event._id, timestamp: event.timestamp});
     }).catch(err => {
-      logger.error('Error while saving handled event', err);
+      logger.error('Error while saving handled event', {event, err});
     });
   };
 
