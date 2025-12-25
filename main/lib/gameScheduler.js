@@ -139,7 +139,7 @@ class Scheduler extends EventEmitter {
       }
       // Update once an hour
       self.updateJob = new CronJob(
-        '* 53 * * * *',
+        '0 53 * * * *',
         function () {
           self.update(function (err) {
             if (err) {
