@@ -11,11 +11,11 @@
 
 const eventRepo    = require('../../common/models/schedulerEventModel');
 const EventEmitter = require('events').EventEmitter;
-const {CronJob} = require('cron');
-const {DateTime} = require('luxon');
-const gameCache = require('./gameCache');
-const logger    = require('../../common/lib/logger').getLogger('gameScheduler');
-const settings  = require('../settings');
+const {CronJob}    = require('cron');
+const {DateTime}   = require('luxon');
+const gameCache    = require('./gameCache');
+const logger       = require('../../common/lib/logger').getLogger('gameScheduler');
+const settings     = require('../settings');
 
 /**
  * Constructor of the scheduler
@@ -38,7 +38,7 @@ class Scheduler extends EventEmitter {
       function () {
         // Update cache at start of the day
         gameCache.refreshCache().catch(err => {
-          logger.error('Error in Constructor', err);
+          logger.error('Error in refreshCache', err);
         });
       },
       null,
@@ -121,7 +121,7 @@ class Scheduler extends EventEmitter {
             logger.info(`${event.gameId}: Emit an old event:${event._id}`, event);
             self.handleEvent(event.type, event);
           } else {
-            logger.info(`${event.gameId}: Push event in joblist:${event._id}`, event);
+            logger.info(`${event.gameId}: Push event in joblist:${event._id} @ ${event.timestamp}`, event);
             let scheduledTs = DateTime.fromJSDate(event.timestamp).plus({seconds: self.settings.scheduler.delay});
             self.jobs.push(
               new CronJob(scheduledTs.toJSDate(),
@@ -137,22 +137,21 @@ class Scheduler extends EventEmitter {
       if (self.updateJob) {
         self.updateJob.stop();
       }
-      // Todo: this time is too short, we don't need to update so often.
-      // The problem is that new games won't be recognized after creation until the scheduler was updated, now
-      // we get new games at least once an hour. Should be fixed with a communication between Editor and Main,
-      // added as GitHub ticket #2 in EDITOR project (as the trigger has to come from the editor)
-      self.updateJob = new CronJob(DateTime.now().plus({minutes: 54, seconds: 3}).toJSDate(),
+      // Update once an hour
+      self.updateJob = new CronJob(
+        '* 53 * * * *',
         function () {
           self.update(function (err) {
-              if (err) {
-                logger.error('SCHEDULER UPDATE FAILED!', err);
-              }
-            },
+            if (err) {
+              logger.error('SCHEDULER UPDATE FAILED!', err);
+            }
+          })
+        },
         null,
         true,
         'Europe/Berlin');
-      });
     }).finally(callback);
+
   };
 
   /**
