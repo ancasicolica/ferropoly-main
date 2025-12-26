@@ -70,7 +70,27 @@ const chartOptions = computed(() => {
         stacked: true
       },
       y: {
-        stacked: true
+        stacked: true,
+        ticks: {
+          stepSize: 10000,
+        },
+        grid: {
+          // Callback to determine the line width for each tick
+          lineWidth: (context) => {
+            // Check if the tick value is a multiple of 100,000
+            if (context.tick && (context.tick.value % 100000 === 0 || context.tick.value % 100000 === 0)) {
+              return 2; // Thicker line for 100k steps
+            }
+            return 1; // Default line width
+          },
+          // Optional: You could also change the color for these ticks
+          color: (context) => {
+            if (context.tick && context.tick.value % 100000 === 0) {
+              return 'rgba(0, 0, 0, 0.3)'; // Darker color for 100k steps
+            }
+            return 'rgba(0, 0, 0, 0.1)'; // Fainter color
+          }
+        }
       }
     }
   };

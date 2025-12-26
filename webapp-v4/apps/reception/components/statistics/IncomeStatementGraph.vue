@@ -89,14 +89,13 @@ const chartOptions = computed(() => {
       y: {
         stacked: true,
         ticks: {
-          // forces step size to be 20,000 units
-          stepSize: 20000,
+          stepSize: 10000,
         },
         grid: {
           // Callback to determine the line width for each tick
           lineWidth: (context) => {
             // Check if the tick value is a multiple of 100,000
-            if (context.tick && context.tick.value % 100000 === 0) {
+            if (context.tick && (context.tick.value % 100000 === 0 || context.tick.value % 100000 === 0)) {
               return 2; // Thicker line for 100k steps
             }
             return 1; // Default line width
