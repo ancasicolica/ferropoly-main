@@ -153,43 +153,45 @@ export const usePropertyStore = defineStore('Property', {
      * @return {Promise<void>}
      */
     async update(options = {}) {
-      console.log('updating', options);
-      const self   = this;
-      const teamId = get(options, 'teamId', null);
-      let url      = `/properties/get/${this.gameId}`;
-      if (teamId) {
-        url += `/${teamId}`;
-      }
-      axios.get(url)
-        .then(async resp => {
-          console.log(resp.data);
-          for (const prop of resp.data.properties) {
-            if (prop.gamedata) {
-              const p = this.properties.get(prop.uuid);
-              if (p) {
-                assign(p.gamedata, prop.gamedata);
-                if (p.gamedata.owner) {
-                  if (self.debugOutput) {
-                    console.log('owned', p);
-                  }
-                  p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
-                } else {
-                  p.gamedata.ownerName = null;
+      try {
+        console.log('updating', options);
+        const self   = this;
+        const teamId = get(options, 'teamId', null);
+        let url      = `/properties/get/${this.gameId}`;
+        if (teamId) {
+          url += `/${teamId}`;
+        }
+        const resp = await axios.get(url);
+
+        console.log(resp.data);
+        for (const prop of resp.data.properties) {
+          if (prop.gamedata) {
+            const p = this.properties.get(prop.uuid);
+            if (p) {
+              assign(p.gamedata, prop.gamedata);
+              if (p.gamedata.owner) {
+                if (self.debugOutput) {
+                  console.log('owned', p);
                 }
+                p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
               } else {
-                console.warn('Property not found in store', prop);
+                p.gamedata.ownerName = null;
               }
+            } else {
+              console.warn('Property not found in store', prop);
             }
           }
-          await self.updateTransactions();
-          this.propertiesVersion++;
-        })
-        .catch(err => {
-          console.warn('Most likely no access rights', err);
-        })
-        .finally(() => {
-          this.updateFilter();
-        })
+        }
+        await self.updateTransactions();
+        this.propertiesVersion++;
+      }
+      catch (err) {
+        console.error('error in PropertyStore.update', err);
+      }
+      finally {
+        this.updateFilter()
+      }
+
     },
     /**
      * Updates transaction data for a specific property or all properties.
@@ -234,6 +236,7 @@ export const usePropertyStore = defineStore('Property', {
           //console.log('profit', prop.account.profit);
         })
 
+        console.log('finished updating');
 
       })
         .catch(err => {

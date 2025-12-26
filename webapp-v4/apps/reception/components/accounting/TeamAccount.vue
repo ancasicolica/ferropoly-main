@@ -12,7 +12,7 @@
   >
     <ScrollPanel style="height: 100%">
       <DataTable
-          v-model:expanded-rows="expandedRows"
+          :expanded-rows="expandedRows"
           data-key="_id"
           size="small"
           :value="teamAccountEntries"
@@ -22,6 +22,7 @@
           :sort-order="sortOrder"
           scrollable
           scroll-height="flex"
+          :virtual-scroller-options="{ itemSize: 44 }"
           @update:sort-order="onSortOrder"
       >
         <Column

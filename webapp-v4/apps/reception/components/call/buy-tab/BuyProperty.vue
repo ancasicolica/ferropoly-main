@@ -65,8 +65,8 @@
           :style="{ height: panelHeight }"
       >
         <DataTable
-            v-model:filters="filters"
-            :value="properties"
+            :filters="filters"
+            :value="filteredProperties"
             size="small"
             striped-rows
             sort-field="searchText"
@@ -74,6 +74,7 @@
             class="mt-2"
             :show-headers="showHeaders"
             table-style="width:100%"
+            :virtual-scroller-options="{ itemSize: 44 }"
         >
           <template #empty>
             <div>Die Suche liefert keinen Treffer!</div>
@@ -117,7 +118,7 @@ import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import ScrollPanel from 'primevue/scrollpanel';
 
-import {onMounted, onUnmounted, ref} from 'vue';
+import {computed, onMounted, onUnmounted, ref} from 'vue';
 import {formatPrice} from '../../../../../common/lib/formatters';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -163,11 +164,16 @@ onUnmounted(() => {
   window.removeEventListener('resize', calculateHeight);
 });
 
-// The properties als own ref - too slow when using them directly from the store as there is a lot of sorting
-// (and the values displayed in the list do not change anyway!)
-const properties = ref(
-    [...propertyStore.properties.values()]
-)
+// Computed property to filter the list based on the search input
+// The list remains empty until the user starts typing
+const filteredProperties = computed(() => {
+  const searchTerm = filters.value['searchText'].value;
+  if (!searchTerm || searchTerm.trim().length === 0) {
+    return [];
+  }
+  return [...propertyStore.properties.values()];
+});
+
 
 // Not showing the headers of the table
 const showHeaders = ref(false);

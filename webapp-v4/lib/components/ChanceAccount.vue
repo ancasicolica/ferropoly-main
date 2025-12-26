@@ -11,6 +11,7 @@
             size="small"
             scrollable
             scroll-height="flex"
+            :virtual-scroller-options="{ itemSize: 44 }"
         >
           <Column
               field="timestamp"

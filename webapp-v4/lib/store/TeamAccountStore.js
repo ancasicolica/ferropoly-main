@@ -15,6 +15,8 @@ import {
   TEAM_TRANSACTION_PURCHASE_HOUSE, TEAM_TRANSACTION_PURCHASE_PROPERTY, TEAM_TRANSACTION_RENT, TEAM_TRANSACTION_START_FEE
 } from '../../../common/models/accounting/teamAccountTransactionTypes';
 
+let teamsStore = null;
+
 export const useTeamAccountStore = defineStore('TeamAccount', {
   state:   () => ({
     records:            new Map(),
@@ -110,26 +112,39 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
     async loadTeamAccountEntries(gameId, teamId = 'all') {
       const self = this;
       try {
+        console.log('TeamAccountStore.loadTeamAccountEntries start');
+        if (!teamsStore) {
+          teamsStore = useTeamsStore();
+        }
         let start         = this.lastValidTimestamp.toISO();
         const resp        = await axios.get(`/teamAccount/get/${gameId}/${teamId}/${start}`);
         const accountData = resp.data.accountData;
 
         if (!accountData || accountData.length === 0) {
-          console.warn(`No account data (which is strange). Start was ${start}`, resp.data);
           return;
         }
-        console.log('accountData', accountData);
+
+        console.log(`TeamAccountStore.loadTeamAccountEntries stage 2. Nb entries: ${accountData.length}`);
+        const affectedTeamIds = new Set(); // Verfolgen, welche Teams Updates erhielten
 
         for (const entry of accountData) {
-          entry.timestamp = DateTime.fromISO(entry.timestamp);
-
-          let account = self.records.get(entry.teamId);
-          if (!account) {
-            account = []
-            self.records.set(entry.teamId, account);
+          const dt = DateTime.fromISO(entry.timestamp);
+          if (!dt.isValid) {
+            console.warn('loadTeamAccountEntries: invalid timestamp', entry)
+            continue;
           }
-          if (!account.findLast(e => e._id === entry._id)) {
+
+          entry.timestamp = dt;
+          let account     = this.records.get(entry.teamId);
+          if (!account) {
+            account = [];
+            this.records.set(entry.teamId, account);
+          }
+
+          // Schnellerer Check (idealerweise über eine Map/Set der IDs pro Team)
+          if (!account.some(e => e._id === entry._id)) {
             account.push(entry);
+            affectedTeamIds.add(entry.teamId);
           }
 
           if (this.lastValidTimestamp < entry.timestamp) {
@@ -137,19 +152,21 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
           }
         }
 
-        // Update balances for all teams
-        const teamIds = self.records.keys();
+        console.log('TeamAccountStore.loadTeamAccountEntries stage 3');
+        // Nur betroffene Bilanzen aktualisieren
+        affectedTeamIds.forEach(tId => {
+          const teamAccount = this.records.get(tId);
+          teamAccount.sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
 
-        for (const teamId of teamIds) {
-          const teamAccount = self.records.get(teamId);
-          teamAccount.sort((a, b) => a.timestamp - b.timestamp);
-          let balance = 0;
-          for (const entry of teamAccount) {
-            balance += entry.transaction.amount;
-          }
-          self.balances.set(teamId, {teamId: teamId, balance: balance, teamName: useTeamsStore().idToTeamName(teamId)});
-        }
+          const balance = teamAccount.reduce((sum, e) => sum + e.transaction.amount, 0);
 
+          this.balances.set(tId, {
+            teamId:   tId,
+            balance:  Math.round(balance * 100) / 100, // Einfacher Fix für Rundungsfehler
+            teamName: teamsStore.idToTeamName(tId)
+          });
+        });
+        console.log('TeamAccountStore.loadTeamAccountEntries finished');
       }
       catch (err) {
         console.log(self, self.lastValidTimestamp);

@@ -38,14 +38,23 @@
       </template>
     </Dialog>
     <!-- here starts the app -->
-    <menu-bar
-        :elements="receptionStore.menuBarElements"
-        show-online-status
-        :online="receptionStore.socketConnected"
-        help-url="/about"
-    />
-    <div class="ferropoly-container">
-      <router-view />
+    <div
+        v-if="isInitialLoading"
+         class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
+    >
+      <ProgressSpinner />
+      <span class="mt-4 font-medium text-lg">Lade Spieldaten...</span>
+    </div>
+    <div v-else>
+      <menu-bar
+          :elements="receptionStore.menuBarElements"
+          show-online-status
+          :online="receptionStore.socketConnected"
+          help-url="/about"
+      />
+      <div class="ferropoly-container">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
@@ -69,6 +78,7 @@ import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
 import {useChancelleryStore} from '../../../lib/store/ChancelleryStore';
 import {DateTime} from 'luxon';
 import {useRulesStore} from '../../../lib/store/RulesStore';
+import ProgressSpinner from 'primevue/progressspinner';
 
 const receptionStore   = useReceptionStore();
 const receptionSocket  = getReceptionSocket();
@@ -83,26 +93,36 @@ const rulesStore       = useRulesStore();
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
 
+const isInitialLoading = ref(true);
+
 receptionStore.fetchStaticData(gameId)
     .then(async staticData => {
       const start = DateTime.now();
       console.log('Start loading data and socket connection');
+      console.log('Init step 1');
+      teamsStore.setTeams(staticData.teams);
+      gameplayStore.init(staticData.gameplay);
+      rulesStore.setRules(staticData.rules);
+      console.log('Init step 2');
+      await propertyStore.init(gameId, staticData.pricelist);
+      console.log('Init step 3');
+      await propertyStore.update();
+      console.log('Init step 4');
+      await teamAccountStore.loadTeamAccountEntries(gameId);
+      console.log('Init step 5');
+      await picBucketStore.fetchPictures({gameId});
+      console.log('Init step 6');
+      await chancelleryStore.loadChancelleryEntries(gameId);
+      console.log('Init step 7');
       receptionSocket.initSocket({
         url:       staticData.socketUrl,
         authToken: staticData.authToken,
         user:      get(staticData, 'user', 'none'),
         gameId:    gameId
       });
-      teamsStore.setTeams(staticData.teams);
-      gameplayStore.init(staticData.gameplay);
-      rulesStore.setRules(staticData.rules);
-      await propertyStore.init(gameId, staticData.pricelist);
-      await propertyStore.update();
-      await teamAccountStore.loadTeamAccountEntries(gameId);
-      await picBucketStore.fetchPictures({gameId});
-      await chancelleryStore.loadChancelleryEntries(gameId);
+      isInitialLoading.value = false;
       const end = DateTime.now();
-      console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`);
+      console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
     })
     .catch(err => {
       console.error(err);

@@ -14,7 +14,7 @@
       <call-active />
     </div>
     <Dialog
-        v-model:visible="dialogActive"
+        :visible="dialogActive"
         modal
         header="Anruf bestätigen"
         position="top"
@@ -41,12 +41,14 @@
             type="button"
             label="Nachtrag"
             severity="secondary"
+            :disabled="activitySelected"
             @click="onEditCallConfirmed"
         />
         <Button
             type="button"
             label="Bearbeiten"
             severity="primary"
+            :disabled="activitySelected"
             @click="onNormalCallConfirmed"
         />
       </div>
@@ -62,6 +64,7 @@ import Dialog from 'primevue/dialog';
 import {computed, ref} from 'vue';
 import CallActive from './CallActive.vue';
 
+const activitySelected = ref(false);
 const dialogActive = computed({
   get: () => {
     return callingTeam.value !== null;
@@ -77,14 +80,17 @@ const receptionStore = useReceptionStore();
 
 const onTeamCalling = (team) => {
   console.log('team is calling', team.value);
+  activitySelected.value = false;
   callingTeam.value = team;
 }
 
 const onNormalCallConfirmed = () => {
+  activitySelected.value = true;
   receptionStore.startTeamCall(callingTeam.value, true);
   callingTeam.value = null;
 }
 const onEditCallConfirmed   = () => {
+  activitySelected.value = true;
   receptionStore.startTeamCall(callingTeam.value, false);
   callingTeam.value = null;
 }
