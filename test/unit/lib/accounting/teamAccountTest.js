@@ -3,13 +3,14 @@
  * Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
  * Created: 08.09.2025
  **/
-const expect             = require('expect.js');
-const db                 = require('../../../../common/lib/ferropolyDb');
-const settings           = require('../../../../main/settings');
-const unitTestGame       = require('../../../fixtures/unitTestGame');
-const teamAccount        = require('../../../../main/lib/accounting/teamAccount');
-const {DateTime}         = require('luxon');
-const gameId             = 'unit-test-team-account';
+const expect                    = require('expect.js');
+const db                        = require('../../../../common/lib/ferropolyDb');
+const settings                  = require('../../../../main/settings');
+const unitTestGame              = require('../../../fixtures/unitTestGame');
+const teamAccount               = require('../../../../main/lib/accounting/teamAccount');
+const {DateTime}                = require('luxon');
+const {TEAM_TRANSACTION_MANUAL} = require('../../../../common/models/accounting/teamAccountTransactionTypes');
+const gameId                    = 'unit-test-team-account';
 let gameData;
 
 describe('Testing the teamAccount', () => {
@@ -27,7 +28,12 @@ describe('Testing the teamAccount', () => {
   describe('Testing negative balance', () => {
 
     it('should calculate an interest for negative accounts', async () => {
-      let info = await teamAccount.chargeToBank({teamId: gameData.teams[0].uuid, gameId, amount: 10000});
+      let info = await teamAccount.chargeToBank({
+        teamId: gameData.teams[0].uuid,
+        gameId,
+        amount: 10000,
+        type:   TEAM_TRANSACTION_MANUAL
+      });
       expect(info.amount).to.be(-10000);
       info = await teamAccount.getBalance(gameId, gameData.teams[0].uuid);
       expect(info.asset).to.be(-10000);
@@ -39,7 +45,7 @@ describe('Testing the teamAccount', () => {
     })
 
     it('should not calculate an interest for positive accounts', async () => {
-      let info = await teamAccount.receiveFromBank(gameData.teams[0].uuid, gameId, 20000);
+      let info = await teamAccount.receiveFromBank(gameData.teams[0].uuid, gameId, 20000, '', TEAM_TRANSACTION_MANUAL);
       expect(info.amount).to.be(20000);
 
       info = await teamAccount.getBalance(gameId, gameData.teams[0].uuid);
@@ -60,9 +66,9 @@ describe('Testing the teamAccount', () => {
 
   describe('Get the ranking list', () => {
     before(async () => {
-      await teamAccount.receiveFromBank(gameData.teams[1].uuid, gameId, 15000);
+      await teamAccount.receiveFromBank(gameData.teams[1].uuid, gameId, 15000, '', TEAM_TRANSACTION_MANUAL);
       await teamAccount.receiveFromChancellery(gameData.teams[2].uuid, gameId, 10000);
-      await teamAccount.receiveFromBank(gameData.teams[3].uuid, gameId, 5000);
+      await teamAccount.receiveFromBank(gameData.teams[3].uuid, gameId, 5000, '', TEAM_TRANSACTION_MANUAL);
     })
     it('should return the ranking list', async () => {
       let info = await teamAccount.getRankingList(gameId);
@@ -76,7 +82,7 @@ describe('Testing the teamAccount', () => {
   describe('Get the account statements', () => {
     before(async () => {
       for (let i = 0; i < 10; i++) {
-        await teamAccount.receiveFromBank(gameData.teams[4].uuid, gameId, 200);
+        await teamAccount.receiveFromBank(gameData.teams[4].uuid, gameId, 200, '', TEAM_TRANSACTION_MANUAL);
       }
     })
     it('should return all statements with no time limits', async () => {
@@ -162,12 +168,13 @@ describe('Testing the teamAccount', () => {
       expect(team2After.asset).to.be(team2Before.asset);
     })
 
-    it('goes wrong if the anount is missing', done => {
+    it('goes wrong if the amount is missing', done => {
       teamAccount.chargeToAnotherTeam({
         gameId,
         debitorTeamId:  gameData.teams[1].uuid,
         creditorTeamId: gameData.teams[2].uuid,
         info:           'test',
+        type:           TEAM_TRANSACTION_MANUAL
       }).then(() => {
           done(new Error('should not happen'));
         }
@@ -181,7 +188,8 @@ describe('Testing the teamAccount', () => {
         debitorTeamId:  gameData.teams[1].uuid,
         creditorTeamId: gameData.teams[2],
         info:           'test',
-        amount: 1000
+        amount:         1000,
+        type:           TEAM_TRANSACTION_MANUAL
       }).then(() => {
           done(new Error('should not happen'));
         }
@@ -191,22 +199,22 @@ describe('Testing the teamAccount', () => {
     })
   })
 
-  describe('Paying interests', ()=> {
-    it('should work for a positive amount', async ()=> {
+  describe('Paying interests', () => {
+    it('should work for a positive amount', async () => {
       const team1Before = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);
       await teamAccount.payInterest(gameData.teams[1].uuid, gameId, 1000)
       const team1After = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);
 
       expect(team1After.asset - team1Before.asset).to.be(1000);
     })
-    it('should work for an amount of 0', async ()=> {
+    it('should work for an amount of 0', async () => {
       const team1Before = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);
       await teamAccount.payInterest(gameData.teams[1].uuid, gameId, 0)
       const team1After = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);
 
       expect(team1After.asset - team1Before.asset).to.be(0);
     })
-    it('should work for a negative amount', async ()=> {
+    it('should work for a negative amount', async () => {
       const team1Before = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);
       await teamAccount.payInterest(gameData.teams[1].uuid, gameId, -1000)
       const team1After = await teamAccount.getBalance(gameId, gameData.teams[1].uuid);

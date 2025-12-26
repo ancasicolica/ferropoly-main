@@ -16,6 +16,11 @@ const gameLog            = require('../gameLog');
 const EventEmitter       = require('events').EventEmitter;
 const _                  = require('lodash');
 const {DateTime}         = require('luxon');
+const {
+        TEAM_TRANSACTION_PURCHASE_HOUSE,
+        TEAM_TRANSACTION_PURCHASE_PROPERTY,
+        TEAM_TRANSACTION_MANUAL, TEAM_TRANSACTION_START_FEE, TEAM_TRANSACTION_INTEREST, TEAM_TRANSACTION_PENALTY_RATE
+      }                  = require('../../../common/models/accounting/teamAccountTransactionTypes');
 let marketplace;
 let ferroSocket;
 
@@ -198,6 +203,7 @@ class Marketplace extends EventEmitter {
       const info     = await propertyAccount.buyProperty(gp, property, team)
       options.amount = info.amount;
       options.info   = 'Kauf ' + property.location.name;
+      options.type   = TEAM_TRANSACTION_PURCHASE_PROPERTY;
       await teamAccount.chargeToBank(options);
       await gameLog.addEntry({
         gameId:    options.gameId,
@@ -289,6 +295,7 @@ class Marketplace extends EventEmitter {
       teamId: teamId,
       gameId: gameId,
       amount: totalAmount,
+      type:   TEAM_TRANSACTION_PURCHASE_HOUSE,
       info:   {info: 'Hausbau', parts: log}
     });
     return {amount: totalAmount, log: log}
@@ -341,6 +348,7 @@ class Marketplace extends EventEmitter {
       teamId: teamId,
       gameId: gameId,
       amount: info.amount,
+      type:   TEAM_TRANSACTION_PURCHASE_HOUSE,
       info:   {info: 'Hausbau ' + property.location.name}
     })
     return info;
@@ -367,7 +375,7 @@ class Marketplace extends EventEmitter {
     }
 
     for (const team of teams) {
-      await teamAccount.receiveFromBank(team.uuid, gameId, gp.gameParams.startCapital, 'Startkapital');
+      await teamAccount.receiveFromBank(team.uuid, gameId, gp.gameParams.startCapital, 'Startkapital', TEAM_TRANSACTION_START_FEE);
     }
   };
 
@@ -460,7 +468,7 @@ class Marketplace extends EventEmitter {
       const info = await teamAccount.negativeBalanceHandling(gameId, team.uuid, gp.gameParams.debtInterest);
       if (info && info.amount !== 0) {
         marketLog(gameId, 'negativeBalanceHandlingResult', info);
-        await chancelleryAccount.payToChancellery(gp, team, info.amount, 'Strafzins (negatives Guthaben)');
+        await chancelleryAccount.payToChancellery(gp, team, info.amount, 'Strafzins (negatives Guthaben)', TEAM_TRANSACTION_PENALTY_RATE);
         return;
       }
     }
@@ -495,7 +503,7 @@ class Marketplace extends EventEmitter {
       await teamAccount.receiveFromBank(info.teamId, gp.internal.gameId, info.totalAmount, {
         info:  'Grundstückzins',
         parts: info.register
-      });
+      }, TEAM_TRANSACTION_INTEREST);
     }
   }
   ;
@@ -641,12 +649,13 @@ class Marketplace extends EventEmitter {
     }
 
     if (amount > 0) {
-      return await teamAccount.receiveFromBank(teamId, gameId, amount, 'Manuelle Gutschrift: ' + reason);
+      return await teamAccount.receiveFromBank(teamId, gameId, amount, 'Manuelle Gutschrift: ' + reason, TEAM_TRANSACTION_MANUAL);
     } else {
       return await teamAccount.chargeToBank({
         teamId: teamId,
         gameId: gameId,
         amount: amount,
+        type:   TEAM_TRANSACTION_MANUAL,
         info:   'Manuelle Lastschrift: ' + reason
       })
     }

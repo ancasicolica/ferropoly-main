@@ -8,7 +8,12 @@ const _                      = require('lodash');
 const teamAccountTransaction = require('./../../../common/models/accounting/teamAccountTransaction');
 const logger                 = require('../../../common/lib/logger').getLogger('accounting:teamAccount');
 const teamAccountActions     = require('../../../components/checkin-datastore/lib/teamAccount/actions');
-const {DateTime} = require('luxon');
+const {DateTime}             = require('luxon');
+const {
+        TEAM_TRANSACTION_HOURLY_FEE,
+        TEAM_TRANSACTION_UNDEFINED,
+        TEAM_TRANSACTION_CHANCELLERY
+      }                      = require('../../../common/models/accounting/teamAccountTransactionTypes');
 
 let ferroSocket;
 
@@ -19,7 +24,7 @@ let ferroSocket;
  * @param amount
  * @param message
  */
-async function payInterest(teamId, gameId, amount, message=null) {
+async function payInterest(teamId, gameId, amount, message = null) {
   if (!_.isString(teamId) || !_.isString(gameId) || !_.isNumber(amount)) {
     logger.info('Bullshit params in payInterest', {teamId, gameId, amount});
     throw new Error('Parameter error in payInterest');
@@ -31,6 +36,7 @@ async function payInterest(teamId, gameId, amount, message=null) {
   entry.transaction.amount = amount;
   entry.transaction.origin = {category: 'bank'};
   entry.transaction.info   = message || 'Startgeld';
+  entry.transaction.type   = TEAM_TRANSACTION_HOURLY_FEE;
   await teamAccountTransaction.book(entry);
   if (ferroSocket) {
     ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
@@ -71,6 +77,7 @@ async function chargeToBankOrChancellery(options, callback) {
   entry.teamId             = options.teamId;
   entry.transaction.amount = chargedAmount;
   entry.transaction.origin = {category: options.category};
+  entry.transaction.type   = options.type || TEAM_TRANSACTION_UNDEFINED;
   entry.user               = options.user;
   if (_.isString(options.info)) {
     entry.transaction.info = options.info;
@@ -103,6 +110,9 @@ async function chargeToBank(options, callback) {
     return callback(new Error('no callback'));
   }
   options.category = 'bank';
+  if (!options.type) {
+    logger.warn('Booking type was not set in chargeToBank', options);
+  }
   return await chargeToBankOrChancellery(options);
 }
 
@@ -131,14 +141,10 @@ async function chargeToChancellery(options, callback) {
  * @param amount
  * @param info
  * @param category
- * @param callback
+ * @param type
  * @returns {*}
  */
-async function receiveFromBankOrChancellery(teamId, gameId, amount, info, category, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in receiveFromBankOrChancellery');
-    return callback(new Error('no callback'));
-  }
+async function receiveFromBankOrChancellery(teamId, gameId, amount, info, category, type = TEAM_TRANSACTION_UNDEFINED) {
 
   if (!_.isString(teamId) || !_.isString(gameId) || !_.isNumber(amount)) {
     logger.info('Bullshit params in receiveFromBankOrChancellery', {teamId: teamId, gameId: gameId, amount: amount});
@@ -154,6 +160,7 @@ async function receiveFromBankOrChancellery(teamId, gameId, amount, info, catego
   entry.teamId             = teamId;
   entry.transaction.amount = Math.abs(amount);
   entry.transaction.origin = {category: category};
+  entry.transaction.type   = type;
   if (_.isString(info)) {
     entry.transaction.info = info;
   } else if (_.isObject(info)) {
@@ -166,7 +173,7 @@ async function receiveFromBankOrChancellery(teamId, gameId, amount, info, catego
     ferroSocket.emitToAdmins(gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: entry});
     ferroSocket.emitToTeam(gameId, teamId, 'checkinStore', teamAccountActions.addTransaction(entry));
   }
-  return {amount }
+  return {amount}
 }
 
 /**
@@ -175,14 +182,10 @@ async function receiveFromBankOrChancellery(teamId, gameId, amount, info, catego
  * @param gameId
  * @param amount   amount to pay (will be always turned to a positive value)
  * @param info     optional text to be supplied with the transaction or object
- * @param callback
+ * @param type     of the transaction
  */
-async function receiveFromBank(teamId, gameId, amount, info, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in receiveFromBank');
-    return callback(new Error('no callback'));
-  }
-  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'bank');
+async function receiveFromBank(teamId, gameId, amount, info, type = TEAM_TRANSACTION_UNDEFINED) {
+  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'bank', type);
 }
 
 /**
@@ -198,7 +201,7 @@ async function receiveFromChancellery(teamId, gameId, amount, info, callback) {
     logger.info('>>>>>>>>  No more callbacks in receiveFromChancellery');
     return callback(new Error('no callback'));
   }
-  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'chancellery');
+  return await receiveFromBankOrChancellery(teamId, gameId, amount, info, 'chancellery', TEAM_TRANSACTION_CHANCELLERY);
 }
 
 /**
@@ -259,7 +262,7 @@ async function chargeToAnotherTeam(options, callback) {
  * @param teamId
  * @param atTime
  */
-async function getBalance(gameId, teamId, atTime=DateTime.fromISO('2525-01-01T00:00:00Z').toJSDate()) {
+async function getBalance(gameId, teamId, atTime = DateTime.fromISO('2525-01-01T00:00:00Z').toJSDate()) {
 
   if (typeof (gameId) !== 'string') {
     throw new Error('gameId must be a string');
@@ -358,7 +361,7 @@ async function getAccountStatement(gameId, teamId, p1, p2, p3) {
     return callback(new Error('no callback'));
   }
 
-  if(!_.isString(gameId)) {
+  if (!_.isString(gameId)) {
     throw new Error('gameId must be a String');
   }
 

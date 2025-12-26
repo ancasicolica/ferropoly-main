@@ -15,6 +15,10 @@ const _                      = require('lodash');
 const chancelleryActions     = require('../../../components/checkin-datastore/lib/chancellery/actions');
 const {DateTime}             = require('luxon');
 const chancelleryTexts       = require('../../lib/ChancelleryTexts.json');
+const {
+        TEAM_TRANSACTION_CHANCELLERY,
+        TEAM_TRANSACTION_GAMBLING
+      }                      = require('../../../common/models/accounting/teamAccountTransactionTypes');
 const logger                 = require('../../../common/lib/logger').getLogger('chancelleryAccount');
 let ferroSocket;
 let jackpotFull              = {};
@@ -70,7 +74,7 @@ async function bookChancelleryEvent(gameplay, team, info) {
       await chancelleryTransaction.book(entry);
       return bookCallback();
     } else {
-      await teamAccount.receiveFromBank(team.uuid, gameplay.internal.gameId, info.amount, info.infoText);
+      await teamAccount.receiveFromBank(team.uuid, gameplay.internal.gameId, info.amount, info.infoText, info.type);
       return bookCallback();
     }
   } else {
@@ -79,7 +83,8 @@ async function bookChancelleryEvent(gameplay, team, info) {
       teamId: team.uuid,
       gameId: gameplay.internal.gameId,
       amount: info.amount,
-      info:   info.infoText
+      info:   info.infoText,
+      type:   TEAM_TRANSACTION_CHANCELLERY
     });
 
     let entry         = new chancelleryTransaction.Model();
@@ -129,6 +134,7 @@ async function playChancellery(gameplay, team, callback) {
       return await playChancellery(gameplay, team);
     }
     retVal.amount = info.balance;
+    retVal.type   = TEAM_TRANSACTION_CHANCELLERY;
     await bookChancelleryEvent(gameplay, team, retVal);
 
     await gameLog.addEntry({
@@ -147,13 +153,26 @@ async function playChancellery(gameplay, team, callback) {
     } else {
       retVal.infoText = 'Chance/Kanzlei: ' + _.sample(chancelleryTexts.win);
     }
+    retVal.type = TEAM_TRANSACTION_CHANCELLERY;
     await bookChancelleryEvent(gameplay, team, retVal);
     return retVal;
   }
 }
 
-// Gambling: the team sets a value and wins it or loses it. Winning it is taken from the bank,
-//  losing it goes to the chancellery
+
+/**
+ * Performs a gambling operation within the context of a gameplay session, involving a specific team and a given amount.
+ * If a callback is provided, an error is immediately returned, as callbacks are not supported in this method.
+ *
+ * @param {Object} gameplay - The gameplay context within which the gambling operation takes place.
+ * @param {Object} team - The team involved in the gambling operation.
+ * @param {number} amount - The amount to gamble. Positive numbers indicate a win, while negative numbers indicate a loss.
+ * @param {Function} callback - A callback function (not supported; providing this will result in an error).
+ * @return {Promise<Object>} A promise that resolves to an object containing details of the gambling transaction, including:
+ *                           - `amount`: The gambled amount.
+ *                           - `infoText`: A description of the result, indicating whether the gamble was won or lost.
+ *                           - `type`: The transaction type.
+ */
 async function gamble(gameplay, team, amount, callback) {
   if (callback) {
     logger.info('>>>>>>>>  No more callbacks in gamble');
@@ -162,7 +181,8 @@ async function gamble(gameplay, team, amount, callback) {
 
   let retVal = {
     amount:   amount,
-    infoText: amount > 0 ? 'Chance/Kanzlei: Gambling gewonnen' : 'Chance/Kanzlei: Gambling verloren'
+    infoText: amount > 0 ? 'Chance/Kanzlei: Gambling gewonnen' : 'Chance/Kanzlei: Gambling verloren',
+    type:     TEAM_TRANSACTION_GAMBLING
   };
   await bookChancelleryEvent(gameplay, team, retVal);
   return retVal;
@@ -174,17 +194,13 @@ async function gamble(gameplay, team, amount, callback) {
  * @param team
  * @param amount
  * @param text
- * @param callback
+ * @param type
  */
-async function payToChancellery(gameplay, team, amount, text, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in payToChancellery');
-    return callback(new Error('no callback'));
-  }
-
+async function payToChancellery(gameplay, team, amount, text, type = TEAM_TRANSACTION_CHANCELLERY) {
   let retVal = {
     amount:   Math.abs(amount) * (-1),
-    infoText: text
+    infoText: text,
+    type:     type
   };
   await bookChancelleryEvent(gameplay, team, retVal);
   return retVal;

@@ -173,8 +173,10 @@ async function resetProperty(gameId, property, reason) {
       // A team spent money into the property - pay it back
       await teamAccount.receiveFromBank(
         transaction.sponsorTeamId,
-        gameId, Math.abs(transaction.amount),
-        `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`);
+        gameId,
+        Math.abs(transaction.amount),
+        `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`,
+        transaction.transaction.type);
       count++;
     }
     if (transaction.receivingTeamId && transaction.stornoPossible) {
@@ -183,7 +185,8 @@ async function resetProperty(gameId, property, reason) {
         teamId: transaction.receivingTeamId,
         gameId,
         amount: Math.abs(transaction.amount),
-        info:   `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`
+        info:   `Storno Buchung ${ts} für Ort ${property.location.name}; Buchungstext: "${transaction.info}"; Grund: ${reason}`,
+        type:   transaction.type
       });
       count++;
     }
