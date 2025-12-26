@@ -232,12 +232,13 @@ async function chargeToAnotherTeam(options, callback) {
   chargingEntry.teamId             = options.debitorTeamId;
   chargingEntry.user               = options.user;
   chargingEntry.transaction.amount = chargedAmount * (-1);
+
   chargingEntry.transaction.origin = {
     uuid:     options.creditorTeamId,
     category: 'team'
   };
   chargingEntry.transaction.info   = options.info;
-
+  chargingEntry.transaction.type   = options.type || TEAM_TRANSACTION_UNDEFINED;
   let receivingEntry                = new teamAccountTransaction.Model();
   receivingEntry.gameId             = options.gameId;
   receivingEntry.teamId             = options.creditorTeamId;
@@ -245,7 +246,7 @@ async function chargeToAnotherTeam(options, callback) {
   receivingEntry.transaction.amount = chargedAmount;
   receivingEntry.transaction.origin = {uuid: options.debitorTeamId, category: 'team'};
   receivingEntry.transaction.info   = options.info;
-
+  receivingEntry.transaction.type   = options.type || TEAM_TRANSACTION_UNDEFINED;
   await teamAccountTransaction.bookTransfer(chargingEntry, receivingEntry)
   if (ferroSocket) {
     ferroSocket.emitToAdmins(options.gameId, 'admin-teamAccount', {cmd: 'onTransaction', data: chargingEntry});

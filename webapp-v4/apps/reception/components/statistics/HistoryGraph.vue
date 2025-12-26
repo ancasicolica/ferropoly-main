@@ -23,7 +23,7 @@
 
 <script setup>
 import Chart from 'primevue/chart';
-import {computed,  ref} from 'vue';
+import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
@@ -33,6 +33,7 @@ import {useContainerResize} from '../../../../lib/composables/useContainerResize
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 
+
 const chartData = computed(() => {
   const teams = teamsStore.teams;
 
@@ -40,13 +41,16 @@ const chartData = computed(() => {
   for (const team of teams) {
     const records   = teamAccountStore.accountForTeam(team.uuid);
     const teamEntry = [];
-    for (const record of records) {
-      teamEntry.push({x: record.timestamp.toISO(), y: record.balance});
+    if (records) {
+      for (const record of records) {
+        teamEntry.push({x: record.timestamp.toISO(), y: record.balance});
+      }
+      datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
+    } else {
+      datasets.push({data: [], label: team.name, backgroundColor: team.color, borderColor: team.color});
     }
-    datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
   }
 
-  console.log('dataset', datasets)
   return {
     label:    'Einkommensverlauf',
     datasets: datasets
@@ -94,7 +98,7 @@ const chartOptions = computed(() => {
 });
 
 // SIZE HANDLING
-const chartContainer = ref(null);
+const chartContainer                                  = ref(null);
 const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
 /// END SIZE HANDLING
 

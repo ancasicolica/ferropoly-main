@@ -18,6 +18,7 @@ const logger              = require('../../../common/lib/logger').getLogger('pro
 const _                   = require('lodash');
 const propertyActions     = require('../../../components/checkin-datastore/lib/properties/actions');
 const {DateTime}          = require('luxon');
+const {TEAM_TRANSACTION_RENT} = require('../../../common/models/accounting/teamAccountTransactionTypes');
 
 let ferroSocket;
 
@@ -122,7 +123,8 @@ async function chargeRent(gp, property, teamId, callback) {
     amount:         val.amount,
     info:           'Miete ' + property.location.name,
     debitorTeamId:  teamId,
-    creditorTeamId: property.gamedata.owner
+    creditorTeamId: property.gamedata.owner,
+    type:           TEAM_TRANSACTION_RENT
   };
 
   // Charge value to the other team

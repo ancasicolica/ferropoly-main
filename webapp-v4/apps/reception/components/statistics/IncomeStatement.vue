@@ -5,12 +5,12 @@
 -->
 
 <template>
-  <fortune-graph-detailed />
+  <income-statement-graph />
 </template>
 
 <script setup>
 
-import FortuneGraphDetailed from './IncomeStatementGraph.vue';
+import IncomeStatementGraph from './IncomeStatementGraph.vue';
 </script>
 
 <style scoped lang="scss">

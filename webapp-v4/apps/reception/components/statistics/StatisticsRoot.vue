@@ -12,22 +12,22 @@
     <Tabs :value="activeTab">
       <TabList>
         <Tab value="0">Vermögen</Tab>
-        <Tab value="1">Vermögensverlauf</Tab>
+        <Tab value="1">Erfolgsrechnung</Tab>
         <Tab value="2">Einkommen</Tab>
-        <Tab value="3">Orte</Tab>
+        <Tab value="3">Vermögensverlauf</Tab>
       </TabList>
       <TabPanels :key="activeTab">
         <TabPanel value="0">
           <FortuneStatistics />
         </TabPanel>
         <TabPanel value="1">
-          <FortuneHistory />
+          <IncomeStatement />
         </TabPanel>
         <TabPanel value="2">
           <IncomeStatistics />
         </TabPanel>
         <TabPanel value="3">
-          <PropertyStatistics />
+          <FortuneHistory />
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -47,7 +47,7 @@ import TabPanel from 'primevue/tabpanel';
 import FortuneHistory from './FortuneHistory.vue';
 import FortuneStatistics from './FortuneStatistics.vue';
 import IncomeStatistics from './IncomeStatistics.vue';
-import PropertyStatistics from './PropertyStatistics.vue';
+import IncomeStatement from './IncomeStatement.vue';
 
 const activeTab = ref("0");
 </script>

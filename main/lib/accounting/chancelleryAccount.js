@@ -84,7 +84,7 @@ async function bookChancelleryEvent(gameplay, team, info) {
       gameId: gameplay.internal.gameId,
       amount: info.amount,
       info:   info.infoText,
-      type:   TEAM_TRANSACTION_CHANCELLERY
+      type:   info.type
     });
 
     let entry         = new chancelleryTransaction.Model();

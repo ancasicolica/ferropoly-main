@@ -25,14 +25,12 @@
 import Chart from 'primevue/chart';
 import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../../../lib/composables/useContainerResize';
 import {evaluatePropertyValueForTeam} from '../../../../lib/propertyLib';
 
 const teamsStore       = useTeamsStore();
-const teamAccountStore = useTeamAccountStore();
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
