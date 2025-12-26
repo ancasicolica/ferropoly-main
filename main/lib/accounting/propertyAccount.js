@@ -171,7 +171,7 @@ async function resetProperty(gameId, property, reason) {
   let count = 0;
   for (const transaction of transactions) {
     const ts = DateTime.fromJSDate(transaction.timestamp).toFormat('HH:mm:ss');
-    if (transaction.sponsorTeamId && transaction.stornoPossible) {
+    if (transaction.sponsorTeamId) {
       // A team spent money into the property - pay it back
       await teamAccount.receiveFromBank(
         transaction.sponsorTeamId,
@@ -181,7 +181,7 @@ async function resetProperty(gameId, property, reason) {
         transaction.transaction.type);
       count++;
     }
-    if (transaction.receivingTeamId && transaction.stornoPossible) {
+    if (transaction.receivingTeamId) {
       // A team received money - get it back
       await teamAccount.chargeToBank({
         teamId: transaction.receivingTeamId,
