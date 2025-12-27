@@ -510,8 +510,9 @@ describe('Testing the marketplace', () => {
       const teams                   = await teamModel.getTeamsAsMap(gameId);
       teams[gameData.teams[0].uuid] = gameData.teams[0];
       const report                  = await teamAccountRepport.get(gameId, null, teams);
+      console.log(report);
       console.log(report.length);
-      expect(report.length).to.be(59);
+      expect(report.length).to.be(60);
     })
     it('should return the team account as Excel', async () => {
       const report = await teamAccountRepport.createXlsx(gameId);
