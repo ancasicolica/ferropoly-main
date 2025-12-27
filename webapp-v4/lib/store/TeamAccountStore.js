@@ -14,8 +14,10 @@ import {
   TEAM_TRANSACTION_PENALTY_RATE,
   TEAM_TRANSACTION_PURCHASE_HOUSE, TEAM_TRANSACTION_PURCHASE_PROPERTY, TEAM_TRANSACTION_RENT, TEAM_TRANSACTION_START_FEE
 } from '../../../common/models/accounting/teamAccountTransactionTypes';
+import {useGameplayStore} from './GameplayStore';
 
-let teamsStore = null;
+let teamsStore    = null;
+let gameplayStore = null;
 
 export const useTeamAccountStore = defineStore('TeamAccount', {
   state:   () => ({
@@ -24,9 +26,18 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
     balances:           new Map() // Balances of the teams, teams.uuid is the key
   }),
   getters: {
-    rankingList:    (state) => {
+    rankingList: (state) => {
       return [...state.balances.values()].sort((a, b) => b.balance - a.balance);
     },
+    /**
+     * Retrieves the account information for a given team based on the team ID.
+     *
+     * @param {Object} state - The current state object containing team records.
+     * @returns {Function} A function that accepts a team ID and returns the account information
+     *                     associated with the given team ID from the state's records.
+     *
+     * @returns {*} The account information stored in the state's records for the given team ID.
+     */
     accountForTeam: (state) => (teamId) => {
       return state.records.get(teamId);
     },
@@ -106,7 +117,98 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
       let check = retVal.various + retVal.gambling + retVal.chancellery + retVal.penalty + retVal.propertyPurchase + retVal.housePurchase + retVal.rent + retVal.hourlyFee + retVal.interest;
       console.log('Check account', check, retVal);
       return retVal;
-    }
+    },
+    incomePerRoundForTeam: (state) => (teamId) => {
+      if (!gameplayStore) {
+        gameplayStore = useGameplayStore();
+      }
+
+      const interestRounds = gameplayStore.gameplay?.scheduling?.interestRounds;
+      if (!interestRounds || interestRounds.length < 2) {
+        return [];
+      }
+
+      const records = state.records.get(teamId);
+      if (!records) {
+        return [];
+      }
+
+      const result = [];
+
+      // Create a summary object for each period between interest rounds
+      for (let i = 0; i < interestRounds.length - 1; i++) {
+        const periodStart = interestRounds[i];
+        const periodEnd   = interestRounds[i + 1];
+
+        const periodSummary = {
+          various:          0,
+          gambling:         0,
+          chancellery:      0,
+          penalty:          0,
+          propertyPurchase: 0,
+          housePurchase:    0,
+          rent:             0,
+          hourlyFee:        0,
+          interest:         0,
+          sum:              0
+        };
+
+        // Filter and categorize transactions within this period
+        for (const r of records) {
+          const transactionTime = r.timestamp;
+
+          // Check if transaction is within the current period
+          if (transactionTime >= periodStart && transactionTime < periodEnd) {
+            const amount = r.transaction.amount;
+
+            switch (r.transaction.type) {
+              case TEAM_TRANSACTION_GAMBLING:
+                periodSummary.gambling += amount;
+                break;
+              case TEAM_TRANSACTION_HOURLY_FEE:
+              case TEAM_TRANSACTION_START_FEE:
+                periodSummary.hourlyFee += amount;
+                break;
+              case TEAM_TRANSACTION_CHANCELLERY:
+                periodSummary.chancellery += amount;
+                break;
+              case TEAM_TRANSACTION_PENALTY_RATE:
+                periodSummary.penalty += amount;
+                break;
+              case TEAM_TRANSACTION_PURCHASE_PROPERTY:
+                periodSummary.propertyPurchase += amount;
+                break;
+              case TEAM_TRANSACTION_PURCHASE_HOUSE:
+                periodSummary.housePurchase += amount;
+                break;
+              case TEAM_TRANSACTION_RENT:
+                periodSummary.rent += amount;
+                break;
+              case TEAM_TRANSACTION_INTEREST:
+                periodSummary.interest += amount;
+                break;
+              default:
+                periodSummary.various += amount;
+                break;
+            }
+          }
+        }
+
+        // Calculate sum of all categories
+        periodSummary.balance = periodSummary.various + periodSummary.gambling +
+          periodSummary.chancellery + periodSummary.penalty +
+          periodSummary.propertyPurchase + periodSummary.housePurchase +
+          periodSummary.rent + periodSummary.hourlyFee +
+          periodSummary.interest;
+
+        periodSummary.startTimestamp = interestRounds[i];
+        periodSummary.endTimestamp   = interestRounds[i + 1];
+
+        result.push(periodSummary);
+      }
+
+      return result;
+    },
   },
   actions: {
     async loadTeamAccountEntries(gameId, teamId = 'all') {

@@ -5,6 +5,7 @@
  **/
 
 import {defineStore} from 'pinia'
+import {DateTime} from 'luxon';
 
 export const useGameplayStore = defineStore('Gameplay', {
   state:   () => ({
@@ -17,12 +18,13 @@ export const useGameplayStore = defineStore('Gameplay', {
         logins: []
       },
       scheduling: {
-        gameDate:    undefined,
-        gameStart:   undefined,
-        gameEnd:     undefined,
-        deleteTs:    undefined,
-        gameEndTs:   undefined,
-        gameStartTs: undefined,
+        gameDate:       undefined,
+        gameStart:      undefined,
+        gameEnd:        undefined,
+        deleteTs:       undefined,
+        gameEndTs:      undefined,
+        gameStartTs:    undefined,
+        interestRounds: [],
       },
       gameParams: {
         presets:                   undefined,
@@ -90,7 +92,29 @@ export const useGameplayStore = defineStore('Gameplay', {
   getters: {},
   actions: {
     init(gameplay) {
-      this.gameplay = gameplay;
+      console.log('xxxx')
+      this.gameplay                        = gameplay;
+      this.gameplay.scheduling.gameStartTs = DateTime.fromISO(gameplay.scheduling.gameStartTs);
+      this.gameplay.scheduling.gameEndTs   = DateTime.fromISO(gameplay.scheduling.gameEndTs);
+      this.gameplay.scheduling.deleteTs    = DateTime.fromISO(gameplay.scheduling.deleteTs);
+      this.gameplay.scheduling.gameDate    = DateTime.fromISO(gameplay.scheduling.gameDate);
+
+
+      // Generate interest rounds array, which is not part of the supplied gameplay but calculated
+      this.gameplay.scheduling.interestRounds = [];
+      let currentRound                        = this.gameplay.scheduling.gameStartTs;
+      const intervalMinutes                   = this.gameplay.gameParams.interestInterval;
+
+      while (currentRound <= this.gameplay.scheduling.gameEndTs) {
+        this.gameplay.scheduling.interestRounds.push(currentRound);
+        currentRound = currentRound.plus({minutes: intervalMinutes});
+      }
+
+      // Ensure the last round is exactly gameEndTs if not already included
+      const lastRound = this.gameplay.scheduling.interestRounds[this.gameplay.scheduling.interestRounds.length - 1];
+      if (lastRound && lastRound < this.gameplay.scheduling.gameEndTs) {
+        this.gameplay.scheduling.interestRounds.push(this.gameplay.scheduling.gameEndTs);
+      }
     }
   }
 })
