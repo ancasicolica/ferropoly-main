@@ -5,10 +5,12 @@
  **/
 
 import {defineStore} from 'pinia'
+import axios from 'axios';
 
 export const useSummaryStore = defineStore('Summary', {
   state:   () => ({
-    menuBarElements:   [
+    gameId:          '',
+    menuBarElements: [
       {label: 'Übersicht', route: 'dashboard'},
       {label: 'Karte', route: 'map'},
       {label: 'Bilder', route: 'pictures'},
@@ -19,5 +21,12 @@ export const useSummaryStore = defineStore('Summary', {
     ],
   }),
   getters: {},
-  actions: {}
+  actions: {
+    async fetchData(gameId) {
+      this.gameId = gameId;
+      const resp  = await axios.get(`/static/${gameId}`);
+      console.log('Static data fetched', resp.data);
+      return resp.data;
+    }
+  }
 })

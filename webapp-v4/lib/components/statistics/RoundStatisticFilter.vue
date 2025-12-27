@@ -88,7 +88,7 @@
 
 <script setup>
 import Checkbox from 'primevue/checkbox';
-import {useStatisticStore} from '../../../../lib/store/StatisticStore';
+import {useStatisticStore} from '../../store/StatisticStore';
 
 const statisticStore = useStatisticStore();
 </script>

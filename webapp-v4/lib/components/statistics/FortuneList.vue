@@ -12,7 +12,7 @@
 
 <script setup>
 
-import RankingList from '../../../../lib/components/RankingList.vue';
+import RankingList from '../RankingList.vue';
 </script>
 
 <style scoped lang="scss">

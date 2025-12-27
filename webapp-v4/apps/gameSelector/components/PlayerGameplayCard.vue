@@ -36,6 +36,7 @@
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
       <Button
           v-if="isTeamLead"
+          class="mr-2 mb-2"
           label="Team Mitglieder"
           size="small"
           icon="pi pi-users"
@@ -44,12 +45,22 @@
           :href="teamEditLink"
       />
       <Button
+          class="mr-2 mb-2"
           label="Preisliste"
           size="small"
           severity="secondary"
           as="a"
           :href="pricelistLink"
-        />
+      />
+      <Button
+          v-if="gameOver"
+          class="mr-2 mb-2"
+          label="Zusammenfassung"
+          size="small"
+          severity="info"
+          as="a"
+          :href="summaryLink"
+      />
     </ferro-card>
   </div>
 </template>
@@ -58,8 +69,9 @@
 
 import Button from 'primevue/button';
 import FerroCard from '../../../common/components/FerroCard.vue';
-import {formatGameDate, formatGameTime, formatMap} from '../../../common/lib/formatters';
+import {createLuxonDate, formatGameDate, formatGameTime, formatMap} from '../../../common/lib/formatters';
 import {computed} from 'vue';
+import {DateTime} from 'luxon';
 
 const props = defineProps({
   gameplay: {
@@ -73,17 +85,29 @@ const props = defineProps({
   }
 });
 
-const title      = computed(() => `${props.gameplay.gamename}, Team "${props.gameplay.team.data.name}"`);
-const owner      = computed(() => props.gameplay.owner.organisatorName);
-const ownerEmail = computed(() => `mailto:${props.gameplay.owner.organisatorEmail}`);
-const gameDate   = computed(() => formatGameDate(props.gameplay.scheduling.gameDate));
-const gameStart  = computed(() => formatGameTime(props.gameplay.scheduling.gameStart));
-const gameEnd    = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
-const map        = computed(() => formatMap(props.gameplay.internal.map))
-const deleteTs   = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs))
-const isTeamLead   = computed(() => props.gameplay.isTeamLead)
-const teamEditLink = computed(()=> `/team/edit/${props.gameplay.internal.gameId}/${props.gameplay.team.uuid}`)
-const pricelistLink = computed(()=> `/info/${props.gameplay.internal.gameId}`)
+const title         = computed(() => `${props.gameplay.gamename}, Team "${props.gameplay.team.data.name}"`);
+const owner         = computed(() => props.gameplay.owner.organisatorName);
+const ownerEmail    = computed(() => `mailto:${props.gameplay.owner.organisatorEmail}`);
+const gameDate      = computed(() => formatGameDate(props.gameplay.scheduling.gameDate));
+const gameStart     = computed(() => formatGameTime(props.gameplay.scheduling.gameStart));
+const gameEnd       = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
+const map           = computed(() => formatMap(props.gameplay.internal.map))
+const deleteTs      = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs))
+const isTeamLead    = computed(() => props.gameplay.isTeamLead)
+const teamEditLink  = computed(() => `/team/edit/${props.gameplay.internal.gameId}/${props.gameplay.team.uuid}`)
+const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`)
+const summaryLink   = computed(() => `/summary/${props.gameplay.internal.gameId}`);
+
+const gameOver = computed(() => {
+  if (!props.gameplay.internal.finalized) {
+    return false;
+  }
+  const gameDate    = createLuxonDate(props.gameplay.scheduling.gameDate);
+  const releaseTime = gameDate.set({hour: 23, minute: 59, second: 59});
+  return DateTime.now() > releaseTime;
+});
+
+
 </script>
 
 <style scoped lang="scss">

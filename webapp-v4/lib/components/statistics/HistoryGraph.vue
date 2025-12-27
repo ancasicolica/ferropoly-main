@@ -1,5 +1,5 @@
 <!---
-
+  Graph with all bookings
   Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
   Created: 22.12.2025
 -->
@@ -11,7 +11,7 @@
   >
     <Chart
         :key="containerKey"
-        type="bar"
+        type="line"
         :data="chartData"
         :options="chartOptions"
         :height="containerHeight"
@@ -24,47 +24,35 @@
 <script setup>
 import Chart from 'primevue/chart';
 import {computed, ref} from 'vue';
-import {useTeamsStore} from '../../../../lib/store/TeamsStore';
+import {useTeamsStore} from '../../store/TeamsStore';
+import {useTeamAccountStore} from '../../store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import {useContainerResize} from '../../../../lib/composables/useContainerResize';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import {useContainerResize} from '../../composables/useContainerResize';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 
+
 const chartData = computed(() => {
   const teams = teamsStore.teams;
 
-  const datasets = [
-    {label: 'Startgeld', data: [], backgroundColor: '#147025'},
-    {label: 'Stündlicher Ortszins', data: [], backgroundColor: '#717fd5'},
-    {label: 'Chance/Kanzlei', data: [], backgroundColor: '#f10d00'},
-    {label: 'Gambling', data: [], backgroundColor: '#fff200'},
-    {label: 'Kauf Orte', data: [], backgroundColor: 'rgba(145,60,234,0.99)'},
-    {label: 'Kauf Häuser', data: [], backgroundColor: '#4b039b'},
-    {label: 'Miete', data: [], backgroundColor: '#574c06'},
-    {label: 'Strafzins', data: [], backgroundColor: '#050505'},
-    {label: 'Diverses', data: [], backgroundColor: '#c798e8'},
-  ];
-  const labels   = [];
+  const datasets = [];
   for (const team of teams) {
-    labels.push(team.name);
-    const info = teamAccountStore.accountSummaryForTeam(team.uuid);
-    datasets[0].data.push(info.hourlyFee);
-    datasets[1].data.push(info.interest);
-    datasets[2].data.push(info.chancellery);
-    datasets[3].data.push(info.gambling);
-    datasets[4].data.push(info.propertyPurchase);
-    datasets[5].data.push(info.housePurchase);
-    datasets[6].data.push(info.rent);
-    datasets[7].data.push(info.penalty);
-    datasets[8].data.push(info.various);
+    const records   = teamAccountStore.accountForTeam(team.uuid);
+    const teamEntry = [];
+    if (records) {
+      for (const record of records) {
+        teamEntry.push({x: record.timestamp.toISO(), y: record.balance});
+      }
+      datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
+    } else {
+      datasets.push({data: [], label: team.name, backgroundColor: team.color, borderColor: team.color});
+    }
   }
 
-  console.log('incoming dataset', datasets)
   return {
-    labels:   labels,
+    label:    'Einkommensverlauf',
     datasets: datasets
   };
 });
@@ -80,22 +68,39 @@ const chartOptions = computed(() => {
           color: 'black'
         }
       },
-
+      zoom:   {
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true
+          },
+          //mode: 'xy',
+          scaleMode: 'xy'
+        },
+        pan:  {
+          enabled: true,
+          mode:    'xy'
+        }
+      }
     },
     scales:              {
       x: {
-        stacked: true
+        type: 'time',
+        time: {
+          unit: 'minute'
+        }
       },
       y: {
-        stacked: true,
         ticks: {
-          stepSize: 10000,
+          stepSize: 50000,
         },
         grid: {
           // Callback to determine the line width for each tick
           lineWidth: (context) => {
             // Check if the tick value is a multiple of 100,000
-            if (context.tick && (context.tick.value % 100000 === 0 || context.tick.value % 100000 === 0)) {
+            if (context.tick && context.tick.value % 250000 === 0) {
               return 2; // Thicker line for 100k steps
             }
             return 1; // Default line width

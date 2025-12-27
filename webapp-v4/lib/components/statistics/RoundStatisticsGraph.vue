@@ -24,12 +24,12 @@
 <script setup>
 import Chart from 'primevue/chart';
 import {computed, ref} from 'vue';
-import {useTeamsStore} from '../../../../lib/store/TeamsStore';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import {useTeamsStore} from '../../store/TeamsStore';
+import {useTeamAccountStore} from '../../store/TeamAccountStore';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import {useContainerResize} from '../../../../lib/composables/useContainerResize';
-import {useStatisticStore} from '../../../../lib/store/StatisticStore';
+import {useContainerResize} from '../../composables/useContainerResize';
+import {useStatisticStore} from '../../store/StatisticStore';
 import {DateTime} from 'luxon';
 
 const teamsStore       = useTeamsStore();

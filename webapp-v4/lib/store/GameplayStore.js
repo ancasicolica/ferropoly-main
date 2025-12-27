@@ -90,10 +90,13 @@ export const useGameplayStore = defineStore('Gameplay', {
     }
   }),
   getters: {
+    /**
+     * Determines whether the game is currently active
+     */
     gameActive(state) {
       const now = DateTime.now();
       return now >= state.gameplay.scheduling.gameStartTs && now <= state.gameplay.scheduling.gameEndTs;
-    }
+    },
   },
   actions: {
     init(gameplay) {

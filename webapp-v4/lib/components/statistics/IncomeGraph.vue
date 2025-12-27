@@ -1,7 +1,7 @@
 <!---
-  Graph with the fortune
+
   Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
-  Created: 20.12.2025
+  Created: 22.12.2025
 -->
 
 <template>
@@ -16,52 +16,39 @@
         :options="chartOptions"
         :height="containerHeight"
         :width="containerWidth"
+        :plugins="[zoomPlugin]"
     />
   </div>
 </template>
 
 <script setup>
-
 import Chart from 'primevue/chart';
 import {computed, ref} from 'vue';
-import {useTeamsStore} from '../../../../lib/store/TeamsStore';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
-import {useContainerResize} from '../../../../lib/composables/useContainerResize';
+import {useTeamsStore} from '../../store/TeamsStore';
+import 'chartjs-adapter-luxon';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import {useContainerResize} from '../../composables/useContainerResize';
+import {evaluatePropertyValueForTeam} from '../../propertyLib';
 
 const teamsStore       = useTeamsStore();
-const teamAccountStore = useTeamAccountStore();
-
-// SIZE HANDLING
-const chartContainer = ref(null);
-const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
-/// END SIZE HANDLING
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
 
-  // Map store data to Chart.js structure
-  const labels           = [];
-  const backgroundColors = teams.map(team => teamsStore.idToColor(team.uuid));
-
-  // Note: Replace the static [2, 4, 5, 2] with real data from your store/team objects if available
-  const dataValues = [];
+  const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
+                    {label: 'Zusätzlicher Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
+  const labels   = [];
   for (const team of teams) {
-    const info = teamAccountStore.balances.get(team.uuid);
-    if (info) {
-      labels.push(info.teamName);
-      dataValues.push(info.balance);
-    }
+    labels.push(team.name);
+    const info = evaluatePropertyValueForTeam(team.uuid);
+    datasets[0].data.push(info.sum);
+    datasets[1].data.push(info.max - info.sum);
   }
 
+  console.log('incoming dataset', datasets)
   return {
     labels:   labels,
-    datasets: [
-      {
-        label:           'Vermögen',
-        data:            dataValues,
-        backgroundColor: backgroundColors
-      }
-    ]
+    datasets: datasets
   };
 });
 
@@ -71,26 +58,21 @@ const chartOptions = computed(() => {
     responsive:          false,
     plugins:             {
       legend: {
-        display: false,
+        display: true,
         labels:  {
           color: 'black'
         }
-      }
+      },
+
     },
     scales:              {
       x: {
-        ticks: {
-          color: 'black'
-        },
-        grid:  {
-          color: 'darkgrey'
-        }
+        stacked: true
       },
       y: {
-        beginAtZero: true,
-        ticks:       {
-          color: 'black',
-          stepSize: 50000,
+        stacked: true,
+        ticks: {
+          stepSize: 10000,
         },
         grid: {
           // Callback to determine the line width for each tick
@@ -114,13 +96,13 @@ const chartOptions = computed(() => {
   };
 });
 
+// SIZE HANDLING
+const chartContainer                                  = ref(null);
+const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
+/// END SIZE HANDLING
 
 </script>
 
 <style scoped lang="scss">
-.chart-container {
-  background-color: white;
-}
-
 
 </style>
