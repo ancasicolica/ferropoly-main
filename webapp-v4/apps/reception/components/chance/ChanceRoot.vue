@@ -13,7 +13,7 @@
         class="flex flex-row w-full h-full"
     >
       <div class="flex flex-1 gap-4 min-h-0 overflow-hidden">
-        <div class="basis-128 shrink-0 min-h-0 overflow-hidden">
+        <div class="basis-100 shrink-0 min-h-0 overflow-hidden">
           <chance-summary />
         </div>
 

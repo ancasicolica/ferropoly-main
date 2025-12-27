@@ -11,12 +11,14 @@
             size="small"
             scrollable
             scroll-height="flex"
+
             :virtual-scroller-options="{ itemSize: 44 }"
         >
           <Column
               field="timestamp"
               header="Zeit"
               :sortable="true"
+              style="width: 100px"
           >
             <template #body="slotProps">
               {{ formatTime(slotProps.data.timestamp) }}
@@ -42,6 +44,7 @@
           <Column
               field="transaction.amount"
               header="Betrag"
+              style="width: 110px"
           >
             <template #body="slotProps">
               {{ formatPrice(slotProps.data.transaction.amount) }}
@@ -50,6 +53,7 @@
           <Column
               field="transaction.amout"
               header="Saldo"
+              style="width: 110px"
           >
             <template #body="slotProps">
               {{ formatPrice(slotProps.data.balance) }}

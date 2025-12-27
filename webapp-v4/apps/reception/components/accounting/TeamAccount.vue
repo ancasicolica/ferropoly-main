@@ -22,12 +22,13 @@
           :sort-order="sortOrder"
           scrollable
           scroll-height="flex"
-          :virtual-scroller-options="{ itemSize: 44 }"
+          table-style="table-layout: fixed"
+          :virtual-scroller-options="{ itemSize: 38 }"
           @update:sort-order="onSortOrder"
       >
         <Column
             expander
-            style="width: 5rem"
+            style="width: 25px"
         >
           <template #body="{data, rowTogglerCallback}">
 
@@ -43,6 +44,7 @@
             field="timestamp"
             header="Zeit"
             :sortable="true"
+            style="width: 150px"
         >
           <template #body="slotProps">
             {{ formatTime(slotProps.data.timestamp) }}
@@ -59,6 +61,7 @@
         <Column
             field="transaction.amount"
             header="Betrag"
+            style="width: 200px"
         >
           <template #body="slotProps">
             {{ formatPrice(slotProps.data.transaction.amount) }}
@@ -67,6 +70,7 @@
         <Column
             field="balance"
             header="Saldo"
+            style="width: 200px"
         >
           <template #body="slotProps">
             {{ formatPrice(slotProps.data.balance) }}

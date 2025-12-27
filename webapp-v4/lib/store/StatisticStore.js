@@ -8,8 +8,8 @@ import {defineStore} from 'pinia'
 
 export const useStatisticStore = defineStore('Statistic', {
   state:   () => ({
-    activeTab: '1',
-    filter: {
+    activeTab: '0',
+    filter:    {
       various:          true,
       gambling:         true,
       chancellery:      true,
