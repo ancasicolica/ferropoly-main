@@ -30,6 +30,7 @@ import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../../../lib/composables/useContainerResize';
 import {useStatisticStore} from '../../../../lib/store/StatisticStore';
+import {DateTime} from 'luxon';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
@@ -58,9 +59,13 @@ const chartData = computed(() => {
     const records = teamAccountStore.incomePerRoundForTeam(team.uuid);
 
     const teamEntry = [];
+    const now = DateTime.now();
     if (records) {
       for (const record of records) {
-        teamEntry.push({x: record.endTimestamp.toISO(), y: calculateIncome(record)});
+        const income = calculateIncome(record);
+        if (record.endTimestamp <= now || income > 0) {
+          teamEntry.push({x: record.endTimestamp.toISO(), y: income});
+        }
       }
       datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
     } else {

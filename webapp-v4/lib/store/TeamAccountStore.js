@@ -118,6 +118,21 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
       console.log('Check account', check, retVal);
       return retVal;
     },
+    /**
+     * Computes income summaries for a specific team over predefined periods (interest rounds).
+     *
+     * This function takes the `state` object and a `teamId`, identifying all transactions of the team and
+     * categorizing them into different types. It summarizes the data for each period between consecutive
+     * interest rounds, providing details on various income and expense categories.
+     *
+     * Each period summary includes the amount for each category, the total balance, and the start and
+     * end timestamps of the period.
+     *
+     * @param {object} state - The state object containing team transaction records.
+     * @returns {function(string): Array<object>} - A function that accepts a team ID and returns
+     *                                              an array of period summaries. Each summary is an
+     *                                              object detailing categorized amounts and balances.
+     */
     incomePerRoundForTeam: (state) => (teamId) => {
       if (!gameplayStore) {
         gameplayStore = useGameplayStore();
