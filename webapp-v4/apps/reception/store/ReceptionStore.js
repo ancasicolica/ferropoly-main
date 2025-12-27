@@ -88,6 +88,7 @@ export const useReceptionStore = defineStore('Reception', {
           });
         }
         catch (err) {
+          self.addCallLog({title: 'Fehler bei Chance/Kanzlei', message: err.message, type: LOG_TYPE_FAIL});
           console.error(err);
         }
       }

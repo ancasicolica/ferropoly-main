@@ -38,6 +38,7 @@
           </div>
         </details>
         <Button
+            v-if="gameActive"
             label="Anruf bearbeiten"
             size="small"
             @click="onClickCall"
@@ -52,10 +53,10 @@
 import Button from 'primevue/button';
 import Panel from 'primevue/panel';
 import {computed} from 'vue';
-import {useTeamsStore} from '../../../../lib/store/TeamsStore';
+import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 
-const teamsStore = useTeamsStore();
-const props      = defineProps({
+const gameplayStore = useGameplayStore();
+const props         = defineProps({
   team: {
     type:     Object,
     required: true,
@@ -69,11 +70,16 @@ const cssVars = computed(() => {
   return {'--team-color': props.team.color};
 })
 
-const emit = defineEmits(['team-calling']);
+const emit = defineEmits(['team-calling', 'view-team']);
 
 const onClickCall = () => {
   emit('team-calling', props.team);
 }
+
+const gameActive = computed(() => {
+  return gameplayStore.gameActive;
+})
+
 </script>
 
 <style scoped lang="scss">

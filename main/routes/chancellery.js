@@ -12,6 +12,7 @@ const logger         = require('../../common/lib/logger').getLogger('routes:chan
 const accessor       = require('../lib/accessor');
 const _              = require('lodash');
 const marketplaceApi = require('../lib/accounting/marketplace');
+const {gameActive} = require('../lib/mainGameplayLib');
 
 /**
  * Get the amount of the chancellery
@@ -70,6 +71,10 @@ router.post('/play/:gameId/:teamId', function (req, res) {
       let gp   = data.gameplay;
       let team = data.teams.get(req.params.teamId);
 
+      if (!gameActive(gp)) {
+        return res.status(406).send({message: 'Game is not active'});
+      }
+
       const chRes = await chancellery.playChancellery(gp, team);
       res.send({result: chRes});
     }
@@ -105,6 +110,10 @@ router.post('/gamble/:gameId/:teamId', function (req, res) {
         const data = await gameCache.getGameData(req.params.gameId);
         let gp     = data.gameplay;
         let team   = data.teams.get(req.params.teamId);
+
+        if (!gameActive(gp)) {
+          return res.status(406).send({message: 'Game is not active'});
+        }
 
         if (!team) {
           return res.status(404).send({message: 'team not found'});

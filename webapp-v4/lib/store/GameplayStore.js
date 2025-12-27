@@ -89,10 +89,14 @@ export const useGameplayStore = defineStore('Gameplay', {
 
     }
   }),
-  getters: {},
+  getters: {
+    gameActive(state) {
+      const now = DateTime.now();
+      return now >= state.gameplay.scheduling.gameStartTs && now <= state.gameplay.scheduling.gameEndTs;
+    }
+  },
   actions: {
     init(gameplay) {
-      console.log('xxxx')
       this.gameplay                        = gameplay;
       this.gameplay.scheduling.gameStartTs = DateTime.fromISO(gameplay.scheduling.gameStartTs);
       this.gameplay.scheduling.gameEndTs   = DateTime.fromISO(gameplay.scheduling.gameEndTs);

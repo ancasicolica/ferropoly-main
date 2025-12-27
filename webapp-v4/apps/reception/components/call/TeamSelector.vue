@@ -13,6 +13,7 @@
         class="flex-[0_0_22rem] flex"
         :team="team"
         @team-calling="onTeamCalling"
+        @viewTeam="onViewTeam"
     />
 
   </div>
@@ -23,14 +24,20 @@
 import TeamCard from './TeamCard.vue';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 import {computed} from 'vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
 
 const teamsStore = useTeamsStore();
+const receptionStore= useReceptionStore();
 
 const teams = computed(() => [...teamsStore.teams]);
 
 const emit          = defineEmits(['team-calling']);
 const onTeamCalling = (team) => {
   emit('team-calling', team);
+}
+
+const onViewTeam = (team) => {
+  receptionStore.viewTeam(team);
 }
 </script>
 

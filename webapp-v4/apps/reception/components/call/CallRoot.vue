@@ -7,6 +7,12 @@
 <template>
   <div>
     <div v-if="!receptionStore.callActive">
+      <Message
+          v-if="!gameplayStore.gameActive"
+          severity="warn"
+      >
+        Anrufe können nur bei laufendem Spiel angenommen werden.
+      </Message>
       <h1>Anrufendes Team auswählen</h1>
       <team-selector @team-calling="onTeamCalling" />
     </div>
@@ -25,7 +31,7 @@
       <p>Möglichkeiten:</p>
       <ul>
         <li>Mit "Bearbeiten" wird ein normaler Anruf eingeleitet, d.h. Chance/Kanlzei wird ausgeführt</li>
-        <li>Mit "Nachtrag" kann ein unterbrochener Anruf fortgesetzt werde, Chance/Kanlzei wird nicht ausgeführt</li>
+        <li>Mit "Nachtrag" kann ein unterbrochener Anruf fortgesetzt werde, Chance/Kanzlei wird nicht ausgeführt</li>
         <li>Mit "Abbrechen" verlässt Du diesen Dialog ohne weitere Aktionen</li>
       </ul>
       <p>Was willst Du tun?</p>
@@ -63,9 +69,11 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import {computed, ref} from 'vue';
 import CallActive from './CallActive.vue';
+import Message from 'primevue/message';
+import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 
 const activitySelected = ref(false);
-const dialogActive = computed({
+const dialogActive     = computed({
   get: () => {
     return callingTeam.value !== null;
   },
@@ -74,14 +82,15 @@ const dialogActive = computed({
   }
 
 })
-const callingTeam  = ref(null);
+const callingTeam      = ref(null);
 
 const receptionStore = useReceptionStore();
+const gameplayStore  = useGameplayStore();
 
 const onTeamCalling = (team) => {
   console.log('team is calling', team.value);
   activitySelected.value = false;
-  callingTeam.value = team;
+  callingTeam.value      = team;
 }
 
 const onNormalCallConfirmed = () => {
