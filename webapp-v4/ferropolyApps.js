@@ -44,4 +44,9 @@ module.exports = [
     entry   : path.join(__dirname, 'apps', 'about', 'app.js'),
     htmlFile: 'about.html'
   },
+  {
+    name    : 'check-in',
+    entry   : path.join(__dirname, 'apps', 'check-in', 'app.js'),
+    htmlFile: 'check-in.html'
+  },
 ];
