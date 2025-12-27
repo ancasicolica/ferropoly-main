@@ -18,7 +18,10 @@ const logger              = require('../../../common/lib/logger').getLogger('pro
 const _                   = require('lodash');
 const propertyActions     = require('../../../components/checkin-datastore/lib/properties/actions');
 const {DateTime}          = require('luxon');
-const {TEAM_TRANSACTION_RENT} = require('../../../common/models/accounting/teamAccountTransactionTypes');
+const {
+        TEAM_TRANSACTION_RENT,
+        TEAM_TRANSACTION_PURCHASE_PROPERTY
+      }                   = require('../../../common/models/accounting/teamAccountTransactionTypes');
 
 let ferroSocket;
 
@@ -75,7 +78,8 @@ async function buyProperty(gameplay, property, team, callback) {
       category: 'team'
     },
     amount: (-1) * retVal.amount, // buy is negative earning on the property
-    info:   'Kauf'
+    info:   'Kauf',
+    type:   TEAM_TRANSACTION_PURCHASE_PROPERTY
   };
 
   await propertyTransaction.book(pt);
@@ -143,7 +147,8 @@ async function chargeRent(gp, property, teamId, callback) {
       category: 'team'
     },
     amount: info.amount,
-    info:   'Miete'
+    info:   'Miete',
+    type: TEAM_TRANSACTION_RENT
   };
 
   await propertyTransaction.book(pt);
