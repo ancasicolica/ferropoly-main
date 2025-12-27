@@ -6,10 +6,22 @@
  **/
 import createWebApp from '../../common/lib/appFactory';
 import SummaryRoot from './components/SummaryRoot.vue';
+import DashboardRoot from './components/dashboard/DashboardRoot.vue';
+import PicturesRoot from './components/pictures/PicturesRoot.vue';
+import StatisticsRoot from './components/statistics/StatisticsRoot.vue';
+import AccountingRoot from './components/accounting/AccountingRoot.vue';
+import ChanceRoot from './components/chance/ChanceRoot.vue';
+import PricelistRoot from './components/pricelist/PricelistRoot.vue';
 
 createWebApp( {
   routes: [
-    {path: '/', name: 'root', component: SummaryRoot },
+    {path: '/', name: 'dashboard', component: DashboardRoot },
+    {path: '/map', name: 'map', component: DashboardRoot },
+    {path: '/pictures', name: 'pictures', component: PicturesRoot },
+    {path: '/statistics', name: 'statistics', component: StatisticsRoot },
+    {path: '/accounting', name: 'accounting', component: AccountingRoot },
+    {path: '/chance', name: 'chance', component: ChanceRoot },
+    {path: '/pricelist', name: 'pricelist', component: PricelistRoot },
   ],
   components: [
     {name: 'summary-root', component: SummaryRoot},
