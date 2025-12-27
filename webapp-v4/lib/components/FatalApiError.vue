@@ -20,7 +20,7 @@
 <script setup>
 
 import Message from 'primevue/message';
-import {computed, defineProps} from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   error: {
