@@ -171,7 +171,7 @@ class Scheduler extends EventEmitter {
             try {
               self.jobs.push(
                 CronJob.from({
-                    cronTime:     scheduledTs.toJSDate(),
+                    cronTime:     scheduledTs.set({'seconds': 0, 'milliseconds': 0}),
                     onTick:       handlerFunction.bind(null, event),
                     start:        true,
                     timezone:     'Europe/Berlin',
