@@ -60,7 +60,7 @@ class Marketplace extends EventEmitter {
           event.callback(null, event);
         }
         catch (err) {
-          event.callback(err);
+          event.callback(err, event);
         }
       });
       /**
@@ -77,7 +77,7 @@ class Marketplace extends EventEmitter {
           event.callback(null, event);
         }
         catch (err) {
-          event.callback(err);
+          event.callback(err, event);
         }
       });
 
@@ -95,7 +95,7 @@ class Marketplace extends EventEmitter {
           event.callback(null, event);
         }
         catch (err) {
-          event.callback(err);
+          event.callback(err, event);
         }
       });
       /**
@@ -115,7 +115,7 @@ class Marketplace extends EventEmitter {
           event.callback(null, event);
         }
         catch (err) {
-          event.callback(err);
+          event.callback(err, event);
         }
       });
     }

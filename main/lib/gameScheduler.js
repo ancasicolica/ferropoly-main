@@ -26,24 +26,63 @@ class Scheduler extends EventEmitter {
     super();
     logger.info('initializing scheduler');
     EventEmitter.call(this);
-
+    const self    = this;
     this.settings = _settings;
     if (!this.settings.scheduler) {
       this.scheduler = {delay: 15};
     }
-    this.jobs      = [];
-    this.updateJob = undefined;
+    this.jobs = [];
 
-    new CronJob('0 1 0 * * *',
-      function () {
-        // Update cache at start of the day
-        gameCache.refreshCache().catch(err => {
-          logger.error('Error in refreshCache', err);
-        });
-      },
-      null,
-      true,
-      'Europe/Berlin')
+    try {
+      this.refreshCronJob = CronJob.from(
+        {
+          cronTime:     '0 1 0 * * *',
+          onTick:       gameCache.refreshCache,
+          start:        true,
+          timezone:     'Europe/Berlin',
+          errorHandler: self.cronErrorHandler,
+          context:      self,
+          runOnInit:    false,
+          name:         'refreshCronJob'
+        }
+      );
+
+      // Update every 3 hours
+      this.updateJob = CronJob.from(
+        {
+          cronTime:     '0 53 0/3 * * *',
+          onTick:       self.update,
+          start:        true,
+          timezone:     'Europe/Berlin',
+          errorHandler: self.cronErrorHandler,
+          context:      self,
+          runOnInit:    false,
+          name:         `updateJob`
+        }
+      );
+    }
+    catch (err) {
+      logger.error('Error in Scheduler constructor', err);
+    }
+  }
+
+  /**
+   * The error handler for cron jobs
+   * @param err
+   */
+  cronErrorHandler(err) {
+    logger.error('Error in cron job', err);
+  }
+
+  /**
+   * Retrieves a list of all cron jobs managed by the system.
+   * The method returns an array that combines existing jobs,
+   * an update job, and a refresh cron job.
+   *
+   * @return {Array} An array containing all cron jobs.
+   */
+  getCronJobs() {
+    return [...this.jobs, this.updateJob, this.refreshCronJob];
   }
 
   /**
@@ -82,20 +121,26 @@ class Scheduler extends EventEmitter {
       return;
     }
     eventRepo.saveAfterHandling(event).then(() => {
-      logger.debug(`${event.gameId}: Event handling "${event.type}" finished. Message:" "${event.message}"`, {id: event._id, timestamp: event.timestamp});
-    }).catch(err => {
+        logger.debug(`${event.gameId}: Event handling '${event.type}'finished. Message: '${event.message}'`, {
+          id: event._id,
+          timestamp:
+              event.timestamp
+        });
+      }
+    ).catch(err => {
       logger.error('Error while saving handled event', {event, err});
     });
   };
 
   /**
-   * Update: load all events of next few hours.
+   * Update: load all events of the next few hours.
    * @param callback
    */
   update(callback) {
     logger.info('Scheduler update');
     let self = this;
     let i;
+    // this returns the events for the next 4 hours
     eventRepo.getUpcomingEvents().then(events => {
       logger.info('Events read: ' + events.length, events);
 
@@ -123,33 +168,26 @@ class Scheduler extends EventEmitter {
           } else {
             logger.info(`${event.gameId}: Push event in joblist:${event._id} @ ${event.timestamp}`, event);
             let scheduledTs = DateTime.fromJSDate(event.timestamp).plus({seconds: self.settings.scheduler.delay});
-            self.jobs.push(
-              new CronJob(scheduledTs.toJSDate(),
-                handlerFunction.bind(null, event),
-                null,
-                true,
-                'Europe/Berlin'));
+            try {
+              self.jobs.push(
+                CronJob.from({
+                    cronTime:     scheduledTs.toJSDate(),
+                    onTick:       handlerFunction.bind(null, event),
+                    start:        true,
+                    timezone:     'Europe/Berlin',
+                    errorHandler: self.cronErrorHandler,
+                    context:      self,
+                    runOnInit:    false,
+                    name:         `event id:${event._id} type:${event.type}`
+                  }
+                ));
+            }
+            catch (err) {
+              logger.error(`Error in Scheduler.update with entry ${scheduledTs.toJSDate()}`, err);
+            }
           }
         }
       }
-
-      // Start the next update job
-      if (self.updateJob) {
-        self.updateJob.stop();
-      }
-      // Update once an hour
-      self.updateJob = new CronJob(
-        '0 53 * * * *',
-        function () {
-          self.update(function (err) {
-            if (err) {
-              logger.error('SCHEDULER UPDATE FAILED!', err);
-            }
-          })
-        },
-        null,
-        true,
-        'Europe/Berlin');
     }).finally(callback);
 
   };

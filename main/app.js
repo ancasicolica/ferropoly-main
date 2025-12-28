@@ -77,6 +77,7 @@ async function initMain() {
   app.use('/rules', require('./routes/rules'));
   app.use('/appinfo', infoRoute(settings));
   app.use('/gamecache/', require('./routes/gamecache'));
+  app.use('/debug/', require('./routes/debug'));
   // Serve robots.txt
   app.get('/robots.txt', function (req, res) {
     res.type('text/plain');
@@ -153,7 +154,7 @@ async function initMain() {
 
   gameScheduler.update(err => {
     if (err) {
-      logger.warn('Error while updating scheduler');
+      logger.warn('Error while updating scheduler', err);
     }
   });
 

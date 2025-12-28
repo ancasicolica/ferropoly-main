@@ -14,14 +14,19 @@ const _         = require('lodash');
  */
 function setupAutopilotRefresher() {
   if (_.get(settings, 'autopilot.enabled')) {
-    new CronJob('0 0 3 * * *',
-      function () {
-        logger.info('Cronjob autopilot refresher');
-        autopilot.refreshActiveGames();
-      },
-      null,
-      true,
-      'Europe/Berlin')
+    try {
+      new CronJob('0 0 3 * * *',
+        function () {
+          logger.info('Cronjob autopilot refresher');
+          autopilot.refreshActiveGames();
+        },
+        null,
+        true,
+        'Europe/Berlin');
+    }
+    catch (err){
+      logger.error('Error in mainCronjobs.setupAutopilotRefresher', err);
+    }
   }
 }
 
