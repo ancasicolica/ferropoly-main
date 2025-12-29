@@ -145,10 +145,15 @@ class Scheduler extends EventEmitter {
       logger.info('Events read: ' + events.length, events);
 
       // Cancel all existing jobs
-      for (i = 0; i < self.jobs.length; i++) {
-        self.jobs[i].stop();
+      try {
+        for (i = 0; i < self.jobs.length; i++) {
+          self.jobs[i].stop();
+        }
       }
-      self.jobs = [];
+      finally
+      {
+        self.jobs = [];
+      }
 
       if (events.length > 0) {
         const now = DateTime.now();
