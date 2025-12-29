@@ -156,7 +156,7 @@ class Scheduler extends EventEmitter {
       }
 
       if (events.length > 0) {
-        const now = DateTime.now();
+        const now = DateTime.now().plus({seconds: 3});
 
         let handlerFunction = function (ev) {
           logger.info(`${ev.gameId}: Emitting event type:${ev.type} id:${ev._id}`);
