@@ -43,7 +43,8 @@ class Scheduler extends EventEmitter {
           errorHandler: self.cronErrorHandler,
           context:      self,
           runOnInit:    false,
-          name:         'refreshCronJob'
+          name:         'refreshCronJob',
+          threshold:    2000
         }
       );
 
@@ -57,7 +58,8 @@ class Scheduler extends EventEmitter {
           errorHandler: self.cronErrorHandler,
           context:      self,
           runOnInit:    false,
-          name:         `updateJob`
+          name:         `updateJob`,
+          threshold:    2000
         }
       );
     }
@@ -150,8 +152,7 @@ class Scheduler extends EventEmitter {
           self.jobs[i].stop();
         }
       }
-      finally
-      {
+      finally {
         self.jobs = [];
       }
 
@@ -183,7 +184,8 @@ class Scheduler extends EventEmitter {
                     errorHandler: self.cronErrorHandler,
                     context:      self,
                     runOnInit:    false,
-                    name:         `event id:${event._id} type:${event.type}`
+                    name:         `event id:${event._id} type:${event.type}`,
+                    threshold:    2000  // very long, but avoid restarts because of the default 250ms
                   }
                 ));
             }
