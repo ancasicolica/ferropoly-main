@@ -128,7 +128,7 @@ import Column from 'primevue/column';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {faHouse, faHotel, faCamera} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import {formatPrice} from '../../common/lib/formatters';
+import {formatPrice} from '../../../common/lib/formatters';
 
 const tableContainer = ref(null);
 const rowsPerPage    = ref(10);
