@@ -5,11 +5,14 @@
 -->
 
 <template>
-  <div>PicturesRoot.vue</div>
+  <div>
+    <picture-gallery :read-only="true" />
+  </div>
 </template>
 
 <script setup>
 
+import PictureGallery from '../../../../lib/components/PictureGallery.vue';
 </script>
 
 <style scoped lang="scss">

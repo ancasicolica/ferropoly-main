@@ -5,11 +5,14 @@
 -->
 
 <template>
-  <div>AccountingRoot.vue</div>
+  <div>
+    <accounting-tabs />
+  </div>
 </template>
 
 <script setup>
 
+import AccountingTabs from '../../../../lib/components/teamAccount/AccountingTabs.vue';
 </script>
 
 <style scoped lang="scss">

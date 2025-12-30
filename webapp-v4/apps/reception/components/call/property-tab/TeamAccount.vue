@@ -22,7 +22,7 @@
 <script setup>
 
 import FerroCard from '../../../../../common/components/FerroCard.vue';
-import TeamAccount from '../../accounting/TeamAccount.vue';
+import TeamAccount from '../../../../../lib/components/teamAccount/TeamAccount.vue';
 import {useReceptionStore} from '../../../store/ReceptionStore';
 
 const receptionStore = useReceptionStore();

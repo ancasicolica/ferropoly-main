@@ -26,9 +26,9 @@
 
 <script setup>
 
-import FerroCard from '../../../../common/components/FerroCard.vue';
-import {formatPrice} from '../../../../common/lib/formatters';
-import {useChancelleryStore} from '../../../../lib/store/ChancelleryStore';
+import FerroCard from '../../../common/components/FerroCard.vue';
+import {formatPrice} from '../../../common/lib/formatters';
+import {useChancelleryStore} from '../../store/ChancelleryStore';
 
 
 const chancelleryStore = useChancelleryStore();

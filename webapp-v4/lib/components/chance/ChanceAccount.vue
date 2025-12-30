@@ -69,11 +69,11 @@
 // The parent provides the available height. We convert it into a fixed DataTable scroll height.
 // This avoids relying on FerroCard being flex-capable.
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-import FerroCard from '../../common/components/FerroCard.vue';
+import FerroCard from '../../../common/components/FerroCard.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import {useChancelleryStore} from '../store/ChancelleryStore';
-import {formatPrice, formatTime} from '../../common/lib/formatters';
+import {useChancelleryStore} from '../../store/ChancelleryStore';
+import {formatPrice, formatTime} from '../../../common/lib/formatters';
 
 const chancelleryStore = useChancelleryStore();
 

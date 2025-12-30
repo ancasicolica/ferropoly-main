@@ -37,7 +37,6 @@ export const useReceptionStore = defineStore('Reception', {
       messageLog:         [],
     },
     paginationEnabled: false,
-    accountingTeamId:  null,
     test: [12, 19, 3, 5, 2, 3]
   }),
   getters: {

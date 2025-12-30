@@ -107,8 +107,8 @@ import Column from 'primevue/column';
 import ScrollPanel from 'primevue/scrollpanel';
 
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-import {formatPrice, formatTime} from '../../../../common/lib/formatters';
-import {useTeamAccountStore} from '../../../../lib/store/TeamAccountStore';
+import {formatPrice, formatTime} from '../../../common/lib/formatters';
+import {useTeamAccountStore} from '../../store/TeamAccountStore';
 
 const expandedRows   = ref({});
 const tableContainer = ref(null);

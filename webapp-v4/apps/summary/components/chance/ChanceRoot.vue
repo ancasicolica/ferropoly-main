@@ -5,11 +5,14 @@
 -->
 
 <template>
-  <div>ChanceRoot.vue</div>
+  <div>
+    <chance-info />
+  </div>
 </template>
 
 <script setup>
 
+import ChanceInfo from '../../../../lib/components/chance/ChanceInfo.vue';
 </script>
 
 <style scoped lang="scss">
