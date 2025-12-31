@@ -23,6 +23,9 @@
           <RankingList />
         </FerroCard>
       </div>
+      <div class="basis-64">
+        <ferropoly-clock />
+      </div>
     </div>
   </div>
 </template>
@@ -36,6 +39,7 @@ import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {computed} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
+import FerropolyClock from './FerropolyClock.vue';
 
 const receptionStore = useReceptionStore();
 const downloadUrl    = computed(() => {

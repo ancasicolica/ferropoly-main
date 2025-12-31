@@ -120,6 +120,7 @@ async function initMain() {
   login.init(app, settings);
   app.use('/', require('./routes/index'));
   app.use('/test', require('./routes/test'));
+  app.use('/cron', require('./routes/cron'));
   app.use('/reception', require('./routes/reception'));
   app.use('/marketplace', require('./routes/marketplace'));
   app.use('/statistics', require('./routes/statistics'));

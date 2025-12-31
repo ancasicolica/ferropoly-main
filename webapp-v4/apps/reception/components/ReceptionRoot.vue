@@ -40,7 +40,7 @@
     <!-- here starts the app -->
     <div
         v-if="isInitialLoading"
-         class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
+        class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
     >
       <ProgressSpinner />
       <span class="mt-4 font-medium text-lg">Lade Spieldaten...</span>
@@ -79,6 +79,7 @@ import {useChancelleryStore} from '../../../lib/store/ChancelleryStore';
 import {DateTime} from 'luxon';
 import {useRulesStore} from '../../../lib/store/RulesStore';
 import ProgressSpinner from 'primevue/progressspinner';
+import {useCronJobStore} from '../../../lib/store/CronJobStore';
 
 const receptionStore   = useReceptionStore();
 const receptionSocket  = getReceptionSocket();
@@ -89,6 +90,7 @@ const gameplayStore    = useGameplayStore();
 const teamAccountStore = useTeamAccountStore();
 const picBucketStore   = usePicBucketStore();
 const rulesStore       = useRulesStore();
+const cronJobStore     = useCronJobStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -114,6 +116,8 @@ receptionStore.fetchStaticData(gameId)
       console.log('Init step 6');
       await chancelleryStore.loadChancelleryEntries(gameId);
       console.log('Init step 7');
+      await cronJobStore.fetch(gameId);
+      console.log('Init step 8');
       receptionSocket.initSocket({
         url:       staticData.socketUrl,
         authToken: staticData.authToken,
@@ -121,7 +125,7 @@ receptionStore.fetchStaticData(gameId)
         gameId:    gameId
       });
       isInitialLoading.value = false;
-      const end = DateTime.now();
+      const end              = DateTime.now();
       console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
     })
     .catch(err => {
