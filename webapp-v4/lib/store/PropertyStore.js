@@ -44,8 +44,98 @@ export const usePropertyStore = defineStore('Property', {
     },
   }),
   getters: {
-    pricelist: (state) => {
+    pricelist:          (state) => {
       return [...state.properties.values()];
+    },
+    /**
+     * Number of free properties (not sold)
+     * @param state
+     * @return {number}
+     */
+    freePropertiesNb:   (state) => {
+      let count = 0;
+      for (const property of state.properties.values()) {
+        if (property?.gamedata?.owner == null) {
+          count++;
+        }
+      }
+      return count;
+    },
+    /**
+     * Number of bought properties
+     * @param state
+     * @return {number}
+     */
+    boughtPropertiesNb: (state) => {
+      let count = 0;
+      for (const property of state.properties.values()) {
+        if (property?.gamedata?.owner != null) {
+          count++;
+        }
+      }
+      return count;
+    },
+    /**
+     * Number of buildings on all properties
+     * @param state
+     * @return {number}
+     */
+    buildingNb:         (state) => {
+      let count = 0;
+      for (const property of state.properties.values()) {
+        if (property?.gamedata?.buildings != null) {
+          count += property.gamedata.buildings;
+        }
+      }
+      return count;
+    },
+    mostProfitableProperties: (state) => {
+      const propertiesArray = [...state.properties.values()];
+
+      // Filter out properties with profit 0 or undefined
+      const profitableProps = propertiesArray.filter(p => p?.account?.profit && p.account.profit > 0);
+
+      if (profitableProps.length === 0) {
+        return [];
+      }
+
+      // Sort by profit descending
+      profitableProps.sort((a, b) => b.account.profit - a.account.profit);
+
+      // Get the top 3
+      const top3 = profitableProps.slice(0, 3);
+
+      if (top3.length < 3) {
+        return top3;
+      }
+
+      const thirdHighestProfit = top3[2].account.profit;
+
+      // Check if more properties have the same profit as the 3rd one
+      const allWithThirdProfit = profitableProps.filter(p => p.account.profit === thirdHighestProfit);
+
+      if (allWithThirdProfit.length > 1) {
+        // Return all properties with profit >= third highest
+        return profitableProps.filter(p => p.account.profit >= thirdHighestProfit);
+      }
+
+      return top3;
+    },
+    leastProfitableProperties: (state) => {
+      const propertiesArray = [...state.properties.values()];
+
+      // Filter out properties with profit 0 or undefined
+      const profitableProps = propertiesArray.filter(p => p?.account?.profit);
+
+      if (profitableProps.length === 0) {
+        return [];
+      }
+
+      // Sort by profit descending
+      profitableProps.sort((a, b) => a.account.profit - b.account.profit);
+
+      // Get the top 3 (of the lowest)
+      return profitableProps.slice(0, 3);
     },
 
     /**

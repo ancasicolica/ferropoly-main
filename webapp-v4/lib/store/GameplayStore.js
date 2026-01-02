@@ -97,6 +97,9 @@ export const useGameplayStore = defineStore('Gameplay', {
       const now = DateTime.now();
       return now >= state.gameplay.scheduling.gameStartTs && now <= state.gameplay.scheduling.gameEndTs;
     },
+    summaryPublic(state) {
+      return state.gameplay.internal.gameDataPublic;
+    }
   },
   actions: {
     init(gameplay) {

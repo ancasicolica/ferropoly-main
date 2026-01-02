@@ -29,6 +29,13 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
     rankingList: (state) => {
       return [...state.balances.values()].sort((a, b) => b.balance - a.balance);
     },
+    bookingsNb: (state) => {
+      let total = 0;
+      for (const records of state.records.values()) {
+        total += records.length;
+      }
+      return total;
+    },
     /**
      * Retrieves the account information for a given team based on the team ID.
      *

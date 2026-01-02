@@ -78,6 +78,13 @@ async function initMain() {
   app.use('/appinfo', infoRoute(settings));
   app.use('/gamecache/', require('./routes/gamecache'));
   app.use('/debug/', require('./routes/debug'));
+  app.use('/static', require('./routes/static'));
+  // Authentication checked by accessor (free read after game, protected during game)
+  app.use('/properties', require('./routes/properties'));
+  app.use('/teamAccount', require('./routes/teamAccount'));
+  app.use('/propertyAccount', require('./routes/propertyAccount'));
+  app.use('/picbucket', picBucketRoute);
+  app.use('/chancellery', require('./routes/chancellery'));
   // Serve robots.txt
   app.get('/robots.txt', function (req, res) {
     res.type('text/plain');
@@ -124,23 +131,18 @@ async function initMain() {
   app.use('/reception', require('./routes/reception'));
   app.use('/marketplace', require('./routes/marketplace'));
   app.use('/statistics', require('./routes/statistics'));
-  app.use('/properties', require('./routes/properties'));
   app.use('/download', require('./routes/download'));
   app.use('/storno', require('./routes/storno'));
-  app.use('/teamAccount', require('./routes/teamAccount'));
-  app.use('/propertyAccount', require('./routes/propertyAccount'));
-  app.use('/chancellery', require('./routes/chancellery'));
   app.use('/travellog', require('./routes/travellog'));
   app.use('/userinfo', require('./routes/userinfo'));
   app.use('/account', require('./routes/account'));
   app.use('/checkin', require('./routes/checkin'));
   app.use('/gameplays', require('./routes/gameplays'));
   app.use('/team', require('./routes/team'));
-  app.use('/static', require('./routes/static'));
   app.use('/agb', require('../common/routes/agb'));
   app.use('/join', joinRoute);
   app.use('/anmelden', joinRoute);
-  app.use('/picbucket', picBucketRoute);
+
   aboutRoute.init(app, settings);
   authtoken.init(app);
 

@@ -19,7 +19,12 @@
           :elements="summaryStore.menuBarElements"
       />
       <div class="ferropoly-container">
-        <router-view />
+        <ferro-jumbotron
+            v-if="!gameplayStore.summaryPublic"
+            title="Noch etwas zu früh..."
+            info="Die Spieldaten sind ab Mitternacht öffentlich, schau doch dann nochmals vorbei!"
+        />
+        <router-view v-else />
       </div>
     </div>
   </div>
@@ -39,6 +44,7 @@ import {useTeamAccountStore} from '../../../lib/store/TeamAccountStore';
 import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
 import {last, split} from 'lodash';
 import {DateTime} from 'luxon';
+import FerroJumbotron from '../../../lib/components/FerroJumbotron.vue';
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -71,7 +77,7 @@ summaryStore.fetchData(gameId)
       console.log('Init step 6');
       await chancelleryStore.loadChancelleryEntries(gameId);
       isInitialLoading.value = false;
-      const end = DateTime.now();
+      const end              = DateTime.now();
       console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
 
     })

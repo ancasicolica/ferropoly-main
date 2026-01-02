@@ -21,7 +21,7 @@ router.get('/:gameId', async function (req, res) {
   try {
 
     let gameId = req.params.gameId;
-    const user = _.get(req.session, 'passport.user', 'nobody');
+    const user = _.get(req.session, 'passport.user', null);
 
     await gamecache.refreshCache();
 
@@ -58,12 +58,14 @@ router.get('/:gameId', async function (req, res) {
         version:   -1
       };
     }
-
     const token           = await authTokenManager.getNewTokenAsync({
       user:          user,
-      proposedToken: req.session.authToken
+      proposedToken: req?.session?.authToken
     });
-    req.session.authToken = token;
+    if (req.session) {
+      req.session.authToken = token;
+    }
+
     logger.debug(`Session saved for ${user} in ${gameId}`, req.session);
     res.send({
       authToken:     token,
