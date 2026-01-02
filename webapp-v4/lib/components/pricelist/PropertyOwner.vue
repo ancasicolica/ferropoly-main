@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import {booleanYesNo, buildingStatus, formatPrice, formatTime} from '../../common/lib/formatters';
+import {booleanYesNo, buildingStatus, formatPrice, formatTime} from '../../../common/lib/formatters';
 import PropertyAccountBookings from './PropertyAccountBookings.vue';
 
 const props = defineProps({

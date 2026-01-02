@@ -68,8 +68,8 @@
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import {computed} from 'vue';
-import {formatGameTime, formatPrice} from '../../common/lib/formatters';
-import {useTeamsStore} from '../store/TeamsStore';
+import {formatGameTime, formatPrice} from '../../../common/lib/formatters';
+import {useTeamsStore} from '../../store/TeamsStore';
 
 const teamsStore = useTeamsStore();
 

@@ -37,7 +37,7 @@ import ScrollPanel from 'primevue/scrollpanel';
 
 import {usePropertyStore} from '../../store/PropertyStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-import PropertyInfoCard from '../PropertyInfoCard.vue';
+import PropertyInfoCard from './PropertyInfoCard.vue';
 import {usePicBucketStore} from '../../store/PicBucketStore';
 
 

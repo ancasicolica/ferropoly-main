@@ -37,6 +37,9 @@
 
 
     </scroll-panel>
+    <div v-else>
+      Wähle ein Ort um mehr Infos hier zu sehen!
+    </div>
   </div>
 </template>
 

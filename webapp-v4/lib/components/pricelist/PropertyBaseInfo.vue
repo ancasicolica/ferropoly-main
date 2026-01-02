@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import {formatAccessibility, formatPrice} from '../../common/lib/formatters';
+import {formatAccessibility, formatPrice} from '../../../common/lib/formatters';
 
 const props = defineProps({
   property: {
