@@ -14,7 +14,7 @@
 <script setup>
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
-import PictureGallery from '../../../../lib/components/PictureGallery.vue';
+import PictureGallery from '../../../../lib/components/pictures/PictureGallery.vue';
 </script>
 
 <style scoped lang="scss">

@@ -9,36 +9,40 @@
     <p class="mb-4">
       Das Ferropoly fand am {{ gameDate }} mit {{ nbTeams }} teilnehmenden Teams statt.
     </p>
-    <p>
+    <div>
       Von den {{ nbProperties }} Orten auf der Preisliste wurden {{ nbPropertiesSold }} Orte gekauft,
       {{ nbPropertiesFree }} waren bei Spielende noch zu haben.
       Insgesamt wurden {{ buildingsBuilt }}
       Häuser gebaut, pro verkauftem Grundstück sind dies im Schnitt {{ buildingsPerProperty }}. Die Bank registrierte
       {{ nbTeamAccountBookings }} Buchungen für die Teams
       und weitere {{ nbChancelleryBooking }} Buchungen für Chance-Kanzlei.
-      Die profitabelsten Orte waren
-      <span
-          v-for="(p, index) in mostProfitableProperties"
-          :key="p.uuid"
-      >
+      <div v-if="mostProfitableProperties.length > 0">
+        Die profitabelsten Orte waren
+        <span
+            v-for="(p, index) in mostProfitableProperties"
+            :key="p.uuid"
+        >
         {{ p.location.name }} ({{ formatPrice(p.account.profit) }}, {{ p.gamedata.ownerName }})
         <template v-if="index < mostProfitableProperties.length - 1">
           {{ index === mostProfitableProperties.length - 2 ? ' und ' : ', ' }}
         </template>
         <template v-else>.</template>
       </span>
-      Am wenigsten Gewinn haben die Orte
-      <span
-          v-for="(p, index) in leastProfitableProperties"
-          :key="p.uuid"
-      >
+      </div>
+      <div v-if="leastProfitableProperties.length">
+        Am wenigsten Gewinn haben die Orte
+        <span
+            v-for="(p, index) in leastProfitableProperties"
+            :key="p.uuid"
+        >
         {{ p.location.name }} ({{ formatPrice(p.account.profit) }}, {{ p.gamedata.ownerName }})
-        <template v-if="index < mostProfitableProperties.length - 1">
-          {{ index === mostProfitableProperties.length - 2 ? ' und ' : ', ' }}
+        <template v-if="index < leastProfitableProperties.length - 1">
+          {{ index === leastProfitableProperties.length - 2 ? ' und ' : ', ' }}
         </template>
       </span>
-      abgeworfen.
-    </p>
+        abgeworfen.
+      </div>
+    </div>
     <p class="mt-4">
       In diesem Rückblick findest Du alle spannenden Infos zu diesem Spiel, diese Infos bleiben bis am {{
         deletionDate

@@ -56,8 +56,8 @@
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
-import {usePicBucketStore} from '../store/PicBucketStore';
-import {useTeamsStore} from '../store/TeamsStore';
+import {usePicBucketStore} from '../../store/PicBucketStore';
+import {useTeamsStore} from '../../store/TeamsStore';
 import {computed} from 'vue';
 
 const picBucketStore = usePicBucketStore();

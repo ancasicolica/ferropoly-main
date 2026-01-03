@@ -20,7 +20,7 @@
           />
         </ScrollPanel>
       </div>
-      <div class="flex-4">
+      <div class="flex-4 hidden md:block">
         <property-info-card
             :property="currentProperty"
             :pictures="propertyPictures"

@@ -89,18 +89,18 @@
 </template>
 
 <script setup>
-import CompactInfo from './CompactInfo.vue';
+import CompactInfo from '../CompactInfo.vue';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
-import {formatDateTime, formatPosition} from '../../common/lib/formatters';
+import {formatDateTime, formatPosition} from '../../../common/lib/formatters';
 import {computed, ref} from 'vue';
-import {usePropertyStore} from '../store/PropertyStore';
+import {usePropertyStore} from '../../store/PropertyStore';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {faArrowUpRightFromSquare, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
-import {usePicBucketStore} from '../store/PicBucketStore';
+import {usePicBucketStore} from '../../store/PicBucketStore';
 import {useToast} from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-import {getLocationText, pictureTooOldWarningActive} from '../pictureLib';
+import {getLocationText, pictureTooOldWarningActive} from '../../pictureLib';
 
 const props = defineProps({
   picture:  {

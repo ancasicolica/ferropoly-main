@@ -11,8 +11,18 @@
     </div>
     <div
         v-else
-        class="mt-2 flex flex-row w-full h-full"
+        class="mt-2 flex flex-col md:flex-row w-full h-full"
     >
+      <div class="w-full md:w-[400px] flex-none md:mr-4">
+        <picture-filter
+            :read-only="readOnly"
+        />
+        <picture-info
+            class="hidden md:block"
+            :picture="selectedPicture"
+            :read-only="readOnly"
+        />
+      </div>
       <div
           ref="tableContainer"
           class="flex-1 flex flex-col min-w-0"
@@ -40,15 +50,6 @@
         </div>
 
       </div>
-      <div class="w-[400px] flex-none ml-4">
-        <picture-filter
-            :read-only="readOnly"
-        />
-        <picture-info
-            :picture="selectedPicture"
-            :read-only="readOnly"
-        />
-      </div>
     </div>
 
   </div>
@@ -58,9 +59,9 @@
 
 import ScrollPanel from 'primevue/scrollpanel';
 
-import {usePicBucketStore} from '../store/PicBucketStore';
+import {usePicBucketStore} from '../../store/PicBucketStore';
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-import GalleryPicture from './GalleryPicture.vue';
+import GalleryPicture from '../GalleryPicture.vue';
 import PictureInfo from './PictureInfo.vue';
 import PictureFilter from './PictureFilter.vue';
 
