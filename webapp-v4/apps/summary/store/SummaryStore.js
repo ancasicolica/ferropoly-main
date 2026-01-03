@@ -24,7 +24,7 @@ export const useSummaryStore = defineStore('Summary', {
   actions: {
     async fetchData(gameId) {
       this.gameId = gameId;
-      const resp  = await axios.get(`/static/${gameId}`);
+      const resp  = await axios.get(`/summary/${gameId}/static`);
       console.log('Static data fetched', resp.data);
       return resp.data;
     }

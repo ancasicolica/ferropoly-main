@@ -237,65 +237,68 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
       const self = this;
       try {
         console.log('TeamAccountStore.loadTeamAccountEntries start');
-        if (!teamsStore) {
-          teamsStore = useTeamsStore();
-        }
         let start         = this.lastValidTimestamp.toISO();
         const resp        = await axios.get(`/teamAccount/get/${gameId}/${teamId}/${start}`);
         const accountData = resp.data.accountData;
+        this.bookTeamAccountEntries(accountData);
 
-        if (!accountData || accountData.length === 0) {
-          return;
-        }
-
-        console.log(`TeamAccountStore.loadTeamAccountEntries stage 2. Nb entries: ${accountData.length}`);
-        const affectedTeamIds = new Set(); // Verfolgen, welche Teams Updates erhielten
-
-        for (const entry of accountData) {
-          const dt = DateTime.fromISO(entry.timestamp);
-          if (!dt.isValid) {
-            console.warn('loadTeamAccountEntries: invalid timestamp', entry)
-            continue;
-          }
-
-          entry.timestamp = dt;
-          let account     = this.records.get(entry.teamId);
-          if (!account) {
-            account = [];
-            this.records.set(entry.teamId, account);
-          }
-
-          // Schnellerer Check (idealerweise über eine Map/Set der IDs pro Team)
-          if (!account.some(e => e._id === entry._id)) {
-            account.push(entry);
-            affectedTeamIds.add(entry.teamId);
-          }
-
-          if (this.lastValidTimestamp < entry.timestamp) {
-            this.lastValidTimestamp = entry.timestamp;
-          }
-        }
-
-        console.log('TeamAccountStore.loadTeamAccountEntries stage 3');
-        // Nur betroffene Bilanzen aktualisieren
-        affectedTeamIds.forEach(tId => {
-          const teamAccount = this.records.get(tId);
-          teamAccount.sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-
-          const balance = teamAccount.reduce((sum, e) => sum + e.transaction.amount, 0);
-
-          this.balances.set(tId, {
-            teamId:   tId,
-            balance:  Math.round(balance * 100) / 100, // Einfacher Fix für Rundungsfehler
-            teamName: teamsStore.idToTeamName(tId)
-          });
-        });
-        console.log('TeamAccountStore.loadTeamAccountEntries finished');
       }
       catch (err) {
         console.log(self, self.lastValidTimestamp);
         console.error(err);
       }
+    },
+    bookTeamAccountEntries(accountData) {
+      if (!accountData || accountData.length === 0) {
+        return;
+      }
+      if (!teamsStore) {
+        teamsStore = useTeamsStore();
+      }
+
+      console.log(`TeamAccountStore.loadTeamAccountEntries stage 2. Nb entries: ${accountData.length}`);
+      const affectedTeamIds = new Set(); // Verfolgen, welche Teams Updates erhielten
+
+      for (const entry of accountData) {
+        const dt = DateTime.fromISO(entry.timestamp);
+        if (!dt.isValid) {
+          console.warn('loadTeamAccountEntries: invalid timestamp', entry)
+          continue;
+        }
+
+        entry.timestamp = dt;
+        let account     = this.records.get(entry.teamId);
+        if (!account) {
+          account = [];
+          this.records.set(entry.teamId, account);
+        }
+
+        // Schnellerer Check (idealerweise über eine Map/Set der IDs pro Team)
+        if (!account.some(e => e._id === entry._id)) {
+          account.push(entry);
+          affectedTeamIds.add(entry.teamId);
+        }
+
+        if (this.lastValidTimestamp < entry.timestamp) {
+          this.lastValidTimestamp = entry.timestamp;
+        }
+      }
+
+      console.log('TeamAccountStore.loadTeamAccountEntries stage 3');
+      // Nur betroffene Bilanzen aktualisieren
+      affectedTeamIds.forEach(tId => {
+        const teamAccount = this.records.get(tId);
+        teamAccount.sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+
+        const balance = teamAccount.reduce((sum, e) => sum + e.transaction.amount, 0);
+
+        this.balances.set(tId, {
+          teamId:   tId,
+          balance:  Math.round(balance * 100) / 100, // Einfacher Fix für Rundungsfehler
+          teamName: teamsStore.idToTeamName(tId)
+        });
+      });
+      console.log('TeamAccountStore.loadTeamAccountEntries finished');
     }
   }
 })

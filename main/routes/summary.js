@@ -22,6 +22,7 @@ const collectAccountStatement     = require('../lib/accounting/collectAccountSta
 const travelLog                   = require('../../common/models/travelLogModel');
 const {DateTime}                  = require('luxon');
 const picBucket                   = require('../lib/picBucket')(settings.picBucket);
+const propertyAccount             = require('../lib/accounting/propertyAccount');
 
 let ngFile = '/js/summaryctrl.js';
 if (settings.minifiedjs) {
@@ -93,13 +94,17 @@ router.get('/:gameId/static', async function (req, res) {
       travelLog[i] = _.omit(travelLog[i], ['_id', '__v', 'gameId']);
     }
 
+    // get all property transactions
+    const propertyAccountData = await propertyAccount.getAccountStatement(gameId);
+
+
     // and the chancellery shall also not to be forgotten
     const chancelleryStatement = await chancelleryTransactionModel.getEntries(gameId);
 
-    let balance = 0;
+    let balance              = 0;
     const chancelleryEntries = [];
     for (let entry of chancelleryStatement) {
-      let e = _.omit(entry, ['_id', '__v', 'gameId']);
+      let e     = _.omit(entry, ['__v', 'gameId']);
       balance += _.get(e, 'transaction.amount', -1);
       e.balance = balance;
       chancelleryEntries.push(e);
@@ -108,16 +113,17 @@ router.get('/:gameId/static', async function (req, res) {
     const bucket = await picBucket.list(gameId, {uploaded: true});
 
     res.send({
-      gameplay:      gp,
-      teams:         teams,
-      currentGameId: gameId,
-      mapApiKey:     settings.maps.apiKey,
-      properties:    props,
+      gameplay:       gp,
+      teams:          teams,
+      currentGameId:  gameId,
+      mapApiKey:      settings.maps.apiKey,
+      properties:     props,
       ranking,
       accountStatement,
-      travelLog:     travelLogEntries,
-      chancellery:   chancelleryEntries,
-      picBucket:     bucket
+      travelLog:      travelLogEntries,
+      chancellery:    chancelleryEntries,
+      picBucket:      bucket,
+      propertyAccount: propertyAccountData
     });
   }
   catch (err) {

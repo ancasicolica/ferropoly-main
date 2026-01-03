@@ -67,15 +67,15 @@ summaryStore.fetchData(gameId)
       teamsStore.setTeams(staticData.teams);
       gameplayStore.init(staticData.gameplay);
       console.log('Init step 2');
-      await propertyStore.init(gameId, staticData.pricelist);
+      await propertyStore.init(gameId, staticData.properties);
       console.log('Init step 3');
-      await propertyStore.update();
+      await propertyStore.updateTransactions('all', staticData.propertyAccount);
       console.log('Init step 4');
-      await teamAccountStore.loadTeamAccountEntries(gameId);
+      teamAccountStore.bookTeamAccountEntries(staticData.accountStatement?.accountData);
       console.log('Init step 5');
-      await picBucketStore.fetchPictures({gameId});
+      picBucketStore.setPictures(staticData.picBucket);
       console.log('Init step 6');
-      await chancelleryStore.loadChancelleryEntries(gameId);
+      await chancelleryStore.setEntries(staticData.chancellery)
       isInitialLoading.value = false;
       const end              = DateTime.now();
       console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)

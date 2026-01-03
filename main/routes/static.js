@@ -17,6 +17,7 @@ const logger           = require('../../common/lib/logger').getLogger('static');
 const settings         = require('../settings');
 
 
+
 router.get('/:gameId', async function (req, res) {
   try {
 

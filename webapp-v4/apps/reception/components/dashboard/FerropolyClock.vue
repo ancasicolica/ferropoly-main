@@ -43,7 +43,6 @@ const nextType           = computed(() => {
 const formatTimeRelative = () => {
   const next = cronJobStore.getNextCronJob();
   if (next) {
-    console.log('next', next);
     return next.timestamp.toRelative({style: 'long', unit: ['minutes', 'seconds']});
   }
   return '';

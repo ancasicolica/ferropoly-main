@@ -64,8 +64,15 @@ export const usePicBucketStore = defineStore('PicBucket', {
         console.warn(err);
       }
     },
-
-
+    /**
+     * Sets the pictures (for summary)
+     * @param pictures
+     */
+    setPictures(pictures) {
+      for (const pic of pictures) {
+        this.addPicture(pic);
+      }
+    },
     /**
      * Assigns a property to a given picture by making a POST request to the server and updates the local picture's
      * location name.

@@ -44,7 +44,7 @@ export const usePropertyStore = defineStore('Property', {
     },
   }),
   getters: {
-    pricelist:          (state) => {
+    pricelist: (state) => {
       return [...state.properties.values()];
     },
     /**
@@ -52,7 +52,7 @@ export const usePropertyStore = defineStore('Property', {
      * @param state
      * @return {number}
      */
-    freePropertiesNb:   (state) => {
+    freePropertiesNb: (state) => {
       let count = 0;
       for (const property of state.properties.values()) {
         if (property?.gamedata?.owner == null) {
@@ -80,7 +80,7 @@ export const usePropertyStore = defineStore('Property', {
      * @param state
      * @return {number}
      */
-    buildingNb:         (state) => {
+    buildingNb:                (state) => {
       let count = 0;
       for (const property of state.properties.values()) {
         if (property?.gamedata?.buildings != null) {
@@ -89,7 +89,7 @@ export const usePropertyStore = defineStore('Property', {
       }
       return count;
     },
-    mostProfitableProperties: (state) => {
+    mostProfitableProperties:  (state) => {
       const propertiesArray = [...state.properties.values()];
 
       // Filter out properties with profit 0 or undefined
@@ -192,13 +192,16 @@ export const usePropertyStore = defineStore('Property', {
       // Create the map of properties
       for (const prop of properties) {
         prop.visibleOnMap = true;
-        prop.gamedata     = {
+        prop.gamedata     = prop.gamedata || {
           owner:           null,
           ownerName:       null,
           boughtTs:        null,
           buildings:       0,
           buildingEnabled: false,
         };
+        if (prop.gamedata.owner) {
+          prop.gamedata.ownerName = useTeamsStore().idToTeamName(prop.gamedata.owner);
+        }
         prop.account      = {
           transactions:       new Map(),  // all property account transactions
           profit:             0,  // sum of all transactions
@@ -281,28 +284,34 @@ export const usePropertyStore = defineStore('Property', {
       finally {
         this.updateFilter()
       }
-
     },
     /**
      * Updates transaction data for a specific property or all properties.
      *
      * @param {string} [propertyId='all'] - The ID of the property to update transactions for.
      *                                      Use 'all' to update transactions for all properties.
+     * @param _transactions
      * @return {Promise<void>} Resolves once the transaction data has been updated or completes with an error.
      */
-    async updateTransactions(propertyId = 'all') {
+    async updateTransactions(propertyId = 'all', _transactions = null) {
       const self  = this;
       const entry = self.properties.get(propertyId);
       let start   = '2022-07-06T12:00';
       if (entry) {
         start = entry.account.lastValidTimestamp.toISO();
       }
-      const url = `/propertyAccount/getAccountStatement/${self.gameId}/${propertyId}/${start}`
-      axios.get(url).then(resp => {
-        console.log('Transactions', resp.data);
+      try {
+        let transactions = _transactions;
+
+        if (!transactions) {
+          const url  = `/propertyAccount/getAccountStatement/${self.gameId}/${propertyId}/${start}`
+          const resp = await axios.get(url);
+          transactions = resp.data.register;
+        }
+        console.log('Transactions', transactions);
         const updatedProperties = new Map();
 
-        for (const t of resp.data.register) {
+        for (const t of transactions) {
           const entry = self.properties.get(t.propertyId);
           if (!entry) {
             console.warn('Property for account entry not found', t);
@@ -312,7 +321,6 @@ export const usePropertyStore = defineStore('Property', {
             updatedProperties.set(t.propertyId, true);
           }
         }
-
         updatedProperties.forEach((value, key) => {
           //console.log(`updating ${key}`);
           const prop = self.properties.get(key);
@@ -325,13 +333,11 @@ export const usePropertyStore = defineStore('Property', {
           })
           //console.log('profit', prop.account.profit);
         })
-
         console.log('finished updating');
-
-      })
-        .catch(err => {
-          console.error('updateTransactions failed', err);
-        })
+      }
+      catch (err) {
+        console.error('updateTransactions failed: ' + err.message, err);
+      }
     },
     /**
      * Resets a specific property for a given team (UNDO all bookings on it!)

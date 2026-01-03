@@ -17,26 +17,40 @@ export const useChancelleryStore = defineStore('Chancellery', {
   }),
   getters: {},
   actions: {
+    /**
+     * Loads the chancellery entries during the game
+     * @param gameId
+     * @return {Promise<void>}
+     */
     async loadChancelleryEntries(gameId) {
-      const teamsStore = useTeamsStore();
-      const self       = this;
       try {
         const resp    = await axios.get(`/chancellery/account/statement/${gameId}`);
-        const entries = resp.data.entries;
-        console.log('chancellery', entries);
-
+        this.setEntries(resp.data.entries);
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+    /**
+     * Sets the entries (which were previously loaded)
+     * @param entries
+     */
+    setEntries(entries) {
+      try {
+        console.log('chancellery transactions', entries);
+        const teamsStore = useTeamsStore();
         let balance = 0;
         for (const entry of entries) {
           entry.timestamp        = DateTime.fromISO(entry.timestamp).toJSDate();
           balance += entry.transaction.amount;
           entry.balance          = balance;
           entry.transaction.team = teamsStore.idToTeamName(entry.transaction.origin.uuid);
-          self.records.set(entry._id, entry);
+          this.records.set(entry._id, entry);
         }
-        self.balance = balance;
+        this.balance = balance;
         console.log('done')
       }
-      catch (err) {
+      catch(err) {
         console.error(err);
       }
     }
