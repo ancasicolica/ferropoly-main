@@ -10,6 +10,7 @@
       class="chart-container"
   >
     <Chart
+        v-if="containerHeight > 0"
         :key="containerKey"
         type="line"
         :data="chartData"
@@ -36,6 +37,9 @@ const teamAccountStore = useTeamAccountStore();
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
+  if (!teams || teams.length === 0) {
+    return { labels: [], datasets: [] };
+  }
 
   const datasets = [];
   for (const team of teams) {

@@ -10,6 +10,7 @@
       class="chart-container"
   >
     <Chart
+        v-if="containerHeight > 0"
         :key="containerKey"
         type="bar"
         :data="chartData"
@@ -35,6 +36,9 @@ const teamAccountStore = useTeamAccountStore();
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
+  if (!teams || teams.length === 0 || containerHeight.value === 0) {
+    return { labels: [], datasets: [] };
+  }
 
   const datasets = [
     {label: 'Startgeld', data: [], backgroundColor: '#147025'},

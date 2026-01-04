@@ -10,6 +10,7 @@
       class="chart-container"
   >
     <Chart
+        v-if="containerHeight > 0"
         :key="containerKey"
         type="bar"
         :data="chartData"
@@ -38,7 +39,9 @@ const {containerHeight, containerWidth, containerKey} = useContainerResize(chart
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
-
+  if (!teams || teams.length === 0 || containerHeight.value === 0) {
+    return { labels: [], datasets: [] };
+  }
   // Map store data to Chart.js structure
   const labels           = [];
   const backgroundColors = teams.map(team => teamsStore.idToColor(team.uuid));
