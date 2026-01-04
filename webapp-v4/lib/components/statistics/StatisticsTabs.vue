@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <Tabs :value="statisticStore.activeTab">
+    <Tabs :value="activeTab">
     <TabList>
       <Tab value="0">Vermögen</Tab>
       <Tab value="1">Erfolgsrechnung</Tab>
@@ -46,9 +46,11 @@ import IncomeStatistics from './IncomeStatistics.vue';
 import IncomeStatement from './IncomeStatement.vue';
 import RoundStatistics from './RoundStatistics.vue';
 import {useStatisticStore} from '../../store/StatisticStore';
+import {computed} from 'vue';
 
 const statisticStore = useStatisticStore();
 
+const activeTab = computed(() => statisticStore.activeTab);
 
 </script>
 
