@@ -26,11 +26,12 @@ import {getAuthToken} from '../../common/adapters/authToken';
 import {DateTime} from 'luxon';
 import {computed, ref, watch} from 'vue';
 import {setObject, getItem} from '../../common/lib/sessionStorage';
+import {getMapRoutesInstance} from '../MapRoutes';
 
 
 export const usePropertyStore = defineStore('Property', () => {
 
-  let gameId = '';
+  let gameId           = '';
 
   // Store properties
   const properties            = ref(new Map());
@@ -54,7 +55,8 @@ export const usePropertyStore = defineStore('Property', () => {
    */
   watch(filter, (newFilter) => {
     setObject(`${gameId}-filter`, newFilter);
-  }, { deep: true });
+    //getMapRoutesInstance().applyTeamFilter(filter.value.teams);
+  }, {deep: true});
 
 
   /**
@@ -246,10 +248,10 @@ export const usePropertyStore = defineStore('Property', () => {
     // Restore filters
     const savedFilters = getItem(`${gameId}-filter`, null);
     if (savedFilters) {
-      console.log('This is filter watch',savedFilters);
+      console.log('This is filter watch', savedFilters);
       filter.value = savedFilters;
     }
-    ready.value  = true;
+    ready.value = true;
     console.log('init done', properties.value);
   }
 
@@ -463,6 +465,7 @@ export const usePropertyStore = defineStore('Property', () => {
     }
 
     getMapMarkerInstance().applyFilter();
+    getMapRoutesInstance().applyTeamFilter(filter.value.teams);
   }
 
   return {

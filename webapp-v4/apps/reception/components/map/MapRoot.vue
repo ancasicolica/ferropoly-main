@@ -30,6 +30,7 @@ import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
 import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import MapFilters from '../../../../lib/components/MapFilters.vue';
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
+import {getMapRoutesInstance} from '../../../../lib/MapRoutes';
 
 const propertyStore = usePropertyStore();
 const mapMarkers    = getMapMarkerInstance();
@@ -62,6 +63,7 @@ const onNewMap = async function (_map) {
     mapRef.value.fitBounds(mapMarkers.getBounds());
     mapRef.value.setCenter(mapMarkers.getCenter());
     getMapMarkerInstance().setMap(map);
+    getMapRoutesInstance().setMap(map);
 
     await propertyStore.update();
     // mapMarkers.applyFilter(map);

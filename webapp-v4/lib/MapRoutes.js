@@ -5,6 +5,7 @@
  **/
 import EventEmitter from '../common/lib/eventEmitter';
 import {useTravelLogStore} from './store/TravelLogStore';
+import {useTeamsStore} from './store/TeamsStore';
 
 
 class MapRoutes extends EventEmitter {
@@ -14,13 +15,24 @@ class MapRoutes extends EventEmitter {
     this.routes         = new Map(); // Stores routes by a unique ID
     this.googleInstance = null;
     this.travelLogStore = useTravelLogStore();
+    this.teamsToShow    = []; // Team Ids to filter on
+    this.teamsStore     = useTeamsStore();
   }
 
+  /**
+   * Sets the map
+   * @param map
+   */
   setMap(map) {
     this.map = map;
   }
 
+  /**
+   * Sets the google instance
+   * @param instance
+   */
   setGoogleInstance(instance) {
+    console.log('Google instance set', instance);
     this.googleInstance = instance;
   }
 
@@ -31,8 +43,8 @@ class MapRoutes extends EventEmitter {
    */
   showRoute(teamId, options = {}) {
     if (!this.map || !this.googleInstance) {
-      console.warn('Map or Google instance not set. Cannot add route.');
-      return;
+      console.warn('Map or Google instance not set. Cannot add route.', this.map, this.googleInstance);
+      return false;
     }
 
     if (this.routes.get(teamId)) {
@@ -46,7 +58,7 @@ class MapRoutes extends EventEmitter {
     }
 
     const defaultOptions = {
-      strokeColor:   '#FF0000',
+      strokeColor:   this.teamsStore.idToColor(teamId),
       strokeOpacity: 0.8,
       strokeWeight:  4,
       map:           this.map,
@@ -59,6 +71,8 @@ class MapRoutes extends EventEmitter {
     });
 
     this.routes.set(teamId, polyline);
+
+    return true;
   }
 
   /**
@@ -67,6 +81,7 @@ class MapRoutes extends EventEmitter {
    */
   removeRoute(id) {
     const polyline = this.routes.get(id);
+    console.log('removeRoute', id, polyline);
     if (polyline) {
       polyline.setMap(null);
       this.routes.delete(id);
@@ -81,6 +96,31 @@ class MapRoutes extends EventEmitter {
       polyline.setMap(null);
     });
     this.routes.clear();
+  }
+
+  refreshRoutes() {
+    for (const teamId of this.teamsToShow) {
+      this.showRoute(teamId);
+    }
+  }
+
+  /**
+   * Applies the team filter: all teams in the param are displayed
+   * @param teams
+   */
+  applyTeamFilter(teams) {
+    const teamsToAdd    = teams.filter(teamId => !this.teamsToShow.includes(teamId))
+    const teamsToRemove = this.teamsToShow.filter(teamId => !teams.includes(teamId));
+
+    for (const teamId of teamsToAdd) {
+      this.teamsToShow.push(teamId);
+    }
+    for (const teamId of teamsToRemove) {
+      this.teamsToShow = this.teamsToShow.filter(_teamId => _teamId !== teamId);
+      this.removeRoute(teamId);
+    }
+    this.refreshRoutes();
+    console.log('applyTeamFilter', teamsToAdd, teamsToRemove, this.teamsToShow);
   }
 
 }

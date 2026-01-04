@@ -80,6 +80,7 @@ import {DateTime} from 'luxon';
 import {useRulesStore} from '../../../lib/store/RulesStore';
 import ProgressSpinner from 'primevue/progressspinner';
 import {useCronJobStore} from '../../../lib/store/CronJobStore';
+import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
 
 const receptionStore   = useReceptionStore();
 const receptionSocket  = getReceptionSocket();
@@ -91,6 +92,7 @@ const teamAccountStore = useTeamAccountStore();
 const picBucketStore   = usePicBucketStore();
 const rulesStore       = useRulesStore();
 const cronJobStore     = useCronJobStore();
+const travelLogStore   = useTravelLogStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -118,6 +120,8 @@ receptionStore.fetchStaticData(gameId)
       console.log('Init step 7');
       await cronJobStore.fetch(gameId);
       console.log('Init step 8');
+      await travelLogStore.fetchLog(gameId);
+      console.log('Init step 9');
       receptionSocket.initSocket({
         url:       staticData.socketUrl,
         authToken: staticData.authToken,

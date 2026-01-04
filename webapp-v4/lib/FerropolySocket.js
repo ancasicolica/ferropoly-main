@@ -9,6 +9,8 @@ import EventEmitter from '../common/lib/eventEmitter'
 import {useTeamAccountStore} from './store/TeamAccountStore';
 import {usePropertyStore} from './store/PropertyStore';
 import {usePicBucketStore} from './store/PicBucketStore';
+import {useTravelLogStore} from './store/TravelLogStore';
+import {getMapRoutesInstance} from './MapRoutes';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -129,7 +131,9 @@ class FerropolySocket extends EventEmitter {
         //   self.store.dispatch({type: 'gameLog/pushEntry', logEntry: msg})
       },
       'player-position':          (msg) => {
-        //   self.store.dispatch({type: 'travelLog/updateGpsPosition', entry: msg});
+        console.log('PLAYER position', msg);
+        useTravelLogStore().addLogEntries([msg]);
+        getMapRoutesInstance().refreshRoutes();
       },
       'pic':                      (msg) => {
         console.log('new pic', msg);

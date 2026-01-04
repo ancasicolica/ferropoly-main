@@ -35,7 +35,7 @@ function handler(req, res) {
     try {
       const log = await travelLog.getAllLogEntries(gameId, tId);
       for (let i = 0; i < log.length; i++) {
-        log[i] = _.omit(log[i], ['_id', '__v', 'gameId']);
+        log[i] = _.omit(log[i], ['__v', 'gameId']);
       }
       res.send(log);
     }
