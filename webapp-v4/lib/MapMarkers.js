@@ -14,6 +14,7 @@ import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
 import {useTeamsStore} from './store/TeamsStore';
 import {booleanYesNo, buildingStatus, formatAccessibility, formatGameTime, formatPrice} from '../common/lib/formatters';
 import {MARKER_MODE_INFO, MARKER_MODE_RECEPTION} from './constants/markerMode';
+import {getMapRoutesInstance} from './MapRoutes';
 
 class MapMarkers extends EventEmitter {
   // The Icons to use
@@ -63,6 +64,7 @@ class MapMarkers extends EventEmitter {
 
     this.propertyStore  = usePropertyStore();
     self.googleInstance = instance;
+    getMapRoutesInstance().setGoogleInstance(instance);
     console.log('Api loaded, creating default markers');
     console.log('PropertyStore has', this.propertyStore.properties.size, 'properties');
 

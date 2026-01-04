@@ -29,9 +29,12 @@ import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
 import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import MapFilters from '../../../../lib/components/MapFilters.vue';
+import {getMapRoutesInstance} from '../../../../lib/MapRoutes';
+import {useTeamsStore} from '../../../../lib/store/TeamsStore';
 
 const propertyStore = usePropertyStore();
 const mapMarkers    = getMapMarkerInstance();
+const teamsStore = useTeamsStore();
 
 // Create a template ref for the component
 const mapRef = ref(null);
@@ -61,7 +64,11 @@ const onNewMap = async function (_map) {
     mapRef.value.fitBounds(mapMarkers.getBounds());
     mapRef.value.setCenter(mapMarkers.getCenter());
     getMapMarkerInstance().setMap(map);
+    getMapRoutesInstance().setMap(map);
 
+    for (const team of teamsStore.teams) {
+      getMapRoutesInstance().showRoute(team.uuid, {strokeColor: teamsStore.idToColor(team.uuid)});
+    }
     await propertyStore.update();
     // mapMarkers.applyFilter(map);
   } else {

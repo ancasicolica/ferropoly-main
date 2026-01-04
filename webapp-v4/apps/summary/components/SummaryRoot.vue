@@ -45,6 +45,7 @@ import {usePicBucketStore} from '../../../lib/store/PicBucketStore';
 import {last, split} from 'lodash';
 import {DateTime} from 'luxon';
 import FerroJumbotron from '../../../lib/components/FerroJumbotron.vue';
+import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
@@ -59,6 +60,7 @@ const propertyStore    = usePropertyStore();
 const gameplayStore    = useGameplayStore();
 const teamAccountStore = useTeamAccountStore();
 const picBucketStore   = usePicBucketStore();
+const travelLogStore   = useTravelLogStore();
 
 summaryStore.fetchData(gameId)
     .then(async staticData => {
@@ -75,7 +77,9 @@ summaryStore.fetchData(gameId)
       console.log('Init step 5');
       picBucketStore.setPictures(staticData.picBucket);
       console.log('Init step 6');
-      await chancelleryStore.setEntries(staticData.chancellery)
+      chancelleryStore.setEntries(staticData.chancellery);
+      console.log('Init step 7');
+      travelLogStore.addLogEntries(staticData.travelLog);
       isInitialLoading.value = false;
       const end              = DateTime.now();
       console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
