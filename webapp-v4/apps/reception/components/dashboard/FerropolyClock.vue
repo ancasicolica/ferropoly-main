@@ -11,8 +11,9 @@
         condensed
     >
       <h1 style="text-align: center;">{{ currentTime }}</h1>
-      <div> Nächstes Ereignis: {{ nextType }}</div>
-      <div>{{ nextTimeRelative }}: {{ nextTime }}</div>
+      <div> Nächster Termin: {{ nextType }}
+        <span v-if="nextTimeRelative">, {{ nextTimeRelative }}: {{ nextTime }}</span>
+      </div>
     </FerroCard>
   </div>
 </template>
@@ -36,7 +37,20 @@ const formatTime = () => {
 const nextType           = computed(() => {
   const next = cronJobStore.getNextCronJob();
   if (next) {
-    return next.type;
+    switch (next.type) {
+      case 'interest':
+        return 'Zins & Startgeld';
+      case 'prestart' :
+        return 'Vorbereitung Spielstart';
+      case 'start':
+        return 'Spielstart';
+      case 'end':
+        return 'Spielende';
+      case 'summary':
+        return 'Freigabe Spieldaten an Teams';
+      default:
+        return next.type;
+    }
   }
   return '';
 })
