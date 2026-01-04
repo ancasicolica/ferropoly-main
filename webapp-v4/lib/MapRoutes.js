@@ -43,7 +43,7 @@ class MapRoutes extends EventEmitter {
    */
   showRoute(teamId, options = {}) {
     if (!this.map || !this.googleInstance) {
-      console.warn('Map or Google instance not set. Cannot add route.', this.map, this.googleInstance);
+      // console.warn('Map or Google instance not set. Cannot add route.', this.map, this.googleInstance);
       return false;
     }
 
