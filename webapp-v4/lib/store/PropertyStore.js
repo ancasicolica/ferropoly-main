@@ -24,7 +24,9 @@ import {createNormalizedString} from '../searchString';
 import {useTeamsStore} from './TeamsStore';
 import {getAuthToken} from '../../common/adapters/authToken';
 import {DateTime} from 'luxon';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
+import {setObject, getItem} from '../../common/lib/sessionStorage';
+
 
 export const usePropertyStore = defineStore('Property', () => {
 
@@ -46,6 +48,13 @@ export const usePropertyStore = defineStore('Property', () => {
     propertyUuid:   PROPERTY_FILTER_UUID_NONE,
     price:          PROPERTY_FILTER_PRICE_NONE
   });
+
+  /**
+   * Save the changed filters in the session store
+   */
+  watch(filter, (newFilter) => {
+    setObject(`${gameId}-filter`, newFilter);
+  }, { deep: true });
 
 
   /**
@@ -194,11 +203,9 @@ export const usePropertyStore = defineStore('Property', () => {
           result.push(prop);
         }
       }
-
       cacheByTeamId.set(teamId, result);
       return result;
     };
-
   });
 
 
@@ -235,6 +242,13 @@ export const usePropertyStore = defineStore('Property', () => {
     propertiesVersion.value++;
     await getMapMarkerInstance().init();
     gameId = _gameId;
+
+    // Restore filters
+    const savedFilters = getItem(`${gameId}-filter`, null);
+    if (savedFilters) {
+      console.log('This is filter watch',savedFilters);
+      filter.value = savedFilters;
+    }
     ready.value  = true;
     console.log('init done', properties.value);
   }

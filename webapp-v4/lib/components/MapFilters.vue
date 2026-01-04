@@ -113,14 +113,14 @@ import RadioButton from 'primevue/radiobutton';
 import Checkbox from 'primevue/checkbox';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {faHome} from '@fortawesome/free-solid-svg-icons';
-import {useTeamsStore} from '../../../../lib/store/TeamsStore';
-import {usePropertyStore} from '../../../../lib/store/PropertyStore';
+import {useTeamsStore} from '../store/TeamsStore';
+import {usePropertyStore} from '../store/PropertyStore';
 import {computed} from 'vue';
 import {
   PROPERTY_FILTER_STATUS_ALL,
   PROPERTY_FILTER_STATUS_BOUGHT,
   PROPERTY_FILTER_STATUS_FREE
-} from '../../../../lib/constants/propertyStoreFilters';
+} from '../constants/propertyStoreFilters';
 
 const teamStore     = useTeamsStore();
 const propertyStore = usePropertyStore();
@@ -166,6 +166,7 @@ function selectAllTeams() {
 function clearAllTeams() {
   propertyStore.filter.teams = [];
 }
+
 
 </script>
 

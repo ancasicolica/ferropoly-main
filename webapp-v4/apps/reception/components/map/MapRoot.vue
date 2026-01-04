@@ -28,7 +28,7 @@ import FerropolyMap from '../../../../common/components/FerropolyMap.vue';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
 import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
-import MapFilters from './MapFilters.vue';
+import MapFilters from '../../../../lib/components/MapFilters.vue';
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 
 const propertyStore = usePropertyStore();

@@ -12,11 +12,12 @@ import StatisticsRoot from './components/statistics/StatisticsRoot.vue';
 import AccountingRoot from './components/accounting/AccountingRoot.vue';
 import ChanceRoot from './components/chance/ChanceRoot.vue';
 import PricelistRoot from './components/pricelist/PricelistRoot.vue';
+import MapRoot from './components/map/MapRoot.vue';
 
 createWebApp( {
   routes: [
     {path: '/', name: 'dashboard', component: DashboardRoot },
-    {path: '/map', name: 'map', component: DashboardRoot },
+    {path: '/map', name: 'map', component: MapRoot },
     {path: '/pictures', name: 'pictures', component: PicturesRoot },
     {path: '/statistics', name: 'statistics', component: StatisticsRoot },
     {path: '/accounting', name: 'accounting', component: AccountingRoot },
