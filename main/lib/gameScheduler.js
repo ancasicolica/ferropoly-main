@@ -132,7 +132,7 @@ class Scheduler extends EventEmitter {
       // Cancel all existing jobs
       try {
         for (i = 0; i < self.jobs.length; i++) {
-          self.jobs[i].stop();
+          self.jobs[i].cancel();
         }
       }
       finally {
