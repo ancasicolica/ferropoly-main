@@ -156,7 +156,7 @@ class Scheduler extends EventEmitter {
             self.handleEvent(event.type, event);
           } else {
             logger.info(`${event.gameId}: Push event in joblist:${event._id} @ ${event.timestamp}`, event);
-            let scheduledTs = DateTime.fromJSDate(event.timestamp).plus({seconds: self.settings.scheduler.delay});
+            let scheduledTs = DateTime.fromJSDate(event.timestamp).set({millisecond: 0}).plus({seconds: self.settings.scheduler.delay});
             try {
               self.jobs.push(schedule.scheduleJob(event._id, scheduledTs.toJSDate(), handlerFunction.bind(null, event)));
             }

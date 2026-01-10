@@ -30,7 +30,7 @@ module.exports = function (settings) {
 
   // This is the highest priorized scheduler: the contabo main rc instance
   settings.scheduler = {
-    delay: 0
+    delay: 5
   };
 
   settings.autopilot = {

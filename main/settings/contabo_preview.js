@@ -30,7 +30,7 @@ module.exports = function (settings) {
 
   settings.scheduler = {
     // The preview instance shall do only something if there is no other going to handle it
-    delay: 0
+    delay: 10
   };
 
   settings.autopilot = {
