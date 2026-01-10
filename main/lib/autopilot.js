@@ -189,7 +189,9 @@ function selectClosestsProperty(travelLog, properties) {
  */
 function startTimer(gp, delay) {
   gp.timer = _.delay(() => {
-    autoplay(gp);
+    autoplay(gp).catch(err => {
+      logger.error(err);
+    });
   }, delay || gp.autopilotInterval);
 }
 

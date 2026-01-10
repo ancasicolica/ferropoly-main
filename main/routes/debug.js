@@ -12,10 +12,10 @@ router.get('/cron', (req, res) => {
   const retVal   = [];
   cronJobs.forEach(job => {
     try {
-      retVal.push({name: job.name, nextDates: job.nextDates(3), lastDate: job.lastDate(), active: job.isActive});
+      retVal.push({name: job.name, nextDate: job.nextInvocation()});
     }
     catch (err) {
-      retVal.push({name: job.name, active: job.isActive, lastDate: job.lastDate(), err: err.message});
+      retVal.push({name: job.name, err: err.message});
     }
 
   })

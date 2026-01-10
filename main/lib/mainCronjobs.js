@@ -3,7 +3,7 @@
  * Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
  * Created: 08.04.23
  **/
-const {CronJob} = require('cron');
+const schedule  = require('node-schedule');
 const autopilot = require('./autopilot');
 const logger    = require('../../common/lib/logger').getLogger('cronjobs');
 const settings  = require('../settings');
@@ -15,16 +15,12 @@ const _         = require('lodash');
 function setupAutopilotRefresher() {
   if (_.get(settings, 'autopilot.enabled')) {
     try {
-      new CronJob('0 0 3 * * *',
-        function () {
-          logger.info('Cronjob autopilot refresher');
-          autopilot.refreshActiveGames();
-        },
-        null,
-        true,
-        'Europe/Berlin');
+      schedule.scheduleJob('autopilotRefesher', '0 3 * * *', function () {
+        logger.info('Cronjob autopilot refresher');
+        autopilot.refreshActiveGames();
+      });
     }
-    catch (err){
+    catch (err) {
       logger.error('Error in mainCronjobs.setupAutopilotRefresher', err);
     }
   }

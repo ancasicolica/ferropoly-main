@@ -11,7 +11,7 @@
 
 const eventRepo    = require('../../common/models/schedulerEventModel');
 const EventEmitter = require('events').EventEmitter;
-const {CronJob}    = require('cron');
+const schedule     = require('node-schedule');
 const {DateTime}   = require('luxon');
 const gameCache    = require('./gameCache');
 const logger       = require('../../common/lib/logger').getLogger('gameScheduler');
@@ -34,34 +34,17 @@ class Scheduler extends EventEmitter {
     this.jobs = [];
 
     try {
-      this.refreshCronJob = CronJob.from(
-        {
-          cronTime:     '0 1 0 * * *',
-          onTick:       gameCache.refreshCache,
-          start:        true,
-          timezone:     'Europe/Berlin',
-          errorHandler: self.cronErrorHandler,
-          context:      self,
-          runOnInit:    false,
-          name:         'refreshCronJob',
-          threshold:    2000
-        }
-      );
+      this.refreshCronJob = schedule.scheduleJob('refreshJob', '1 0 * * *', function () {
+        // Update cache at start of the day
+        gameCache.refreshCache().catch(err => {
+          logger.error('Error in refreshCache (cronjob)', err);
+        });
+      });
 
-      // Update every 3 hours
-      this.updateJob = CronJob.from(
-        {
-          cronTime:     '0 53 0/3 * * *',
-          onTick:       self.update,
-          start:        true,
-          timezone:     'Europe/Berlin',
-          errorHandler: self.cronErrorHandler,
-          context:      self,
-          runOnInit:    false,
-          name:         `updateJob`,
-          threshold:    2000
-        }
-      );
+      this.updateJob = schedule.scheduleJob('updateJob', '53 0/3 * * *', function () {
+        // // Update every 3 hours
+        self.update();
+      });
     }
     catch (err) {
       logger.error('Error in Scheduler constructor', err);
@@ -175,19 +158,7 @@ class Scheduler extends EventEmitter {
             logger.info(`${event.gameId}: Push event in joblist:${event._id} @ ${event.timestamp}`, event);
             let scheduledTs = DateTime.fromJSDate(event.timestamp).plus({seconds: self.settings.scheduler.delay});
             try {
-              self.jobs.push(
-                CronJob.from({
-                    cronTime:     scheduledTs.set({'seconds': 0, 'milliseconds': 0}),
-                    onTick:       handlerFunction.bind(null, event),
-                    start:        true,
-                    timezone:     'Europe/Berlin',
-                    errorHandler: self.cronErrorHandler,
-                    context:      self,
-                    runOnInit:    false,
-                    name:         `event id:${event._id} type:${event.type}`,
-                    threshold:    2000  // very long, but avoid restarts because of the default 250ms
-                  }
-                ));
+              self.jobs.push(schedule.scheduleJob(event._id, scheduledTs.toJSDate(), handlerFunction.bind(null, event)));
             }
             catch (err) {
               logger.error(`Error in Scheduler.update with entry ${scheduledTs.toJSDate()}`, err);
