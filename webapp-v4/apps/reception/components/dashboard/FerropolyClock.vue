@@ -12,7 +12,7 @@
     >
       <h1 style="text-align: center;">{{ currentTime }}</h1>
       <div> Nächster Termin: {{ nextType }}
-        <span v-if="nextTimeRelative">, {{ nextTimeRelative }}: {{ nextTime }}</span>
+        <span v-if="nextTimeRelative"> {{ nextTimeRelative }}: {{ nextTime }}</span>
       </div>
     </FerroCard>
   </div>

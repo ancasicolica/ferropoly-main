@@ -8,8 +8,8 @@
   <div>
     <call-active-warning-banner />
     <h1>Übersicht</h1>
-    <div class="flex  gap-4">
-      <div class="basis-128">
+    <div class="flex gap-4">
+      <div class="basis-lg">
         <FerroCard
             title="Rangliste"
             condensed
@@ -23,8 +23,11 @@
           <RankingList />
         </FerroCard>
       </div>
-      <div class="basis-64">
+      <div class="basis-lg">
         <ferropoly-clock />
+      </div>
+      <div class="basis-lg">
+        <game-log-card />
       </div>
     </div>
   </div>
@@ -40,6 +43,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {computed} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
 import FerropolyClock from './FerropolyClock.vue';
+import GameLogCard from './GameLogCard.vue';
 
 const receptionStore = useReceptionStore();
 const downloadUrl    = computed(() => {

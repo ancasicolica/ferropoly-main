@@ -11,6 +11,7 @@ import {usePropertyStore} from './store/PropertyStore';
 import {usePicBucketStore} from './store/PicBucketStore';
 import {useTravelLogStore} from './store/TravelLogStore';
 import {getMapRoutesInstance} from './MapRoutes';
+import {useGameLogStore} from './store/GameLogStore';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -128,7 +129,7 @@ class FerropolySocket extends EventEmitter {
         //   self.store.dispatch({type: 'updateProperties'});
       },
       'game-log':                 (msg) => {
-        //   self.store.dispatch({type: 'gameLog/pushEntry', logEntry: msg})
+        useGameLogStore().addLogEntry(msg);
       },
       'player-position':          (msg) => {
         console.log('PLAYER position', msg);
