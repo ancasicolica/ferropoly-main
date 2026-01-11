@@ -8,8 +8,8 @@
   <div>
     <call-active-warning-banner />
     <h1>Übersicht</h1>
-    <div class="flex gap-4">
-      <div class="basis-lg">
+    <div class="flex gap-2">
+      <div class="basis-1/3">
         <FerroCard
             title="Rangliste"
             condensed
@@ -23,10 +23,10 @@
           <RankingList />
         </FerroCard>
       </div>
-      <div class="basis-lg">
+      <div class="basis-1/3">
         <ferropoly-clock />
       </div>
-      <div class="basis-lg">
+      <div class="basis-1/3">
         <game-log-card />
       </div>
     </div>

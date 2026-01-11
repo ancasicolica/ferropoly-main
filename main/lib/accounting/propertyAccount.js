@@ -153,6 +153,16 @@ async function chargeRent(gp, property, teamId, callback) {
 
   await propertyTransaction.book(pt);
 
+  if (ferroSocket) {
+    ferroSocket.emitToAdmins(options.gameId, 'admin-propertyAccount', {
+      cmd:         'rent',
+      property:    property,
+      transaction: pt
+    });
+
+    ferroSocket.emitToTeam(options.gameId, property.gamedata.owner, 'checkinStore', propertyActions.updateProperty(property));
+  }
+
   return {property: property, owner: property.gamedata.owner, amount: info.amount};
 }
 

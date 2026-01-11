@@ -109,8 +109,11 @@ class FerropolySocket extends EventEmitter {
         //  self.store.dispatch({type: 'updateTeamAccountEntries', teamId: msg.data.teamId});
       },
       'admin-propertyAccount':    msg => {
-        if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought' || msg.cmd === 'propertyReset') {
+        if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought' || msg.cmd === 'propertyReset' || msg.cmd === 'rent') {
           usePropertyStore().updateProperty(msg.property)
+        }
+        else {
+          console.warn('Unhandled command for admin-propertyAccount', msg);
         }
         //  self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'propertyRegister/updatePropertyInPricelist', property: msg.property});

@@ -248,6 +248,10 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
         console.error(err);
       }
     },
+    /**
+     * Books the team account entries
+     * @param accountData
+     */
     bookTeamAccountEntries(accountData) {
       if (!accountData || accountData.length === 0) {
         return;
@@ -273,7 +277,7 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
           this.records.set(entry.teamId, account);
         }
 
-        // Schnellerer Check (idealerweise über eine Map/Set der IDs pro Team)
+        // Fast check for affected teams
         if (!account.some(e => e._id === entry._id)) {
           account.push(entry);
           affectedTeamIds.add(entry.teamId);
