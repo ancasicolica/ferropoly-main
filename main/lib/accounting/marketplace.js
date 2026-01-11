@@ -34,6 +34,41 @@ function marketLog(gameId, text, obj) {
   logger.info(`${gameId}: ${text}`, obj);
 }
 
+/**
+ * Formats the price range of a property this is from the frontend 'formatters.js'. Think about having a shared
+ * library for such purposes (which is not common use case, first time needed after 10 years of development, so
+ * low prio).
+ * @param val
+ * @returns {string}
+ */
+function formatPriceRange(val) {
+  switch (val) {
+    case -1:
+      return 'unbenutzt';
+
+    case 0:
+      return 'sehr billig';
+
+    case 1:
+      return 'billig';
+
+    case 2:
+      return 'unteres Mittelfeld';
+
+    case 3:
+      return 'oberes Mittelfeld';
+
+    case 4:
+      return 'teuer';
+
+    case 5:
+      return 'sehr teuer';
+
+    default:
+      return 'unbekannt';
+  }
+}
+
 class Marketplace extends EventEmitter {
   /**
    * Constructor
@@ -208,7 +243,7 @@ class Marketplace extends EventEmitter {
         gameId:    options.gameId,
         category:  gameLog.CAT_PROPERTY,
         title:     `"${team.data.name}" kaufen ${property.location.name} für ${info.amount} Fr.`,
-        saveTitle: `"${team.data.name}" kaufen ein Ort für ${info.amount} Fr.`,
+        saveTitle: `"${team.data.name}" kaufen ein Ort der Preisklasse "${formatPriceRange(property.pricelist.priceRange)}"`,
         options:   {teamId: team.uuid}
       })
       // that's it!

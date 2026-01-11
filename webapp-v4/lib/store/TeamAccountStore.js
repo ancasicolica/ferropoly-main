@@ -122,7 +122,7 @@ export const useTeamAccountStore = defineStore('TeamAccount', {
       }
 
       let check = retVal.various + retVal.gambling + retVal.chancellery + retVal.penalty + retVal.propertyPurchase + retVal.housePurchase + retVal.rent + retVal.hourlyFee + retVal.interest;
-      console.log('Check account', check, retVal);
+      // console.log('Check account', check, retVal);
       return retVal;
     },
     /**
