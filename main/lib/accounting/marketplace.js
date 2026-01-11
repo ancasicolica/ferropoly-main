@@ -105,8 +105,7 @@ class Marketplace extends EventEmitter {
         try {
           marketLog(event.gameId, 'Marketplace: onEnd');
           await self.payFinalRents(event.gameId);
-          marketLog(event.gameId, 'Timed interests paid');
-          marketLog(event.gameId, 'Marketplace: onStart');
+          marketLog(event.gameId, 'Final interests paid');
           await gameLog.addEntry({
             gameId:    event.gameId,
             category:  gameLog.CAT_GENERAL,
@@ -225,9 +224,9 @@ class Marketplace extends EventEmitter {
     else {
       // CASE 3: property belongs to another team, pay the rent
       marketLog(options.gameId, `"${property.location.name}" is already sold to another team`);
-      const info = propertyAccount.chargeRent(gp, property, options.teamId);
+      const info = await propertyAccount.chargeRent(gp, property, options.teamId);
 
-      let targetTeam = _.get(gameData.teams[info.owner], 'data.name', 'unbekannt');
+      let targetTeam = _.get(gameData.teams.get(info.owner), 'data.name', 'unbekannt');
       await gameLog.addEntry({
         gameId:    options.gameId,
         category:  gameLog.CAT_PROPERTY,
@@ -406,10 +405,9 @@ class Marketplace extends EventEmitter {
     }
 
     for (let i = 0; i < gp.gameParams.interestCyclesAtEndOfGame; i++) {
-      await self.payRents({gameId: gameId, tolerance: tolerance});
+      await self.payRents({gameId: gameId, tolerance: tolerance, message: `Abschlussrunde ${i + 1}`});
     }
-  }
-  ;
+  };
 
   /**
    * Pay Interest (this is the fix value) for all teams.
@@ -523,7 +521,7 @@ class Marketplace extends EventEmitter {
     }
     let gameId    = options.gameId;
     let tolerance = options.tolerance || 0;
-    let message   = options.message;
+    let message   = options.message || 'Startgeld';
 
     if (!gameId) {
       throw new Error('no gameId supplied in payRents');
@@ -561,8 +559,12 @@ class Marketplace extends EventEmitter {
     }
 
     if (ferroSocket) {
-      // Inform clients that the can build again
-      ferroSocket.emitToGame(gameId, 'general', {cmd: 'rentsPaid', message: 'Die Mieten wurden ausbezahlt'});
+      // Inform clients that the can build again. The message is like "Startgeld Runde 3"
+      await gameLog.addEntry({
+        gameId:    gameId,
+        category:  gameLog.CAT_GENERAL,
+        saveTitle: `${message} ausbezahlt`
+      });
     }
   };
 

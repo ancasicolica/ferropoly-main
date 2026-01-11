@@ -9,6 +9,7 @@ const teamAccountTransaction = require('./../../../common/models/accounting/team
 const logger                 = require('../../../common/lib/logger').getLogger('accounting:teamAccount');
 const teamAccountActions     = require('../../../components/checkin-datastore/lib/teamAccount/actions');
 const {DateTime}             = require('luxon');
+const teamModel             = require('../../../common/models/teamModel');
 const {
         TEAM_TRANSACTION_HOURLY_FEE,
         TEAM_TRANSACTION_UNDEFINED,
@@ -227,25 +228,29 @@ async function chargeToAnotherTeam(options, callback) {
   // Amount has to be positive for us, not concerning of the parameter value!
   const chargedAmount = Math.abs(options.amount);
 
+  // Two queries in the DB, but this happens not too often, so ok
+  const debitorTeam = await teamModel.getTeam(options.gameId, options.debitorTeamId);
+  const creditorTeam = await teamModel.getTeam(options.gameId, options.creditorTeamId);
+
   let chargingEntry                = new teamAccountTransaction.Model();
   chargingEntry.gameId             = options.gameId;
   chargingEntry.teamId             = options.debitorTeamId;
   chargingEntry.user               = options.user;
   chargingEntry.transaction.amount = chargedAmount * (-1);
 
-  chargingEntry.transaction.origin = {
+  chargingEntry.transaction.origin  = {
     uuid:     options.creditorTeamId,
     category: 'team'
   };
-  chargingEntry.transaction.info   = options.info;
-  chargingEntry.transaction.type   = options.type || TEAM_TRANSACTION_UNDEFINED;
+  chargingEntry.transaction.info    = `${options.info} an ${_.get(creditorTeam, 'data.name', 'unbekannt')}`;
+  chargingEntry.transaction.type    = options.type || TEAM_TRANSACTION_UNDEFINED;
   let receivingEntry                = new teamAccountTransaction.Model();
   receivingEntry.gameId             = options.gameId;
   receivingEntry.teamId             = options.creditorTeamId;
   receivingEntry.user               = options.user;
   receivingEntry.transaction.amount = chargedAmount;
   receivingEntry.transaction.origin = {uuid: options.debitorTeamId, category: 'team'};
-  receivingEntry.transaction.info   = options.info;
+  receivingEntry.transaction.info   = `${options.info} von ${_.get(debitorTeam, 'data.name', 'unbekannt')}`;
   receivingEntry.transaction.type   = options.type || TEAM_TRANSACTION_UNDEFINED;
   await teamAccountTransaction.bookTransfer(chargingEntry, receivingEntry)
   if (ferroSocket) {
