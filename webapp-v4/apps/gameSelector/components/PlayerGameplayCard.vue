@@ -35,6 +35,14 @@
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
       <Button
+          class="mr-2 mb-2"
+          label="Spielen"
+          size="small"
+          severity="primary"
+          as="a"
+          :href="playLink"
+      />
+      <Button
           v-if="isTeamLead"
           class="mr-2 mb-2"
           label="Team Mitglieder"
@@ -97,6 +105,7 @@ const isTeamLead    = computed(() => props.gameplay.isTeamLead)
 const teamEditLink  = computed(() => `/team/edit/${props.gameplay.internal.gameId}/${props.gameplay.team.uuid}`)
 const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`)
 const summaryLink   = computed(() => `/summary/${props.gameplay.internal.gameId}`);
+const playLink      = computed(() => `/checkin/${props.gameplay.internal.gameId}`);
 
 const gameOver = computed(() => {
   if (!props.gameplay.internal.finalized) {

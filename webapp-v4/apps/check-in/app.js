@@ -6,10 +6,27 @@
  **/
 import createWebApp from '../../common/lib/appFactory';
 import CheckInRoot from './components/CheckInRoot.vue';
+import CheckInDashboard from './components/dashboard/CheckInDashboard.vue';
+import CheckInMap from './components/map/CheckInMap.vue';
+import CheckInUpload from './components/upload/CheckInUpload.vue';
+import CheckInPictures from './components/pictures/CheckInPictures.vue';
+import CheckInProperty from './components/property/CheckInProperty.vue';
+import CheckInAccount from './components/account/CheckInAccount.vue';
+import CheckInPricelist from './components/pricelist/CheckInPricelist.vue';
+import CheckInRules from './components/rules/CheckInRules.vue';
+import CheckInStatistics from './components/statistics/CheckInStatistics.vue';
 
 createWebApp( {
   routes: [
-    {path: '/', name: 'root', component: CheckInRoot },
+    {path: '/', name: 'dashboard', component: CheckInDashboard },
+    {path: '/map', name: 'map', component: CheckInMap },
+    {path: '/upload', name: 'upload', component: CheckInUpload },
+    {path: '/pictures', name: 'pictures', component: CheckInPictures },
+    {path: '/property', name: 'property', component: CheckInProperty },
+    {path: '/account', name: 'account', component: CheckInAccount },
+    {path: '/pricelist', name: 'pricelist', component: CheckInPricelist },
+    {path: '/rules', name: 'rules', component: CheckInRules },
+    {path: '/statistics', name: 'statistics', component: CheckInStatistics },
   ],
   components: [
     {name: 'check-in-root', component: CheckInRoot},
