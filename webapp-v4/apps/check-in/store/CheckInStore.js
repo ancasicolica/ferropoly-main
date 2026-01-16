@@ -6,9 +6,10 @@
 
 import {defineStore} from 'pinia'
 import {ref} from 'vue'
+import axios from 'axios';
 
 export const useCheckInStore = defineStore('CheckIn', () => {
-  const menuBarElements = ref(   [
+  const menuBarElements = ref([
     {label: 'Übersicht', route: 'dashboard'},
     {label: 'Karte', route: 'map'},
     {label: 'Preisliste', route: 'pricelist'},
@@ -19,9 +20,13 @@ export const useCheckInStore = defineStore('CheckIn', () => {
     {label: 'Statistik', route: 'statistics'},
     {label: 'Spielregeln', route: 'rules'},
   ]);
-    const socketConnected = ref(   false);
 
+  const fetchStaticData = async function(gameId) {
+    this.gameId = gameId;
+    const resp  = await axios.get(`/static/${gameId}`);
+    console.log('Static data fetched', resp.data);
+    return resp.data;
+  }
 
-
-  return {menuBarElements, socketConnected}
+  return {menuBarElements, fetchStaticData}
 })

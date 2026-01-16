@@ -54,7 +54,7 @@ export const useTeamsStore = defineStore('Teams', {
   },
   actions: {
     setTeams(teams) {
-      let i           = 1;
+      let i           = 0;
       let sortedTeams = sortBy(teams, 'data.name');
       console.log('SORTING', teams, sortedTeams);
       sortedTeams.forEach(t => {

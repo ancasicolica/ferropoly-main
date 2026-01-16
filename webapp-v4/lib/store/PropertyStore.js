@@ -12,7 +12,7 @@
 
 import {defineStore} from 'pinia';
 import {getMapMarkerInstance} from '../MapMarkers';
-import {get, assign, isString, findIndex,} from 'lodash';
+import {assign, isString, findIndex,} from 'lodash';
 import axios from 'axios';
 import {MARKER_MODE_INFO} from '../constants/markerMode';
 import {
@@ -31,7 +31,7 @@ import {getMapRoutesInstance} from '../MapRoutes';
 
 export const usePropertyStore = defineStore('Property', () => {
 
-  let gameId           = '';
+  let gameId = '';
 
   // Store properties
   const properties            = ref(new Map());
@@ -42,6 +42,8 @@ export const usePropertyStore = defineStore('Property', () => {
   const markerMode            = ref(MARKER_MODE_INFO);
   const propertiesVersion     = ref(0); // increments whenever ownership-related data changes (used for memoized
                                         // getters)
+  const teamId = ref(null);
+
   const filter = ref({
     propertyStatus: PROPERTY_FILTER_STATUS_ALL,
     teams:          [],
@@ -49,6 +51,7 @@ export const usePropertyStore = defineStore('Property', () => {
     propertyUuid:   PROPERTY_FILTER_UUID_NONE,
     price:          PROPERTY_FILTER_PRICE_NONE
   });
+
 
   /**
    * Save the changed filters in the session store
@@ -217,9 +220,12 @@ export const usePropertyStore = defineStore('Property', () => {
    * @param _gameId
    * @param {Array<Object>} props - An array of property objects to initialize.
    * Each property object should include a `uuid` and other relevant attributes.
+   * @param options
    * @return {Promise<void>} A promise that resolves once the initialization is completed.
    */
-  async function init(_gameId, props) {
+  async function init(_gameId, props, options = {}) {
+    teamId.value = options.teamId;
+
     // Create the map of properties
     for (const prop of props) {
       prop.visibleOnMap = true;
@@ -287,10 +293,9 @@ export const usePropertyStore = defineStore('Property', () => {
     try {
       console.log('updating', options);
 
-      const teamId = get(options, 'teamId', null);
-      let url      = `/properties/get/${gameId}`;
-      if (teamId) {
-        url += `/${teamId}`;
+      let url = `/properties/get/${gameId}`;
+      if (teamId.value) {
+        url += `/${teamId.value}`;
       }
       const resp = await axios.get(url);
 
@@ -342,7 +347,12 @@ export const usePropertyStore = defineStore('Property', () => {
       let transactions = _transactions;
 
       if (!transactions) {
-        const url    = `/propertyAccount/getAccountStatement/${gameId}/${propertyId}/${start}`
+        let url = '/propertyAccount';
+        if (teamId.value) {
+          url += `/getTeamAccountStatement/${gameId}/${teamId.value}/${propertyId}/${start}`;
+        } else {
+          url += `/getAccountStatement/${gameId}/${propertyId}/${start}`
+        }
         const resp   = await axios.get(url);
         transactions = resp.data.register;
       }
@@ -471,7 +481,7 @@ export const usePropertyStore = defineStore('Property', () => {
   return {
     properties, ready, debugOutput, showMarkersAsCategory, markerGroupModus, markerMode, propertiesVersion, filter,
     pricelist, freePropertiesNb, boughtPropertiesNb, buildingNb, mostProfitableProperties, leastProfitableProperties,
-    propertiesByTeamId,
+    propertiesByTeamId, teamId,
     init, updateProperty, update, updateTransactions, resetProperty, updateFilter
   }
 

@@ -30,7 +30,6 @@ export const useReceptionStore = defineStore('Reception', {
         ]
       },
     ],
-    socketConnected:   false,
     activeCall:        {
       team:               null,
       chancelleryEnabled: true,

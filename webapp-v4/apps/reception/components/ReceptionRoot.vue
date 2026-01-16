@@ -49,7 +49,7 @@
       <menu-bar
           :elements="receptionStore.menuBarElements"
           show-online-status
-          :online="receptionStore.socketConnected"
+          :online="socketStore.connected"
           help-url="/about"
       />
       <div class="ferropoly-container">
@@ -81,6 +81,7 @@ import {useRulesStore} from '../../../lib/store/RulesStore';
 import ProgressSpinner from 'primevue/progressspinner';
 import {useCronJobStore} from '../../../lib/store/CronJobStore';
 import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
+import {useSocketStore} from '../../../lib/store/SocketStore';
 
 const receptionStore   = useReceptionStore();
 const receptionSocket  = getReceptionSocket();
@@ -93,13 +94,14 @@ const picBucketStore   = usePicBucketStore();
 const rulesStore       = useRulesStore();
 const cronJobStore     = useCronJobStore();
 const travelLogStore   = useTravelLogStore();
+const socketStore      = useSocketStore();
 
 const elements = split(window.location.pathname, '/');
 let gameId     = last(elements);
 
 const isInitialLoading = ref(true);
 
-onMounted(()=> {
+onMounted(() => {
   receptionStore.fetchStaticData(gameId)
       .then(async staticData => {
         const start = DateTime.now();
@@ -129,15 +131,16 @@ onMounted(()=> {
           user:      get(staticData, 'user', 'none'),
           gameId:    gameId
         });
-        isInitialLoading.value = false;
-        const end              = DateTime.now();
+        const end = DateTime.now();
         console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
       })
       .catch(err => {
         console.error(err);
+      })
+      .finally(() => {
+        isInitialLoading.value = false;
       });
 })
-
 
 
 const dialogVisible = ref(false);

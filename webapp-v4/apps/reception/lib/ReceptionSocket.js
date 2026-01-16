@@ -4,25 +4,25 @@
  * Created: 08.11.2025
  **/
 import {FerropolySocket} from '../../../lib/FerropolySocket';
-import {useReceptionStore} from '../store/ReceptionStore';
+import {useSocketStore} from '../../../lib/store/SocketStore';
 
 let socket = null;
 
 class ReceptionSocket {
   constructor() {
     this.socket = null;
-    this.receptionStore = useReceptionStore();
+    this.socketStore = useSocketStore();
   }
 
   initSocket(options) {
     this.socket = new FerropolySocket(options);
 
     this.socket.on('connected', ()=> {
-      this.receptionStore.socketConnected = true;
+      this.socketStore.connected = true;
       console.log('connected');
     })
     this.socket.on('disconnected', ()=> {
-      this.receptionStore.socketConnected = false;
+      this.socketStore.connected = false;
       console.log('disconnected');
     })
   }
