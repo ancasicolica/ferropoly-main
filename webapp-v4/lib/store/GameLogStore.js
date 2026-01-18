@@ -11,7 +11,9 @@ import {DateTime} from 'luxon';
 const NUMBER_OF_ENTRIES = 10;
 
 export const useGameLogStore = defineStore('GameLog', () => {
-  const logs = ref(new Map())
+  const logs = ref(new Map());
+
+  const numberOfEntries = ref(NUMBER_OF_ENTRIES);
 
   const addLogEntry = function (entry) {
     entry.timestamp = DateTime.fromISO(entry.timestamp);
@@ -22,8 +24,8 @@ export const useGameLogStore = defineStore('GameLog', () => {
   const currentEntries = computed(() => {
     return Array.from(logs.value.values())
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())
-      .slice(0, NUMBER_OF_ENTRIES);
+      .slice(0, numberOfEntries.value);
   })
 
-  return {logs, addLogEntry, currentEntries}
+  return {logs, addLogEntry, currentEntries, numberOfEntries}
 })

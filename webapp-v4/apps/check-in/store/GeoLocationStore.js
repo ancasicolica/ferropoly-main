@@ -12,9 +12,11 @@ export const useGeoLocationStore = defineStore('GeoLocation', () => {
   const currentPosition = ref({lat: 0, lng: 0, accuracy: 0});
 
   geograph.on('player-position-update', (pos) => {
+    console.log('new position', pos);
     currentPosition.value = pos;
   });
   geograph.on('player-position-error', () => {
+    console.warn('Geograph error');
     currentPosition.value = null;
   })
 
@@ -24,8 +26,12 @@ export const useGeoLocationStore = defineStore('GeoLocation', () => {
   };
 
   const positionIsValid = computed(() => {
-    return geograph.positionIsValid();
+    return currentPosition.value.lat !== 0;
   })
 
-  return {currentPosition, init, positionIsValid}
+  const localize = function() {
+    geograph.localize();
+  }
+
+  return {currentPosition, init, positionIsValid, localize}
 })

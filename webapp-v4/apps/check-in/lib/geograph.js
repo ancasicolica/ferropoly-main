@@ -19,7 +19,7 @@ class Geograph extends EventEmitter {
   }
 
   /**
-   * One time localization
+   * One-time localization
    * @returns {null}
    */
   localize() {
@@ -35,8 +35,8 @@ class Geograph extends EventEmitter {
       } else {
         //console.log('GPS: receiving new geolocation position', geoLocationPosition);
         self.position = {
-          lat     : get(geoLocationPosition, 'coords.latitude', 0),
-          lng     : get(geoLocationPosition, 'coords.longitude', 0),
+          lat:      get(geoLocationPosition, 'coords.latitude', 0),
+          lng:      get(geoLocationPosition, 'coords.longitude', 0),
           accuracy: get(geoLocationPosition, 'coords.accuracy', 1000)
         };
         self.emit('player-position-update', self.position);
@@ -44,7 +44,7 @@ class Geograph extends EventEmitter {
     }
 
     if (navigator.geolocation) {
-      // navigator object is in browser available when there's a GPS
+      // navigator object is in a browser available when there's a GPS
       navigator.geolocation.getCurrentPosition(
         pos => {
           // Handler when everything is ok
@@ -67,6 +67,10 @@ class Geograph extends EventEmitter {
               console.error('GPS: An unknown error occurred.');
               break;
           }
+        },
+        {
+          maximumAge:         0,
+          enableHighAccuracy: true
         });
     } else {
       console.log('GPS: Geolocation is not supported by this browser.');
@@ -81,7 +85,7 @@ class Geograph extends EventEmitter {
    * @returns {boolean}
    */
   positionIsValid() {
-    return this.position !== null;
+    return this.position !== null && this.position.lat !== 0;
   }
 
   /**

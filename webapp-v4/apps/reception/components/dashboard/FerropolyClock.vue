@@ -23,6 +23,7 @@ import {DateTime} from 'luxon';
 import {ref, onMounted, onBeforeUnmount, computed} from 'vue';
 import FerroCard from '../../../../common/components/FerroCard.vue';
 import {useCronJobStore} from '../../../../lib/store/CronJobStore';
+import {cronjobTypeToText} from '../../../../lib/cronJob';
 
 const cronJobStore     = useCronJobStore();
 const currentTime      = ref('');
@@ -37,20 +38,7 @@ const formatTime = () => {
 const nextType           = computed(() => {
   const next = cronJobStore.getNextCronJob();
   if (next) {
-    switch (next.type) {
-      case 'interest':
-        return 'Zins & Startgeld';
-      case 'prestart' :
-        return 'Vorbereitung Spielstart';
-      case 'start':
-        return 'Spielstart';
-      case 'end':
-        return 'Spielende';
-      case 'summary':
-        return 'Freigabe Spieldaten an Teams';
-      default:
-        return next.type;
-    }
+    return cronjobTypeToText(next.type);
   }
   return '';
 })
@@ -65,7 +53,6 @@ const formatTimeRelative = () => {
 const nextTime = computed(() => {
   const next = cronJobStore.getNextCronJob();
   if (next) {
-    console.log('next', next);
     return next.timestamp.toLocaleString(DateTime.TIME_SIMPLE);
   }
   return '';

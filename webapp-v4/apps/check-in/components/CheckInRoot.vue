@@ -89,6 +89,8 @@ onMounted(() => {
         console.log('Init step 8');
         await travelLogStore.fetchLog(gameId, staticData?.team?.uuid);
         console.log('Init step 9');
+        checkInStore.team = staticData.team;
+        console.log('Init step 10');
         receptionSocket.initSocket({
           url:       staticData.socketUrl,
           authToken: staticData.authToken,

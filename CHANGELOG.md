@@ -11,6 +11,7 @@
 * Check-in
     * Der Preis eines von einer anderen Gruppe gekauften Ortes wird nicht mehr angezeigt, nur noch die Preiskategorie (
       2025 konnte eine Gruppe anhand des Preises die Liegenschaften der anderen Gruppen erraten)
+    * Das nächste Ereignis wird angezeigt
 * Summary: Angeglichen an Reception, deutlich mehr Infos (alle Statistiken, Buchungen)
 * Mehr Statistik: Erfolgsrechnung
 * Profit der Orte kann dargestellt werden

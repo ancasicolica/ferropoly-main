@@ -243,7 +243,7 @@ class Marketplace extends EventEmitter {
         gameId:    options.gameId,
         category:  gameLog.CAT_PROPERTY,
         title:     `"${team.data.name}" kaufen ${property.location.name} für ${info.amount} Fr.`,
-        saveTitle: `"${team.data.name}" kaufen ein Ort der Preisklasse "${formatPriceRange(property.pricelist.priceRange)}"`,
+        saveTitle: `${team.data.name} kaufen ein Ort der Preisklasse "${formatPriceRange(property.pricelist.priceRange)}"`,
         options:   {teamId: team.uuid}
       })
       // that's it!

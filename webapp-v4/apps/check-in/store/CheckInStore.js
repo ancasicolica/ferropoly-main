@@ -21,12 +21,19 @@ export const useCheckInStore = defineStore('CheckIn', () => {
     {label: 'Spielregeln', route: 'rules'},
   ]);
 
-  const fetchStaticData = async function(gameId) {
+  const team = ref({
+    uuid: '',
+    data: {
+      name: ''
+    }
+  });
+
+  const fetchStaticData = async function (gameId) {
     this.gameId = gameId;
     const resp  = await axios.get(`/static/${gameId}`);
     console.log('Static data fetched', resp.data);
     return resp.data;
   }
 
-  return {menuBarElements, fetchStaticData}
+  return {menuBarElements, team, fetchStaticData}
 })
