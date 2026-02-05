@@ -27,7 +27,7 @@
                 @click="acceptCallback"
             />
             <Button
-                label="Nein, abbrechen"
+                label="Abbrechen"
                 variant="outlined"
                 class="w-64"
                 @click="rejectCallback"
@@ -42,7 +42,7 @@
         style="height: 100%"
     >
       <template #header>
-        <h3> Liegenschaft kaufen </h3>
+        <h3> Ort kaufen </h3>
       </template>
       <div class="search-container">
         <IconField class="search-field">
@@ -50,11 +50,11 @@
           <InputText
               v-model="filters['searchText'].value"
               type="text"
-              placeholder="Suche..."
+              placeholder="Suchen..."
           />
         </IconField>
         <Button
-            label="Löschen"
+            label="Leeren"
             severity="secondary"
             class="clear-button"
             @click="clearSearch"
@@ -77,7 +77,7 @@
             :virtual-scroller-options="{ itemSize: 44 }"
         >
           <template #empty>
-            <div>Die Suche liefert keinen Treffer!</div>
+            <div>Keine Ergebnisse gefunden!</div>
           </template>
           <Column
               field="searchText"
@@ -135,6 +135,8 @@ const receptionStore = useReceptionStore();
 const propertyStore  = usePropertyStore();
 const confirm        = useConfirm();
 
+const isBuying = ref('');
+
 // Clear the search string
 const clearSearch = () => {
   filters.value['searchText'].value = null;
@@ -183,7 +185,6 @@ const filters = ref({
 })
 
 const onClickBuy = function (prop) {
-  console.log('BUY', prop);
   confirm.require({
     group:       'headless',
     header:      'Ort kaufen',
@@ -195,8 +196,16 @@ const onClickBuy = function (prop) {
     acceptProps: {
       label: 'Ja, kaufen'
     },
-    accept:      () => {
-      receptionStore.buyProperty(receptionStore.activeCall.team.uuid, prop.uuid);
+    accept:      async () => {
+      if (isBuying.value === prop.uuid) {
+        return;
+      }
+      isBuying.value = prop.uuid;
+      try {
+        await receptionStore.buyProperty(receptionStore.activeCall.team.uuid, prop.uuid);
+      }
+      finally {
+      }
     },
     reject:      () => {
       console.log('Panic, do not buy!');
@@ -226,6 +235,6 @@ const onClickBuy = function (prop) {
 }
 
 #confirm-icon {
-  font-size: xxx-large;
+  font-size: 3rem;
 }
 </style>

@@ -131,6 +131,7 @@ export const useReceptionStore = defineStore('Reception', {
      * @return {Promise<void>} A promise that resolves when the operation is complete and relevant logs are recorded.
      */
     async buyProperty(teamId, propertyId) {
+      console.log('>>>> buyProperty', teamId, propertyId);
       const self = this;
       try {
         const authToken = await getAuthToken();
