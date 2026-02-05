@@ -5,13 +5,25 @@
 -->
 
 <template>
-  <div>CheckInRules.vue</div>
+  <div>
+    <!-- eslint-disable vue/no-v-html -->
+    <div
+        class="rules-container"
+        v-html="rulesStore.rules.released"
+    />
+  </div>
 </template>
 
 <script setup>
+import {useRulesStore} from '../../../../lib/store/RulesStore';
+
+const rulesStore = useRulesStore();
 
 </script>
 
 <style scoped lang="scss">
-
+.rules-container {
+  width: 90%;
+  margin: 0 auto;
+}
 </style>
