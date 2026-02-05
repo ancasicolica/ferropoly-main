@@ -85,7 +85,7 @@ class FerropolySocket extends EventEmitter {
         } else if (msg.type === 'setChancelleryAsset') {
           //  self.store.dispatch({type: 'setChancelleryAsset', asset: msg.asset});
         } else if (msg.type === 'updateProperty') {
-          //  self.store.dispatch({type: 'propertyRegister/updatePropertyInPricelist', property: msg.property});
+          usePropertyStore().updateProperty(msg.property);
         } else if (msg.type === 'addTeamAccountTransaction') {
           //  self.store.dispatch({type: 'addTeamAccountTransaction', transaction: msg.transaction});
         } else if (msg.type === 'setTeamAccountAsset') {
