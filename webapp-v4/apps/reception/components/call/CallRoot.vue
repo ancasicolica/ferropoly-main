@@ -95,12 +95,16 @@ const onTeamCalling = (team) => {
 
 const onNormalCallConfirmed = () => {
   activitySelected.value = true;
-  receptionStore.startTeamCall(callingTeam.value, true);
+  if (callingTeam.value) {
+    receptionStore.startTeamCall(callingTeam.value, true);
+  }
   callingTeam.value = null;
 }
 const onEditCallConfirmed   = () => {
   activitySelected.value = true;
-  receptionStore.startTeamCall(callingTeam.value, false);
+  if (callingTeam.value) {
+    receptionStore.startTeamCall(callingTeam.value, false);
+  }
   callingTeam.value = null;
 }
 const onCancel              = () => {
