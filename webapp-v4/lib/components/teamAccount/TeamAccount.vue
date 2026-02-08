@@ -28,7 +28,7 @@
       >
         <Column
             expander
-            style="width: 25px"
+            :style="styleExpander"
         >
           <template #body="{data, rowTogglerCallback}">
 
@@ -44,10 +44,11 @@
             field="timestamp"
             header="Zeit"
             :sortable="true"
-            style="width: 150px"
+            :style="styleTimestamp"
         >
           <template #body="slotProps">
-            {{ formatTime(slotProps.data.timestamp) }}
+            <div v-if="smallWindow"> {{ formatGameTime(slotProps.data.timestamp) }}</div>
+            <div v-else> {{ formatTime(slotProps.data.timestamp) }}</div>
           </template>
         </Column>
         <Column
@@ -60,32 +61,36 @@
         </Column>
         <Column
             field="transaction.amount"
-            header="Betrag"
-            style="width: 200px"
+            :style="styleAmount"
         >
+          <template #header>
+            <div class="w-full text-right">Betrag</div>
+          </template>
           <template #body="slotProps">
-            {{ formatPrice(slotProps.data.transaction.amount) }}
+            <div class="amount">{{ formatPrice(slotProps.data.transaction.amount) }}</div>
           </template>
         </Column>
         <Column
             field="balance"
-            header="Saldo"
-            style="width: 200px"
+            :style="styleBalance"
         >
+          <template #header>
+            <div class="w-full text-right">Saldo</div>
+          </template>
           <template #body="slotProps">
-            {{ formatPrice(slotProps.data.balance) }}
+            <div class="amount"> {{ formatPrice(slotProps.data.balance) }} </div>
           </template>
         </Column>
         <template #expansion="slotProps">
-          <div class="flex flex-col items-center">
+          <div>
             <div
                 v-for="t in slotProps.data.transaction.parts"
                 :key="t.uuid"
                 class="flex flex-row"
             >
               <div
-                  class="grid grid-cols-3 gap-4"
-                  style="width: 600px"
+                  class="grid grid-cols-3 gap-1"
+                  :style="styleTransactionParts"
               >
                 <div> {{ t.propertyName }}</div>
                 <div v-if="t.buildingNb > 0 && t.buildingNb < 5"> {{ t.buildingNb }}. Haus</div>
@@ -107,13 +112,14 @@ import Column from 'primevue/column';
 import ScrollPanel from 'primevue/scrollpanel';
 
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-import {formatPrice, formatTime} from '../../../common/lib/formatters';
+import {formatGameTime, formatPrice, formatTime} from '../../../common/lib/formatters';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
 
-const expandedRows   = ref({});
-const tableContainer = ref(null);
-
-const emit = defineEmits(['update:sort-order']);
+const expandedRows     = ref({});
+const tableContainer   = ref(null);
+const windowWidth      = ref(window.innerWidth);
+const smallWindowWidth = 768;
+const emit             = defineEmits(['update:sort-order']);
 
 const onSortOrder = function (value) {
   emit('update:sort-order', value);
@@ -122,20 +128,44 @@ const onSortOrder = function (value) {
 let resizeObserver = null;
 
 const props = defineProps({
-  teamId:           {
+  teamId:    {
     type:     String,
     required: true,
     default:  ''
   },
-  sortOrder:        {
+  sortOrder: {
     type:     Number,
     required: false,
     default:  1
   }
 })
 
-const teamAccountStore = useTeamAccountStore();
+const teamAccountStore   = useTeamAccountStore();
 const teamAccountEntries = computed(() => teamAccountStore.records.get(props.teamId));
+
+const smallWindow=computed(()=> {
+  return windowWidth.value < smallWindowWidth;
+})
+
+const styleExpander = computed(() => {
+  return windowWidth.value < smallWindowWidth ? 'width: 20px' : 'width: 25px';
+})
+
+const styleTimestamp = computed(() => {
+  return windowWidth.value < smallWindowWidth ? 'width: 55px' : 'width: 150px';
+})
+
+const styleAmount = computed(() => {
+  return windowWidth.value < smallWindowWidth ? 'width: 70px' : 'width: 200px';
+})
+
+const styleBalance = computed(() => {
+  return windowWidth.value < smallWindowWidth ? 'width: 90px' : 'width: 200px';
+})
+
+const styleTransactionParts = computed(() => {
+  return windowWidth.value < smallWindowWidth ? 'width: 100%' : 'width: 600px';
+})
 
 
 /**
@@ -146,24 +176,25 @@ const teamAccountEntries = computed(() => teamAccountStore.records.get(props.tea
  * - The function assumes `tableContainer` is a reactive reference to a DOM element (e.g., using Vue's ref or similar).
  */
 const adjustHeight = () => {
+  windowWidth.value = window.innerWidth;
   if (tableContainer.value) {
     const rect                        = tableContainer.value.getBoundingClientRect();
-    // Berechnet den Platz vom oberen Rand des Elements bis zum unteren Rand des Fensters
+    // Calculate the space from the top of the element to the bottom of the window
     const remainingHeight             = window.innerHeight - rect.top - 20;
-    // Setzt die Höhe (verhindert negative Werte)
+    // Set the height (prevent negative values)
     tableContainer.value.style.height = `${Math.max(0, remainingHeight)}px`;
   }
 };
 
 onMounted(() => {
-  // Initiale Berechnung
+  // Initial calculation
   adjustHeight();
 
-  // Bei Änderung der Fenstergröße neu berechnen
+  // Recalculate on window resize
   window.addEventListener('resize', adjustHeight);
 
-  // ResizeObserver überwacht nun den Body, um Layout-Verschiebungen
-  // (z.B. Banner wird größer/kleiner) zu erkennen.
+  // ResizeObserver monitors the body to detect layout shifts
+  // (e.g., banner becomes larger/smaller).
   resizeObserver = new ResizeObserver(() => {
     adjustHeight();
   });
@@ -181,5 +212,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-
+.amount {
+  text-align: right;
+}
 </style>
