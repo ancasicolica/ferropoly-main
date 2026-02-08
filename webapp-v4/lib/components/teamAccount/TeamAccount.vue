@@ -89,7 +89,7 @@
                 class="flex flex-row"
             >
               <div
-                  class="grid grid-cols-3 gap-1"
+                  :class="getTransactionClass(t.buildingNb)"
                   :style="styleTransactionParts"
               >
                 <div> {{ t.propertyName }}</div>
@@ -167,7 +167,12 @@ const styleTransactionParts = computed(() => {
   return windowWidth.value < smallWindowWidth ? 'width: 100%' : 'width: 600px';
 })
 
-
+const getTransactionClass = (buildingNb) => {
+  if (buildingNb) {
+    return "grid grid-cols-3 gap-1"
+  }
+  return "grid grid-cols-2 gap-1"
+}
 /**
  * Adjusts the height of the referenced tableContainer element dynamically,
  * ensuring it fits within the available vertical space in the viewport.
