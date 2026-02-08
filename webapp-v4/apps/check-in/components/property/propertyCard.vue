@@ -15,7 +15,10 @@
       <span class="label">Anzahl Häuser:</span>
       <span class="value">{{ buildingStatus(property.gamedata.buildings) }}</span>
     </div>
-    <div class="row">
+    <div
+         v-if="property.gamedata.buildings < 5"
+         class="row"
+    >
       <span class="label">Hausbau möglich:</span>
       <span class="value">{{ booleanYesNo(property.gamedata.buildingEnabled) }}</span>
     </div>
