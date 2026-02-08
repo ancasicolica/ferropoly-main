@@ -12,6 +12,7 @@ import {usePicBucketStore} from './store/PicBucketStore';
 import {useTravelLogStore} from './store/TravelLogStore';
 import {getMapRoutesInstance} from './MapRoutes';
 import {useGameLogStore} from './store/GameLogStore';
+import {useChancelleryStore} from './store/ChancelleryStore';
 
 class FerropolySocket extends EventEmitter {
   constructor(options) {
@@ -50,11 +51,8 @@ class FerropolySocket extends EventEmitter {
 
   /**
    * Returns the handlers
-   * @returns {{disconnect: disconnect, checkinStore: checkinStore, identify: identify, 'admin-teamAccount':
-   *   admin-teamAccount, 'admin-chancelleryAccount': admin-chancelleryAccount, initialized: initialized,
-   *   'admin-properties': admin-properties, welcome: welcome, connect: connect, 'admin-rents-paid': admin-rents-paid,
-   *   'admin-propertyAccount': admin-propertyAccount, 'admin-marketplace': admin-marketplace}}
-   */
+   * ®returns {}
+  */
   getHandlers() {
     let self = this;
     return {
@@ -79,21 +77,30 @@ class FerropolySocket extends EventEmitter {
         }
         self.emit('connected');
       },
-      'checkinStore':             msg => {
-        if (msg.type === 'buildingAllowedAgain') {
-          // self.store.dispatch({type: 'propertyRegister/buildingAllowedAgain'});
-        } else if (msg.type === 'setChancelleryAsset') {
-          //  self.store.dispatch({type: 'setChancelleryAsset', asset: msg.asset});
-        } else if (msg.type === 'updateProperty') {
-          usePropertyStore().updateProperty(msg.property);
-        } else if (msg.type === 'addTeamAccountTransaction') {
-          //  self.store.dispatch({type: 'addTeamAccountTransaction', transaction: msg.transaction});
-        } else if (msg.type === 'setTeamAccountAsset') {
-          console.log('ignoring "setTeamAccountAsset"');
-        } else if (msg.type === 'setTeamAccountTransactions') {
-          console.log('ignoring "setTeamAccountTransactions"');
+      'building-allowed': msg=> {
+        // Building is allowed again, no payload. This is for general purpose
+        // Payload: none
+        console.warn('Message should be handled', msg);
+      },
+      'team-property-update': msg=> {
+        // A property was updated, info only relevant for teams
+        // Payload: updated property
+        console.warn('Message should be handled', msg);
+      },
+      'team-property-account': msg => {
+        // A new entry for the property account (a booking) for a teams property.
+        // Payload: property and transaction (part of only, for maintaining privacy)
+        console.warn('Message should be handled', msg);
+      },
+      'team-account':        msg => {
+        // A new account information for a team
+        if (msg.cmd === 'onTransaction') {
+          useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId)
+            .catch(err => {
+              console.error(err)
+            });
         } else {
-          console.warn('Checkin store...?', msg);
+          console.warn('Unhandled command for admin-teamAccount', msg);
         }
       },
       'admin-teamAccount':        msg => {
@@ -105,8 +112,6 @@ class FerropolySocket extends EventEmitter {
         } else {
           console.warn('Unhandled command for admin-teamAccount', msg);
         }
-        // self.store.dispatch({type: 'fetchRankingList'});
-        //  self.store.dispatch({type: 'updateTeamAccountEntries', teamId: msg.data.teamId});
       },
       'admin-propertyAccount':    msg => {
         if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought' || msg.cmd === 'propertyReset' || msg.cmd === 'rent') {
@@ -118,32 +123,32 @@ class FerropolySocket extends EventEmitter {
         //  self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'propertyRegister/updatePropertyInPricelist', property: msg.property});
       },
-      'admin-chancelleryAccount': () => {
-        //  self.store.dispatch({type: 'fetchRankingList'});
-        //   self.store.dispatch({type: 'updateChancellery'});
+      'chancellery-balance': msg => {
+        // Info about
+        useChancelleryStore().setBalance(msg.balance);
       },
-      'admin-properties':         () => {
-        //   self.store.dispatch({type: 'fetchRankingList'});
+      'admin-properties':         msg => {
+        console.warn('Message should be handled 2', msg);
       },
-      'admin-marketplace':        () => {
-        //   self.store.dispatch({type: 'fetchRankingList'});
+      'admin-marketplace':        msg => {
+        console.warn('Message should be handled 3', msg);
       },
-      'admin-rents-paid':         () => {
-        //   self.store.dispatch({type: 'updateProperties'});
+      'admin-rents-paid':         msg => {
+        console.warn('Message should be handled 4', msg);
       },
-      'game-log':                 (msg) => {
+      'game-log':                 msg => {
         useGameLogStore().addLogEntry(msg);
       },
-      'player-position':          (msg) => {
+      'player-position':          msg => {
         console.log('PLAYER position', msg);
         useTravelLogStore().addLogEntries([msg]);
         getMapRoutesInstance().refreshRoutes();
       },
-      'pic':                      (msg) => {
+      'pic':                      msg => {
         console.log('new pic', msg);
         usePicBucketStore().addPicture(msg);
       },
-      'general':                  (msg) => {
+      'general':                  msg => {
         if (msg.cmd === 'rentsPaid') {
           usePropertyStore().update().catch(err => {
             console.error(err);
@@ -190,7 +195,7 @@ class FerropolySocket extends EventEmitter {
    * @param {*} payload - The data payload to be emitted.
    * @returns {boolean} - Returns true if the payload was successfully emitted, false otherwise.
    */
-  emitToGame(channel, payload) {
+  emitToGame(channel, payload = {}) {
     let self = this;
     if (!self.connected) {
       console.log('socket is disconnected', channel, payload);

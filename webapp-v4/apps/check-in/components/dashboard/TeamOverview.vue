@@ -14,15 +14,19 @@
 
       <!-- Row 2 -->
       <div class="text-gray-600 font-medium">Gekaufte Orte</div>
-      <div class="text-right font-bold text-slate-900"> {{ nbProperties }} </div>
+      <div class="text-right font-bold text-slate-900"> {{ nbProperties }}</div>
 
       <!-- Row 3 -->
       <div class="text-gray-600 font-medium">Mietwert akt.</div>
-      <div class="text-right font-bold text-slate-900"> {{ currentRent }} </div>
+      <div class="text-right font-bold text-slate-900"> {{ currentRent }}</div>
 
       <!-- Row 4 -->
-      <div class="text-gray-600 font-medium">Mietwert max</div>
-      <div class="text-right font-bold text-slate-900"> {{ maxRent }} </div>
+      <div class="text-gray-600 font-medium">Mietwert max.</div>
+      <div class="text-right font-bold text-slate-900"> {{ maxRent }}</div>
+
+      <!-- Row 5 -->
+      <div class="text-gray-600 font-medium">Parkplatz</div>
+      <div class="text-right font-bold text-slate-900"> {{ chancelleryBalance }}</div>
     </div>
   </div>
 </template>
@@ -35,10 +39,12 @@ import {computed} from 'vue';
 import {formatPrice} from '../../../../common/lib/formatters';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {evaluatePropertyValueForTeam} from '../../../../lib/propertyLib';
+import {useChancelleryStore} from '../../../../lib/store/ChancelleryStore';
 
 const teamAccountStore = useTeamAccountStore();
 const checkInStore     = useCheckInStore();
 const propertyStore    = usePropertyStore();
+const chancelleryStore = useChancelleryStore();
 
 const asset = computed(() => {
   return formatPrice(teamAccountStore.balances.get(checkInStore.team.uuid)?.balance);
@@ -48,15 +54,19 @@ const nbProperties = computed(() => {
   return propertyStore.propertiesByTeamId(checkInStore.team.uuid).length;
 });
 
-const currentRent = computed(()=> {
+const currentRent = computed(() => {
   const val = evaluatePropertyValueForTeam(checkInStore.team.uuid);
   return formatPrice(val.sum);
 });
 
-const maxRent = computed(()=> {
+const maxRent = computed(() => {
   const val = evaluatePropertyValueForTeam(checkInStore.team.uuid);
   return formatPrice(val.max);
 });
+
+const chancelleryBalance = computed(() => {
+  return formatPrice(chancelleryStore.balance);
+})
 </script>
 
 <style scoped lang="scss">

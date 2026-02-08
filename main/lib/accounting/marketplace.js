@@ -9,7 +9,6 @@ const propWrap           = require('../propertyWrapper');
 const teamAccount        = require('./teamAccount');
 const propertyAccount    = require('./propertyAccount');
 const chancelleryAccount = require('./chancelleryAccount');
-const propertyActions    = require('../../../components/checkin-datastore/lib/properties/actions');
 const logger             = require('../../../common/lib/logger').getLogger('marketplace');
 const travelLog          = require('../../../common/models/travelLogModel');
 const gameLog            = require('../gameLog');
@@ -585,7 +584,7 @@ class Marketplace extends EventEmitter {
     const nbAffected = await propWrap.allowBuilding(gameId)
     if (ferroSocket) {
       // Inform clients that they can build again
-      ferroSocket.emitToGame(gameId, 'checkinStore', propertyActions.buildingAllowedAgain());
+      ferroSocket.emitToGame(gameId, 'building-allowed', {});
     }
     marketLog(gameId, 'Building allowed again for ' + nbAffected.toString() + ' buildings');
 

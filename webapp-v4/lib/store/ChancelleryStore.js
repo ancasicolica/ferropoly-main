@@ -53,6 +53,13 @@ export const useChancelleryStore = defineStore('Chancellery', {
       catch(err) {
         console.error(err);
       }
+    },
+    /**
+     * Sets the balance to a value, only needed for check-in, where not all account data is available
+     * @param balance
+     */
+    setBalance(balance) {
+      this.balance= balance;
     }
   }
 })

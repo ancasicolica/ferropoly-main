@@ -276,7 +276,7 @@ class FerroSocket extends EventEmitter {
    * @param channel
    * @param data
    */
-  emitToGame(gameId, channel, data) {
+  emitToGame(gameId, channel, data = {}) {
     logger.debug(`${gameId}: ferroSockets.emitToGame @ ${channel}`, {gameId, channel, data});
 
     if (this.sockets[gameId]) {

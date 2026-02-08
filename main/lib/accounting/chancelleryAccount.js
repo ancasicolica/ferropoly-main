@@ -12,7 +12,6 @@ const chancelleryTransaction = require('../../../common/models/accounting/chance
 const gameLog                = require('../gameLog');
 const teamAccount            = require('./teamAccount');
 const _                      = require('lodash');
-const chancelleryActions     = require('../../../components/checkin-datastore/lib/chancellery/actions');
 const {DateTime}             = require('luxon');
 const chancelleryTexts       = require('../../lib/ChancelleryTexts.json');
 const {
@@ -38,11 +37,6 @@ async function bookChancelleryEvent(gameplay, team, info) {
    * The internal callbackhandler, sending the new balance to all teams of a game
    */
   async function bookCallback() {
-    if (!ferroSocket) {
-      // No socket, just return
-      return;
-    }
-
     const info = await chancelleryTransaction.getBalance(gameplay.internal.gameId);
 
     if (info.balance > gameplay.gameParams.chancellery.maxJackpotSize) {
@@ -52,8 +46,7 @@ async function bookChancelleryEvent(gameplay, team, info) {
       jackpotFull[gameplay.internal.gameId] = false;
     }
     if (ferroSocket) {
-      ferroSocket.emitToGame(gameplay.internal.gameId, 'checkinStore', chancelleryActions.setAsset(info.balance));
-      ferroSocket.emitToAdmins(gameplay.internal.gameId, 'admin-chancelleryAccount', {balance: info.balance});
+      ferroSocket.emitToGame(gameplay.internal.gameId, 'chancellery-balance', {balance: info.balance});
     }
   }
 
@@ -167,17 +160,12 @@ async function playChancellery(gameplay, team, callback) {
  * @param {Object} gameplay - The gameplay context within which the gambling operation takes place.
  * @param {Object} team - The team involved in the gambling operation.
  * @param {number} amount - The amount to gamble. Positive numbers indicate a win, while negative numbers indicate a loss.
- * @param {Function} callback - A callback function (not supported; providing this will result in an error).
  * @return {Promise<Object>} A promise that resolves to an object containing details of the gambling transaction, including:
  *                           - `amount`: The gambled amount.
  *                           - `infoText`: A description of the result, indicating whether the gamble was won or lost.
  *                           - `type`: The transaction type.
  */
-async function gamble(gameplay, team, amount, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in gamble');
-    return callback(new Error('no callback'));
-  }
+async function gamble(gameplay, team, amount) {
 
   let retVal = {
     amount:   amount,
@@ -209,13 +197,8 @@ async function payToChancellery(gameplay, team, amount, text, type = TEAM_TRANSA
 /**
  * Gets the balance
  * @param gameId
- * @param callback callback
  */
-async function getBalance(gameId, callback) {
-  if (callback) {
-    logger.info('>>>>>>>>  No more callbacks in getBalance');
-    return callback(new Error('no callback'));
-  }
+async function getBalance(gameId) {
 
   const info = await chancelleryTransaction.getBalance(gameId);
 
@@ -264,7 +247,7 @@ module.exports = {
 
       const info = await getBalance(data.gameId);
 
-      ferroSocket.emitToTeam(data.gameId, data.teamId, 'checkinStore', chancelleryActions.setAsset(info.balance));
+      ferroSocket.emitToTeam(data.gameId, data.teamId,  'chancellery-balance', {balance: info.balance});
 
       logger.debug(`${data.gameId}: ChancelleryAccount Socket connected`, {
         info,

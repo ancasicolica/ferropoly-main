@@ -16,7 +16,6 @@ const propertyTransaction = require('../../../common/models/accounting/propertyT
 const teamAccount         = require('./teamAccount');
 const logger              = require('../../../common/lib/logger').getLogger('propertyAccount');
 const _                   = require('lodash');
-const propertyActions     = require('../../../components/checkin-datastore/lib/properties/actions');
 const {DateTime}          = require('luxon');
 const {
         TEAM_TRANSACTION_RENT,
@@ -90,7 +89,7 @@ async function buyProperty(gameplay, property, team, callback) {
       transaction: pt
     });
 
-    ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'checkinStore', propertyActions.updateProperty(property));
+    ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'team-property-update', property);
   }
   return retVal;
 }
@@ -148,7 +147,7 @@ async function chargeRent(gp, property, teamId, callback) {
     },
     amount: info.amount,
     info:   'Miete',
-    type: TEAM_TRANSACTION_RENT
+    type:   TEAM_TRANSACTION_RENT
   };
 
   await propertyTransaction.book(pt);
@@ -160,7 +159,10 @@ async function chargeRent(gp, property, teamId, callback) {
       transaction: pt
     });
 
-    ferroSocket.emitToTeam(options.gameId, property.gamedata.owner, 'checkinStore', propertyActions.updateProperty(property));
+    ferroSocket.emitToTeam(options.gameId, property.gamedata.owner, 'team-property-account', {
+      property,
+      transaction: {amount: info.amount, info: pt.info}
+    });
   }
 
   return {property: property, owner: property.gamedata.owner, amount: info.amount};
@@ -297,7 +299,7 @@ async function buyBuilding(gameplay, property, team, callback) {
       transaction: pt
     });
 
-    ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'checkinStore', propertyActions.updateProperty(property));
+    ferroSocket.emitToTeam(gameplay.internal.gameId, team.uuid, 'team-property-update', property);
   }
   return retVal;
 }
@@ -521,25 +523,6 @@ async function getPropertyProfitability(gameId, propertyId = undefined, callback
   return await propertyTransaction.getSummary(gameId, propertyId);
 }
 
-/**
- * Handles the commands received over the ferroSocket
- * @param req
- */
-let socketCommandHandler = function (req) {
-  logger.info('propertyAccount socket handler: ' + req.cmd);
-  switch (req.cmd.name) {
-    case 'getAccountStatement':
-      logger.error(new Error('OBSOLETE, replace socket.io getAccountStatement by GET request'));
-      getAccountStatement(req.gameId, req.propertyId, req.start, req.end, function (err, data) {
-        let resp = {
-          err:  err,
-          cmd:  'accountStatement',
-          data: data
-        };
-        req.response('propertyAccount', resp);
-      });
-  }
-};
 
 
 module.exports = {
@@ -557,18 +540,5 @@ module.exports = {
 
   init: function () {
     ferroSocket = require('../ferroSocket').get();
-    if (ferroSocket) {
-      ferroSocket.on('propertyAccount', socketCommandHandler);
-
-      ferroSocket.on('player-connected', function (data) {
-        propWrap.getTeamProperties(data.gameId, data.teamId, function (err, props) {
-          if (err) {
-            logger.error(`${data.gameId}: Error in propertyAccount.init`, err);
-            return;
-          }
-          ferroSocket.emitToTeam(data.gameId, data.teamId, 'checkinStore', propertyActions.setProperties(props));
-        });
-      });
-    }
   }
 };
