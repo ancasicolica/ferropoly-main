@@ -77,10 +77,10 @@ class FerropolySocket extends EventEmitter {
         }
         self.emit('connected');
       },
-      'building-allowed':      msg => {
+      'building-allowed':      () => {
         // Building is allowed again, no payload. This is for general purpose
         // Payload: none
-        console.warn('Message should be handled', msg);
+        this.emit('building-allowed');
       },
       'team-property-update':  msg => {
         // A property was updated, info only relevant for teams
@@ -90,7 +90,6 @@ class FerropolySocket extends EventEmitter {
       'team-property-account': msg => {
         // A new entry for the property account (a booking) for a teams property.
         // Payload: property and transaction (part of only, for maintaining privacy)
-        console.log('yyy')
         usePropertyStore().updateTransactions(msg.property.uuid, [msg.transaction]).catch(err => {
           console.error(err);
         })

@@ -6,6 +6,7 @@
 
 <template>
   <div>
+    <Toast />
     <div
         v-if="isInitialLoading"
         class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
@@ -47,6 +48,10 @@ import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
 import {useSocketStore} from '../../../lib/store/SocketStore';
 import {useGeoLocationStore} from '../store/GeoLocationStore';
 
+import Toast from 'primevue/toast';
+import {useToast} from 'primevue/usetoast';
+
+const toast = useToast();
 
 const isInitialLoading = ref(true);
 const elements         = split(window.location.pathname, '/');
@@ -98,6 +103,7 @@ onMounted(() => {
           gameId:    gameId,
           teamId:    staticData?.team?.uuid
         });
+        receptionSocket.socket.on('building-allowed', onBuildingAllowed)
         const end = DateTime.now();
         console.log(`Data finally loaded, needed ${end.diff(start).as('seconds')} seconds`)
       })
@@ -108,6 +114,10 @@ onMounted(() => {
         isInitialLoading.value = false;
       })
 })
+
+function onBuildingAllowed() {
+  toast.add({severity: 'info', summary: 'Spielrunde abgeschlossen', detail: 'Die Mieten wurden ausbezahlt, es kann wieder gebaut werden!', life: 5000})
+}
 
 </script>
 
