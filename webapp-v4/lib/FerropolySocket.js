@@ -52,11 +52,11 @@ class FerropolySocket extends EventEmitter {
   /**
    * Returns the handlers
    * ®returns {}
-  */
+   */
   getHandlers() {
     let self = this;
     return {
-      'identify':                 () => {
+      'identify':              () => {
         console.log('identify', self.options);
         self.socket.emit('identify', {
           user:      self.options.user,
@@ -65,10 +65,10 @@ class FerropolySocket extends EventEmitter {
           gameId:    self.options.gameId
         })
       },
-      'welcome':                  () => {
+      'welcome':               () => {
         console.log('Welcome!');
       },
-      'initialized':              (msg) => {
+      'initialized':           (msg) => {
         if (msg.isPlayer) {
           console.log('PLAYER socket initialized');
         }
@@ -77,22 +77,25 @@ class FerropolySocket extends EventEmitter {
         }
         self.emit('connected');
       },
-      'building-allowed': msg=> {
+      'building-allowed':      msg => {
         // Building is allowed again, no payload. This is for general purpose
         // Payload: none
         console.warn('Message should be handled', msg);
       },
-      'team-property-update': msg=> {
+      'team-property-update':  msg => {
         // A property was updated, info only relevant for teams
         // Payload: updated property
-        console.warn('Message should be handled', msg);
+        usePropertyStore().updateProperty(msg);
       },
       'team-property-account': msg => {
         // A new entry for the property account (a booking) for a teams property.
         // Payload: property and transaction (part of only, for maintaining privacy)
-        console.warn('Message should be handled', msg);
+        console.log('yyy')
+        usePropertyStore().updateTransactions(msg.property.uuid, [msg.transaction]).catch(err => {
+          console.error(err);
+        })
       },
-      'team-account':        msg => {
+      'team-account':          msg => {
         // A new account information for a team
         if (msg.cmd === 'onTransaction') {
           useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId)
@@ -103,7 +106,7 @@ class FerropolySocket extends EventEmitter {
           console.warn('Unhandled command for admin-teamAccount', msg);
         }
       },
-      'admin-teamAccount':        msg => {
+      'admin-teamAccount':     msg => {
         if (msg.cmd === 'onTransaction') {
           useTeamAccountStore().loadTeamAccountEntries(msg.data.gameId, msg.data.teamId)
             .catch(err => {
@@ -113,42 +116,41 @@ class FerropolySocket extends EventEmitter {
           console.warn('Unhandled command for admin-teamAccount', msg);
         }
       },
-      'admin-propertyAccount':    msg => {
+      'admin-propertyAccount': msg => {
         if (msg.cmd === 'buildingBuilt' || msg.cmd === 'propertyBought' || msg.cmd === 'propertyReset' || msg.cmd === 'rent') {
           usePropertyStore().updateProperty(msg.property)
-        }
-        else {
+        } else {
           console.warn('Unhandled command for admin-propertyAccount', msg);
         }
         //  self.store.dispatch({type: 'fetchRankingList'});
         //  self.store.dispatch({type: 'propertyRegister/updatePropertyInPricelist', property: msg.property});
       },
-      'chancellery-balance': msg => {
+      'chancellery-balance':   msg => {
         // Info about
         useChancelleryStore().setBalance(msg.balance);
       },
-      'admin-properties':         msg => {
+      'admin-properties':      msg => {
         console.warn('Message should be handled 2', msg);
       },
-      'admin-marketplace':        msg => {
+      'admin-marketplace':     msg => {
         console.warn('Message should be handled 3', msg);
       },
-      'admin-rents-paid':         msg => {
+      'admin-rents-paid':      msg => {
         console.warn('Message should be handled 4', msg);
       },
-      'game-log':                 msg => {
+      'game-log':              msg => {
         useGameLogStore().addLogEntry(msg);
       },
-      'player-position':          msg => {
+      'player-position':       msg => {
         console.log('PLAYER position', msg);
         useTravelLogStore().addLogEntries([msg]);
         getMapRoutesInstance().refreshRoutes();
       },
-      'pic':                      msg => {
+      'pic':                   msg => {
         console.log('new pic', msg);
         usePicBucketStore().addPicture(msg);
       },
-      'general':                  msg => {
+      'general':               msg => {
         if (msg.cmd === 'rentsPaid') {
           usePropertyStore().update().catch(err => {
             console.error(err);

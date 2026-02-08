@@ -161,7 +161,14 @@ async function chargeRent(gp, property, teamId, callback) {
 
     ferroSocket.emitToTeam(options.gameId, property.gamedata.owner, 'team-property-account', {
       property,
-      transaction: {amount: info.amount, info: pt.info}
+      transaction: {
+        _id:         pt._id,
+        gameId:      pt.gameId,
+        propertyId:  pt.propertyId,
+        amount:      pt.amount,
+        info:        pt.info,
+        transaction: pt.transaction
+      }
     });
   }
 
@@ -522,7 +529,6 @@ async function getPropertyProfitability(gameId, propertyId = undefined, callback
 
   return await propertyTransaction.getSummary(gameId, propertyId);
 }
-
 
 
 module.exports = {
