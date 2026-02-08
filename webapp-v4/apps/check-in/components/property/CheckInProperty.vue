@@ -7,8 +7,12 @@
 <template>
   <div>
     <h1>Besitz</h1>
+    <div v-if="properties.length === 0">
+      Aktuell habt ihr noch keine Orte gekauft.
+    </div>
     <div
         v-for="prop in properties"
+        v-else
         :key="prop.uuid"
     >
       <property-card :property="prop" />
