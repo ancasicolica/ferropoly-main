@@ -18,7 +18,7 @@ router.get('/:gameId', async function (req, res) {
     if (!gameData) {
       return errorHandler(res, 'Spiel nicht gefunden.', null, 404);
     }
-    res.sendFile(path.join(__dirname, '..', 'public', 'html', 'checkin.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'html', 'check-in.html'));
   }
   catch (err) {
     return errorHandler(res, 'Spiel nicht gefunden.', err, 404);
