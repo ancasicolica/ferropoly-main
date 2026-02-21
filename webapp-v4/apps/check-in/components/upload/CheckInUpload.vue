@@ -42,7 +42,7 @@
                   v-if="slotProps.option.distance !== null"
                   class="text-sm text-surface-500"
               >
-                &nbsp;{{ Math.round(slotProps.option.distance) }}m
+                &nbsp;{{ Math.round(slotProps.option.distance) }} km
               </span>
             </div>
           </template>
@@ -72,10 +72,18 @@
 
       <div
           v-if="uploadSuccess"
-          class="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg flex items-center gap-2"
+          class="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg flex flex-col gap-2"
       >
-        <i class="pi pi-check-circle"></i>
-        <span>Das Bild wurde erfolgreich hochgeladen!</span>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-check-circle"></i>
+          <span>Das Bild wurde erfolgreich hochgeladen!</span>
+        </div>
+        <img
+            v-if="uploadedThumbnailUrl"
+            :src="uploadedThumbnailUrl"
+            alt="Hochgeladenes Bild"
+            class="w-full rounded-lg mt-2"
+        />
       </div>
     </div>
 
@@ -115,6 +123,7 @@ const toast          = useToast();
 
 const isUploading           = ref(false);
 const uploadSuccess         = ref(false);
+const uploadedThumbnailUrl = ref(null);
 const canvasRef             = ref(null);
 const selectedProperty      = ref(null);
 const positionUpdateTrigger = ref(0);
@@ -163,7 +172,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c    = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c * 1000; // Distance in meters
+  return R * c; // Distance in kilometers
 };
 
 const handlePositionUpdate = () => {
@@ -321,8 +330,9 @@ const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
           }
 
           console.log('Upload complete', data);
-          isUploading.value   = false;
-          uploadSuccess.value = true;
+          isUploading.value          = false;
+          uploadSuccess.value        = true;
+          uploadedThumbnailUrl.value = data.thumbnail;
           toast.add({severity: 'success', summary: 'Erfolg', detail: 'Bild erfolgreich hochgeladen', life: 5000});
 
           // Refresh pictures in store
