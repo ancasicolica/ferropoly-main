@@ -18,6 +18,37 @@
         v-if="gameplayStore.gameActive"
         class="flex flex-col gap-4 mt-4"
     >
+      <div class="flex flex-col gap-2">
+        <label
+            for="property-select"
+            class="font-medium"
+        >
+          Ort auswählen (empfohlen)
+        </label>
+        <Select
+            id="property-select"
+            v-model="selectedProperty"
+            :options="[{uuid: null, name: 'Kein Ort', distance: null}, ...nearestProperties]"
+            option-label="name"
+            option-value="uuid"
+            placeholder="Wähle einen Ort aus"
+            class="w-full mb-8"
+            :disabled="isUploading || nearestProperties.length === 0"
+        >
+          <template #option="slotProps">
+            <div class="flex justify-between items-center">
+              <span>{{ slotProps.option.name }}</span>
+              <span
+                  v-if="slotProps.option.distance !== null"
+                  class="text-sm text-surface-500"
+              >
+                &nbsp;{{ Math.round(slotProps.option.distance) }}m
+              </span>
+            </div>
+          </template>
+        </Select>
+      </div>
+
       <FileUpload
           mode="basic"
           name="demo[]"
@@ -64,23 +95,80 @@
 </template>
 
 <script setup>
-import {ref, onMounted, nextTick} from 'vue';
+import {ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
 import FileUpload from 'primevue/fileupload';
+import Select from 'primevue/select';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 import {useCheckInStore} from '../../store/CheckInStore';
 import {usePicBucketStore} from '../../../../lib/store/PicBucketStore';
 import {useToast} from 'primevue/usetoast';
 import {getAuthToken} from '../../../../common/adapters/authToken';
 import {announcePicture, uploadPicture, confirmPicture} from '../../lib/picUploader';
+import geograph from '../../lib/geograph';
+import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 
 const gameplayStore  = useGameplayStore();
 const checkInStore   = useCheckInStore();
 const picBucketStore = usePicBucketStore();
+const propertyStore  = usePropertyStore();
 const toast          = useToast();
 
-const isUploading   = ref(false);
-const uploadSuccess = ref(false);
-const canvasRef     = ref(null);
+const isUploading           = ref(false);
+const uploadSuccess         = ref(false);
+const canvasRef             = ref(null);
+const selectedProperty      = ref(null);
+const positionUpdateTrigger = ref(0);
+
+const nearestProperties = computed(() => {
+  // Depend on trigger to recalculate when position updates
+  positionUpdateTrigger.value;
+
+  const currentPosition = geograph.getLastLocation();
+  if (!currentPosition || !currentPosition.lat || !currentPosition.lng) {
+    return [];
+  }
+
+  const properties = [...propertyStore.properties.values()];
+
+  // Calculate distance for each property
+  const propertiesWithDistance = properties
+      .filter(p => p.location && p.location.position && p.location.position.lat && p.location.position.lng)
+      .map(property => {
+        const distance = calculateDistance(
+            currentPosition.lat,
+            currentPosition.lng,
+            property.location.position.lat,
+            property.location.position.lng
+        );
+        return {
+          uuid:     property.uuid,
+          name:     property.location.name,
+          distance: distance
+        };
+      });
+
+  // Sort by distance and take top 5
+  return propertiesWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 5);
+});
+
+// Haversine formula to calculate distance between two coordinates
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R    = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a    =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c    = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c * 1000; // Distance in meters
+};
+
+const handlePositionUpdate = () => {
+  positionUpdateTrigger.value++;
+};
 
 onMounted(() => {
   // Ensure the input element has capture="environment" for mobile camera access
@@ -90,6 +178,13 @@ onMounted(() => {
       input.setAttribute('capture', 'environment');
     }
   });
+
+  // Listen for position updates
+  geograph.on('player-position-update', handlePositionUpdate);
+});
+
+onUnmounted(() => {
+  geograph.off('player-position-update', handlePositionUpdate);
 });
 
 const onFileSelect = async (event) => {
@@ -196,7 +291,8 @@ const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
 
   announcePicture(gameId, teamId, {
     authToken,
-    lastModifiedDate
+    lastModifiedDate,
+    propertyId: selectedProperty.value
   }, (err, info) => {
     if (err) {
       handleError('Problem bei der Bild-Ankündigung', err);
