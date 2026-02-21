@@ -7,6 +7,7 @@
 <template>
   <div>
     <Select
+        v-if="!teamId"
         v-model="picBucketStore.filterTeamId"
         :options="teams"
         size="small"
@@ -20,7 +21,7 @@
         v-model="picBucketStore.searchQuery"
         type="text"
         fluid
-        placeholder="Filtere nach Teamnamen oder Ort"
+        placeholder="Suchbegriff"
         size="small"
         class="mt-2"
     />
@@ -72,6 +73,10 @@ const props = defineProps({
   readOnly: {
     type:    Boolean,
     default: true
+  },
+  teamId:   {
+    type:    String,
+    default: () => null
   }
 });
 </script>

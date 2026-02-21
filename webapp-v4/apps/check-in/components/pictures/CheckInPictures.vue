@@ -5,10 +5,20 @@
 -->
 
 <template>
-  <div>CheckInPictures.vue</div>
+  <div>
+    <picture-gallery
+        :read-only="true"
+        :team-id="checkInStore.team.uuid"
+    />
+  </div>
 </template>
 
 <script setup>
+
+import PictureGallery from '../../../../lib/components/pictures/PictureGallery.vue';
+import {useCheckInStore} from '../../store/CheckInStore';
+
+const checkInStore = useCheckInStore();
 
 </script>
 

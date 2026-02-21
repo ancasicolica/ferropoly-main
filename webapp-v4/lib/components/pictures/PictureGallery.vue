@@ -16,6 +16,7 @@
       <div class="w-full md:w-[400px] flex-none md:mr-4">
         <picture-filter
             :read-only="readOnly"
+            :team-id="teamId"
         />
         <picture-info
             class="hidden md:block"
@@ -71,6 +72,10 @@ const props = defineProps({
   readOnly: {
     type:    Boolean,
     default: true
+  },
+  teamId:   {
+    type:    String,
+    default: () => null
   }
 });
 

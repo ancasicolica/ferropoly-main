@@ -193,7 +193,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  geograph.off('player-position-update', handlePositionUpdate);
+  geograph.removeListener('player-position-update', handlePositionUpdate);
 });
 
 const onFileSelect = async (event) => {
