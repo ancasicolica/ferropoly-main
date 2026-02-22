@@ -60,7 +60,11 @@
           choose-label="Foto aufnehmen"
           class="w-full"
           @select="onFileSelect"
-      />
+      >
+        <template #chooseicon>
+          <FontAwesomeIcon :icon="faCamera" />
+        </template>
+      </FileUpload>
 
       <div
           v-if="isUploading"
@@ -114,6 +118,8 @@ import {getAuthToken} from '../../../../common/adapters/authToken';
 import {announcePicture, uploadPicture, confirmPicture} from '../../lib/picUploader';
 import geograph from '../../lib/geograph';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import {faCamera} from '@fortawesome/free-solid-svg-icons';
 
 const gameplayStore  = useGameplayStore();
 const checkInStore   = useCheckInStore();
