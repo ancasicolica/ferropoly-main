@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <Tabs :value="activeTab">
+    <Tabs :value="activeTab" @update:value="statisticStore.activeTab = $event">
     <TabList>
       <Tab value="0">Vermögen</Tab>
       <Tab value="1">Erfolgsrechnung</Tab>
