@@ -37,7 +37,7 @@ const teamAccountStore = useTeamAccountStore();
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
-  if (!teams || teams.length === 0) {
+  if (!teams || teams.length === 0 || containerHeight.value === 0) {
     return { labels: [], datasets: [] };
   }
 

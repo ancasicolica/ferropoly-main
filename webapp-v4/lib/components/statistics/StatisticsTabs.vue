@@ -14,21 +14,21 @@
       <Tab value="3">Einkommen pro Runde</Tab>
       <Tab value="4">Vermögensverlauf</Tab>
     </TabList>
-    <TabPanels :key="activeTab">
+    <TabPanels>
       <TabPanel value="0">
-        <FortuneStatistics />
+        <FortuneStatistics v-if="activeTab === '0'" />
       </TabPanel>
       <TabPanel value="1">
-        <IncomeStatement />
+        <IncomeStatement v-if="activeTab === '1'" />
       </TabPanel>
       <TabPanel value="2">
-        <IncomeStatistics />
+        <IncomeStatistics v-if="activeTab === '2'" />
       </TabPanel>
       <TabPanel value="3">
-        <RoundStatistics />
+        <RoundStatistics v-if="activeTab === '3'" />
       </TabPanel>
       <TabPanel value="4">
-        <FortuneHistory />
+        <FortuneHistory v-if="activeTab === '4'" />
       </TabPanel>
     </TabPanels>
   </Tabs></div>

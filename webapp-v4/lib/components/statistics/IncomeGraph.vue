@@ -10,6 +10,7 @@
       class="chart-container"
   >
     <Chart
+        v-if="containerHeight > 0"
         :key="containerKey"
         type="bar"
         :data="chartData"
@@ -34,6 +35,9 @@ const teamsStore       = useTeamsStore();
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
+  if (!teams || teams.length === 0 || containerHeight.value === 0) {
+    return { labels: [], datasets: [] };
+  }
 
   const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
                     {label: 'Zusätzlicher Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
