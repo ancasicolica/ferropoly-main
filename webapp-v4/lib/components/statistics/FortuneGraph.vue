@@ -9,15 +9,16 @@
       ref="chartContainer"
       class="chart-container"
   >
-    <Chart
-        v-if="containerHeight > 0"
-        :key="containerKey"
-        type="bar"
-        :data="chartData"
-        :options="chartOptions"
-        :height="containerHeight"
-        :width="containerWidth"
-    />
+    <div v-if="containerHeight > 0" class="chart-wrapper">
+      <Chart
+          :key="containerKey"
+          type="bar"
+          :data="chartData"
+          :options="chartOptions"
+          :height="containerHeight"
+          :width="containerWidth"
+      />
+    </div>
   </div>
 </template>
 
@@ -70,8 +71,8 @@ const chartData = computed(() => {
 
 const chartOptions = computed(() => {
   return {
-    maintainAspectRatio: true,
-    responsive:          false,
+    maintainAspectRatio: false,
+    responsive:          true,
     plugins:             {
       legend: {
         display: false,
@@ -125,5 +126,9 @@ const chartOptions = computed(() => {
   background-color: white;
 }
 
-
+.chart-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
 </style>

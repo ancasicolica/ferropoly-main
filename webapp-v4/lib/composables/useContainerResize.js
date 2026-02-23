@@ -19,7 +19,7 @@
  * Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
  * Created: 23.12.2025
  **/
-import {ref, onMounted, onBeforeUnmount} from 'vue';
+import {ref, onMounted, onBeforeUnmount, nextTick} from 'vue';
 
 
 /**
@@ -76,7 +76,7 @@ export function useContainerResize(container, options = {}) {
         }
       } else {
         // First initialization to a non-zero height
-        // Defer to the next two animation frames AND a small timeout to ensure the DOM/layout 
+        // Defer to the next two animation frames AND a small timeout to ensure the DOM/layout
         // is fully stable and the browser has had a chance to commit all layout changes
         // before mounting the Chart component (which depends on containerHeight > 0)
         requestAnimationFrame(() => {
@@ -86,10 +86,12 @@ export function useContainerResize(container, options = {}) {
               const rect2 = container.value.getBoundingClientRect();
               if (rect2.width === 0 && rect2.height === 0) return; // still not ready
               container.value.style.height = `${heightVal}px`;
-              containerHeight.value        = heightVal;
               container.value.style.width  = `${widthVal}px`;
-              containerWidth.value         = widthVal;
-              // Note: Initial mount usually doesn't need forceKeyUpdate as v-if will trigger it
+              // Use nextTick to ensure styles are applied before setting reactive values
+              setTimeout(() => {
+                containerHeight.value = heightVal;
+                containerWidth.value  = widthVal;
+              }, 20);
             }, 100);
           });
         });

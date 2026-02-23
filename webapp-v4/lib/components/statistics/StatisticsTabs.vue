@@ -8,22 +8,23 @@
   <div>
     <Tabs :value="activeTab" @update:value="statisticStore.activeTab = $event">
     <TabList>
-      <Tab value="0">Vermögen</Tab>
-      <Tab value="1">Erfolgsrechnung</Tab>
-      <Tab value="2">Einkommen</Tab>
+      <Tab value="0">Einkommen</Tab>
+      <Tab value="1">Vermögen</Tab>
+      <Tab value="2">Erfolgsrechnung</Tab>
       <Tab value="3">Einkommen pro Runde</Tab>
       <Tab value="4">Vermögensverlauf</Tab>
     </TabList>
     <TabPanels>
       <TabPanel value="0">
-        <FortuneStatistics v-if="activeTab === '0'" />
+        <IncomeStatistics v-if="activeTab === '0'" />
       </TabPanel>
       <TabPanel value="1">
-        <IncomeStatement v-if="activeTab === '1'" />
+        <FortuneStatistics v-if="activeTab === '1'" />
       </TabPanel>
       <TabPanel value="2">
-        <IncomeStatistics v-if="activeTab === '2'" />
+        <IncomeStatement v-if="activeTab === '2'" />
       </TabPanel>
+
       <TabPanel value="3">
         <RoundStatistics v-if="activeTab === '3'" />
       </TabPanel>
