@@ -80,7 +80,7 @@ class MapMarkers extends EventEmitter {
         title:    prop.location.name,
       });
       //  console.log(`Marker set for ${marker.title}, ${marker.position.lat}`)
-      marker.addListener('click', () => {
+      marker.addListener('gmp-click', () => {
         self.emit('property-selected', prop);
       })
       self.markers.set(prop.uuid, marker);
@@ -296,7 +296,7 @@ class MapMarkers extends EventEmitter {
     // Add the listener which will
     // a) emit an event
     // b) open a pop-up window
-    marker.addListener('click', () => {
+    marker.addListener('gmp-click', () => {
       self.infoWindow.close();
       const header     = document.createElement('h3');
       header.innerHTML = property.location.name;
