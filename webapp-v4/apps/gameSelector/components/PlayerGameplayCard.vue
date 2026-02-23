@@ -35,6 +35,7 @@
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
       <Button
+          v-if="gameToday"
           class="mr-2 mb-2"
           label="Spielen"
           size="small"
@@ -116,6 +117,11 @@ const gameOver = computed(() => {
   return DateTime.now() > releaseTime;
 });
 
+const gameToday = computed(() => {
+  const gameDate = createLuxonDate(props.gameplay.scheduling.gameDate);
+  const today    = DateTime.now().startOf('day');
+  return gameDate.hasSame(today, 'day');
+})
 
 </script>
 
