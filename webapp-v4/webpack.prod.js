@@ -6,61 +6,70 @@ const HtmlWebpackPlugin     = require('html-webpack-plugin');
 const ferropolyApps         = require('./ferropolyApps.js');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const webpack           = require('webpack');
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+
 
 // Build the webpack list
 let plugins = [
   new BundleAnalyzerPlugin({analyzerMode: 'static', reportFilename: 'report.html'}),
-  new FaviconsWebpackPlugin(path.join(__dirname, 'favicon.png'))
+  new FaviconsWebpackPlugin(path.join(__dirname, 'favicon.png')),
+  sentryWebpackPlugin({
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    org: "ferropoly",
+    project: process.env.FERROPOLY_SENTRY_PROJECT
+  })
 ];
 ferropolyApps.forEach(app => {
   plugins.push(new HtmlWebpackPlugin(({
-    chunks    : [`${app.name}`],
-    template  : path.join(__dirname, 'html', app.htmlFile),
-    filename  : path.join(__dirname, '..', 'main', 'public', 'html', app.htmlFile),
+    chunks:     [`${app.name}`],
+    template:   path.join(__dirname, 'html', app.htmlFile),
+    filename:   path.join(__dirname, '..', 'main', 'public', 'html', app.htmlFile),
     publicPath: '/build/',
-    minify    : true
+    minify:     true
   })));
 
-  plugins.push(  new webpack.DefinePlugin({
-    __VUE_OPTIONS_API__  : true,
-    __VUE_PROD_DEVTOOLS__: false,
-    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+  plugins.push(new webpack.DefinePlugin({
+    __VUE_OPTIONS_API__:                     true,
+    __VUE_PROD_DEVTOOLS__:                   false,
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+    'process.env.FERROPOLY_SENTRY_VUE_DSN':  JSON.stringify(process.env.FERROPOLY_SENTRY_VUE_DSN)
   }))
 });
 
 module.exports = merge(common, {
-  mode   : 'production',
-  //devtool: 'source-map',
-  output : {
-    filename     : '[name].min.js',
+  mode: 'production',
+  devtool: 'source-map',
+  output:       {
+    filename:      '[name].min.js',
     chunkFilename: '[name].bundle.js',
-    path    : path.resolve(__dirname, '..', 'main', 'public', 'build')
+    path:          path.resolve(__dirname, '..', 'main', 'public', 'build')
   },
-  stats  : {
-    preset  : 'normal',
+  stats:        {
+    preset:   'normal',
     children: true
   },
   optimization: {
     splitChunks: {
-      chunks                : 'all',
-      minSize               : 30000,
-      maxSize               : 180000,
-      minChunks             : 1,
-      maxAsyncRequests      : 20,
-      maxInitialRequests    : 5,
+      chunks:                 'all',
+      minSize:                30000,
+      maxSize:                120000,
+      minChunks:              1,
+      maxAsyncRequests:       20,
+      maxInitialRequests:     10,
       automaticNameDelimiter: '-',
-      cacheGroups           : {
+      cacheGroups:            {
         vendors: {
-          test    : /[\\/]node_modules[\\/]/,
+          test:     /[\\/]node_modules[\\/]/,
           priority: -10
         },
         default: {
-          minChunks         : 2,
-          priority          : -20,
+          minChunks:          2,
+          priority:           -20,
           reuseExistingChunk: false
         }
       }
     }
   },
-  plugins     : plugins
+  plugins:      plugins
 });

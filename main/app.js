@@ -5,6 +5,10 @@
  * Created by kc on 14.04.15.
  */
 
+// IMPORTANT: Make sure to import `instrument.js` at the top of your file.
+// If you're using ECMAScript Modules (ESM) syntax, use `import "./instrument.js";`
+require("./instrument.js");
+
 // Logging has highest prio
 const settings = require('./settings');
 const logging  = require('../common/lib/logger');

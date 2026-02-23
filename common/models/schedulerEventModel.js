@@ -51,7 +51,6 @@ async function getEvents(gameId) {
     .find()
     .where('gameId').equals(gameId)
     .where('timestamp').gt(new Date())
-    .sort('timestamp')
     .exec();
 }
 

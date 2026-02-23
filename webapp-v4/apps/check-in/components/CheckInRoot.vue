@@ -52,7 +52,6 @@ import Toast from 'primevue/toast';
 import {useToast} from 'primevue/usetoast';
 
 const toast = useToast();
-
 const isInitialLoading = ref(true);
 const elements         = split(window.location.pathname, '/');
 let gameId             = last(elements);
@@ -69,6 +68,7 @@ const cronJobStore     = useCronJobStore();
 const travelLogStore   = useTravelLogStore();
 const socketStore      = useSocketStore();
 const geoLocationStore = useGeoLocationStore();
+
 
 onMounted(() => {
   checkInStore.fetchStaticData(gameId)
