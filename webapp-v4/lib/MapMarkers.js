@@ -48,6 +48,7 @@ class MapMarkers extends EventEmitter {
     this.teamsStore    = useTeamsStore();
     this.infoWindow    = null;
     this.map           = null;
+    this.teamMarker    = null;
   }
 
   /**
@@ -314,6 +315,29 @@ class MapMarkers extends EventEmitter {
 
     // console.log('created marker', marker);
     return marker;
+  }
+
+  /**
+   * Creates and sets a marker on the map to represent a team position.
+   * If a marker already exists, it removes the existing marker before creating a new one.
+   *
+   * @param {Object} position The geographical coordinates where the marker should be placed.
+   * @param {number} position.lat The latitude of the marker's position.
+   * @param {number} position.lng The longitude of the marker's position.
+   * @return {void} Does not return a value.
+   */
+  createTeamMarker(position) {
+    if (this.teamMarker) {
+      this.teamMarker.remove();
+      this.teamMarker = null;
+    }
+    this.teamMarker = new this.googleInstance.AdvancedMarkerElement({
+      position: {
+        lat: position.lat,
+        lng: position.lng
+      }
+    });
+    this.teamMarker.map = toRaw(this.map);
   }
 
   /**

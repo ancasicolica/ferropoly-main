@@ -24,9 +24,10 @@ import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
 import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import {getMapRoutesInstance} from '../../../../lib/MapRoutes';
-import {ref} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import {useCheckInStore} from '../../store/CheckInStore';
 import {PROPERTY_FILTER_STATUS_ALL} from '../../../../lib/constants/propertyStoreFilters';
+import geograph from '../../lib/geograph';
 
 const checkInStore  = useCheckInStore();
 const propertyStore = usePropertyStore();
@@ -36,11 +37,11 @@ const mapMarkers    = getMapMarkerInstance();
 const mapRef = ref(null);
 
 const mapOptions = {
-  zoom: 14
+  zoom: 12
 };
 
-let map = null;
-
+let map        = null;
+const mapReady = ref(false);
 
 const onNewMap = async function (_map) {
   console.log('new map', _map);
@@ -56,23 +57,42 @@ const onNewMap = async function (_map) {
   // Access the component instance through mapRef.value
   if (mapRef.value && propertyStore.ready) {
     console.log(mapMarkers.getBounds());
-    propertyStore.markerMode   = MARKER_MODE_RECEPTION;
-    propertyStore.filter.teams = [checkInStore.team.uuid];
+    propertyStore.markerMode            = MARKER_MODE_RECEPTION;
+    propertyStore.filter.teams          = [checkInStore.team.uuid];
     propertyStore.filter.propertyStatus = PROPERTY_FILTER_STATUS_ALL;
-    mapRef.value.fitBounds(mapMarkers.getBounds());
-    mapRef.value.setCenter(mapMarkers.getCenter());
     getMapMarkerInstance().setMap(map);
     getMapRoutesInstance().setMap(map);
 
     await propertyStore.update();
     propertyStore.updateFilter();
     getMapRoutesInstance().refreshRoutes();
-    // mapMarkers.applyFilter(map);
+
+    google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+      console.log('update valider!!')
+      geograph.localize();
+      map.setCenter(geograph.getLastLocation());
+      map.setZoom(14);
+      mapReady.value = true;
+    });
   } else {
     console.warn('Map initialization skipped - propertyStore not ready or timeout reached');
   }
 }
 
+const playerUpdate = function (pos) {
+  if (mapReady.value) {
+    console.log('playerUpdate', pos);
+    mapMarkers.createTeamMarker(pos);
+  }
+}
+
+onMounted(() => {
+  geograph.on('player-position-update', playerUpdate);
+})
+
+onUnmounted(() => {
+  geograph.removeListener('player-position-update', playerUpdate);
+})
 </script>
 
 <style scoped lang="scss">
