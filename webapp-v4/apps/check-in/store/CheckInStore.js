@@ -17,7 +17,6 @@ export const useCheckInStore = defineStore('CheckIn', () => {
     {label: 'Kontobuch', route: 'account'},
     {label: 'Bilder', route: 'pictures'},
     {label: 'Bild hochladen', route: 'upload'},
-    {label: 'Statistik', route: 'statistics'},
     {label: 'Spielregeln', route: 'rules'},
   ]);
 
