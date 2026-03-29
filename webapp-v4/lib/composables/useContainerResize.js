@@ -19,7 +19,7 @@
  * Christian Kuster, CH-8342 Wernetshausen, christian@kusti.ch
  * Created: 23.12.2025
  **/
-import {ref, onMounted, onBeforeUnmount, nextTick} from 'vue';
+import {ref, onMounted, onBeforeUnmount} from 'vue';
 
 
 /**
@@ -67,6 +67,7 @@ export function useContainerResize(container, options = {}) {
       // finds a fully settled DOM when it starts its internal initialization.
       if (containerHeight.value > 0 || heightVal === 0) {
         container.value.style.height = `${heightVal}px`;
+        //console.log('DEBUG container', container.value, container.value.style.height);
         containerHeight.value        = heightVal;
         container.value.style.width  = `${widthVal}px`;
         containerWidth.value         = widthVal;
@@ -89,6 +90,7 @@ export function useContainerResize(container, options = {}) {
               container.value.style.width  = `${widthVal}px`;
               // Use nextTick to ensure styles are applied before setting reactive values
               setTimeout(() => {
+                //console.log('DEBUG containerHeight', containerHeight.value);
                 containerHeight.value = heightVal;
                 containerWidth.value  = widthVal;
               }, 20);
