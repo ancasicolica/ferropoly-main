@@ -39,22 +39,13 @@ import {useContainerResize} from '../../composables/useContainerResize';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import {useExportChart} from '../../composables/useExportChart';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 
-const chartRef = ref(null);
-
-const exportChart = () => {
-  if (chartRef.value) {
-    // chartRef.value.chart gives access to the underlying Chart.js instance
-    const base64Image = chartRef.value.chart.toBase64Image();
-    const link = document.createElement('a');
-    link.href = base64Image;
-    link.download = `${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}_Erfolgsrechnung.png`;
-    link.click();
-  }
-};
+const chartRef      = ref(null);
+const {exportChart} = useExportChart(chartRef, {title: 'Erfolgsrechnung'});
 
 
 const chartData = computed(() => {
