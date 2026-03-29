@@ -9,9 +9,16 @@
       ref="chartContainer"
       class="chart-container"
   >
+    <button
+        class="export-button"
+        @click="exportChart"
+    >
+      <FontAwesomeIcon :icon="faDownload" />
+    </button>
     <Chart
         v-if="containerHeight > 0"
         :key="containerKey"
+        ref="chartRef"
         type="line"
         :data="chartData"
         :options="chartOptions"
@@ -32,10 +39,25 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../composables/useContainerResize';
 import {useStatisticStore} from '../../store/StatisticStore';
 import {DateTime} from 'luxon';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 const statisticStore   = useStatisticStore();
+
+const chartRef    = ref(null);
+const exportChart = () => {
+  if (chartRef.value) {
+    // chartRef.value.chart gives access to the underlying Chart.js instance
+    const base64Image = chartRef.value.chart.toBase64Image();
+    const link        = document.createElement('a');
+    link.href         = base64Image;
+    link.download     = `${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}_einkomme_pro_runde.png`;
+    link.click();
+  }
+};
+
 
 const calculateIncome = function (record) {
   let income = 0;
@@ -55,7 +77,7 @@ const calculateIncome = function (record) {
 const chartData = computed(() => {
   const teams = teamsStore.teams;
   if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return { labels: [], datasets: [] };
+    return {labels: [], datasets: []};
   }
 
   const datasets = [];
@@ -63,7 +85,7 @@ const chartData = computed(() => {
     const records = teamAccountStore.incomePerRoundForTeam(team.uuid);
 
     const teamEntry = [];
-    const now = DateTime.now();
+    const now       = DateTime.now();
     if (records) {
       for (const record of records) {
         const income = calculateIncome(record);
@@ -93,6 +115,12 @@ const chartOptions = computed(() => {
         labels:  {
           color: 'black'
         }
+      },
+      title:  {
+        display: true,
+        text:    'Einkommen pro Runde',
+        color:   'black',
+        font:    {size: 18}
       },
       zoom:   {
         zoom: {
@@ -152,5 +180,18 @@ const {containerHeight, containerWidth, containerKey} = useContainerResize(chart
 </script>
 
 <style scoped lang="scss">
+.chart-container {
+  background-color: white;
+  position: relative;
+}
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  padding: 5px 10px;
+  cursor: pointer;
+}
 
 </style>

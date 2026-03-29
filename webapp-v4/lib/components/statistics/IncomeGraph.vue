@@ -9,9 +9,16 @@
       ref="chartContainer"
       class="chart-container"
   >
+    <button
+        class="export-button"
+        @click="exportChart"
+    >
+      <FontAwesomeIcon :icon="faDownload" />
+    </button>
     <Chart
         v-if="containerHeight > 0"
         :key="containerKey"
+        ref="chartRef"
         type="bar"
         :data="chartData"
         :options="chartOptions"
@@ -30,13 +37,27 @@ import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../composables/useContainerResize';
 import {evaluatePropertyValueForTeam} from '../../propertyLib';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
-const teamsStore       = useTeamsStore();
+const teamsStore = useTeamsStore();
+const chartRef   = ref(null);
+
+const exportChart = () => {
+  if (chartRef.value) {
+    // chartRef.value.chart gives access to the underlying Chart.js instance
+    const base64Image = chartRef.value.chart.toBase64Image();
+    const link        = document.createElement('a');
+    link.href         = base64Image;
+    link.download     = `${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}_Einkommen.png`;
+    link.click();
+  }
+};
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
   if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return { labels: [], datasets: [] };
+    return {labels: [], datasets: []};
   }
 
   const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
@@ -61,6 +82,12 @@ const chartOptions = computed(() => {
     maintainAspectRatio: true,
     responsive:          false,
     plugins:             {
+      title:  {
+        display: true,
+        text:    'Einkommen',
+        color:   'black',
+        font:    {size: 18}
+      },
       legend: {
         display: true,
         labels:  {
@@ -75,10 +102,10 @@ const chartOptions = computed(() => {
       },
       y: {
         stacked: true,
-        ticks: {
+        ticks:   {
           stepSize: 10000,
         },
-        grid: {
+        grid:    {
           // Callback to determine the line width for each tick
           lineWidth: (context) => {
             // Check if the tick value is a multiple of 100,000
@@ -108,5 +135,17 @@ const {containerHeight, containerWidth, containerKey} = useContainerResize(chart
 </script>
 
 <style scoped lang="scss">
+.chart-container {
+  position: relative;
+}
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  padding: 5px 10px;
+  cursor: pointer;
+}
 
 </style>

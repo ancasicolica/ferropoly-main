@@ -9,9 +9,16 @@
       ref="chartContainer"
       class="chart-container"
   >
+    <button
+        class="export-button"
+        @click="exportChart"
+    >
+      <FontAwesomeIcon :icon="faDownload" />
+    </button>
     <Chart
         v-if="containerHeight > 0"
         :key="containerKey"
+        ref="chartRef"
         type="bar"
         :data="chartData"
         :options="chartOptions"
@@ -30,9 +37,25 @@ import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../composables/useContainerResize';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
+
+const chartRef = ref(null);
+
+const exportChart = () => {
+  if (chartRef.value) {
+    // chartRef.value.chart gives access to the underlying Chart.js instance
+    const base64Image = chartRef.value.chart.toBase64Image();
+    const link = document.createElement('a');
+    link.href = base64Image;
+    link.download = `${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}_Erfolgsrechnung.png`;
+    link.click();
+  }
+};
+
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
@@ -84,7 +107,12 @@ const chartOptions = computed(() => {
           color: 'black'
         }
       },
-
+      title: {
+        display: true,
+        text: 'Erfolgsrechnung',
+        color: 'black',
+        font: { size: 18 }
+      },
     },
     scales:              {
       x: {
@@ -125,5 +153,16 @@ const {containerHeight, containerWidth, containerKey} = useContainerResize(chart
 </script>
 
 <style scoped lang="scss">
+.chart-container {
+  position: relative;
+}
 
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  padding: 5px 10px;
+  cursor: pointer;
+}
 </style>

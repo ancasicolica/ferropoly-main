@@ -9,9 +9,19 @@
       ref="chartContainer"
       class="chart-container"
   >
-    <div v-if="containerHeight > 0" class="chart-wrapper">
+    <button
+        class="export-button"
+        @click="exportChart"
+    >
+      <FontAwesomeIcon :icon="faDownload" />
+    </button>
+    <div
+        v-if="containerHeight > 0"
+        class="chart-wrapper"
+    >
       <Chart
           :key="containerKey"
+          ref="chartRef"
           type="bar"
           :data="chartData"
           :options="chartOptions"
@@ -29,19 +39,33 @@ import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../store/TeamsStore';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
 import {useContainerResize} from '../../composables/useContainerResize';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 
 // SIZE HANDLING
-const chartContainer = ref(null);
+const chartContainer                                  = ref(null);
 const {containerHeight, containerWidth, containerKey} = useContainerResize(chartContainer);
 /// END SIZE HANDLING
+
+const chartRef    = ref(null);
+const exportChart = () => {
+  if (chartRef.value) {
+    // chartRef.value.chart gives access to the underlying Chart.js instance
+    const base64Image = chartRef.value.chart.toBase64Image();
+    const link        = document.createElement('a');
+    link.href         = base64Image;
+    link.download     = `${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}_vermoegen.png`;
+    link.click();
+  }
+};
 
 const chartData = computed(() => {
   const teams = teamsStore.teams;
   if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return { labels: [], datasets: [] };
+    return {labels: [], datasets: []};
   }
   // Map store data to Chart.js structure
   const labels           = [];
@@ -74,6 +98,12 @@ const chartOptions = computed(() => {
     maintainAspectRatio: false,
     responsive:          true,
     plugins:             {
+      title:  {
+        display: true,
+        text:    'Vermögen',
+        color:   'black',
+        font:    {size: 18}
+      },
       legend: {
         display: false,
         labels:  {
@@ -93,10 +123,10 @@ const chartOptions = computed(() => {
       y: {
         beginAtZero: true,
         ticks:       {
-          color: 'black',
+          color:    'black',
           stepSize: 50000,
         },
-        grid: {
+        grid:        {
           // Callback to determine the line width for each tick
           lineWidth: (context) => {
             // Check if the tick value is a multiple of 100,000
@@ -124,6 +154,16 @@ const chartOptions = computed(() => {
 <style scoped lang="scss">
 .chart-container {
   background-color: white;
+  position: relative;
+}
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
 .chart-wrapper {
