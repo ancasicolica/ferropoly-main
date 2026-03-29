@@ -42,9 +42,9 @@ router.get('/data/:gameId', async function (req, res) {
       if (!pl) {
         return res.status(500).send({message: 'Interner Fehler: pl ist null'});
       }
-
-      rules = await rulesModel.getRules(gameId);
     }
+
+    rules = await rulesModel.getRules(gameId);
 
     const foundTeams = await teamModel.getTeams(gameId)
     // Filter some info
