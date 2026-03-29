@@ -13,7 +13,8 @@ class FerropolyApiError {
     this.httpMessage = get(err, 'message', 'Generic HTTP ERROR');
     this.causingUrl = get(err, 'request.responseURL', 'unknown');
 
-    console.warn(`API call returned status ${this.statusCode} for ${this.causingUrl}: ${this.message}`, err)
+    // Send out a sentry for invalid API Calls
+    console.error(`API call returned status ${this.statusCode} for ${this.causingUrl}: ${this.message}`, err)
   }
 }
 
