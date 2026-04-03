@@ -22,8 +22,17 @@
           <game-info />
         </div>
         <div class="col-span-2 md:col-span-1">
-          <join-form />
-          <join-my-registration />
+          <div v-if="joinStore.joiningPossible">
+            <join-form />
+            <join-my-registration />
+          </div>
+          <div v-else>
+            <ferro-jumbotron
+                title="Den Zug verpasst..."
+                info="Der Anmeldeschluss ist vorbei, neue Anmeldungen oder Anpassungen der Anmeldung sind nicht mehr möglich."
+            />
+          </div>
+
         </div>
       </div>
     </div>
@@ -40,6 +49,7 @@ import {onMounted} from 'vue';
 import {last, split} from 'lodash';
 import {useJoinStore} from '../store/joinStore';
 import JoinMyRegistration from './JoinMyRegistration.vue';
+import FerroJumbotron from '../../../lib/components/FerroJumbotron.vue';
 
 const joinStore = useJoinStore();
 

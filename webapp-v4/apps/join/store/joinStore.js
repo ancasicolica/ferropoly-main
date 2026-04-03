@@ -11,6 +11,7 @@ import {assign} from 'lodash'
 import {teamNameSchema, organizationNameSchema, teamPhoneSchema} from '../../../common/schemas/PlayerSchema';
 import {joinFormSchema} from '../lib/joinFormSchema';
 import {getAuthToken} from '../../../common/adapters/authToken';
+import {DateTime} from 'luxon';
 
 export const useJoinStore = defineStore('Join', {
   state:   () => ({
@@ -70,6 +71,9 @@ export const useJoinStore = defineStore('Join', {
     },
     formValidation(state) {
       return joinFormSchema.safeParse(state.teamInfoEdit);
+    },
+    joiningPossible(state) {
+      return (DateTime.fromISO(state.gameplay.joining.possibleUntil) > DateTime.now())
     }
   },
   actions: {
