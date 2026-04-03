@@ -75,10 +75,6 @@ export const useInfoStore = defineStore('Info', {
         const propertyStore = usePropertyStore();
         await propertyStore.init(gameId, resp.data.pricelist);
 
-        // Clean up the data concerting the game; we don't need it here, even for admins
-        for (const property of [...propertyStore.properties.values()]) {
-          property.gamedata = {owner: null, boughtTs: null, buildings: 0, buildingEnabled: false}
-        }
         this.dataLoaded = true;
       }
       catch (err) {
