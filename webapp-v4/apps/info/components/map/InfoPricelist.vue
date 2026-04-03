@@ -17,6 +17,7 @@
         <column
             field="pricelist.position"
             header="Pos"
+            sortable
         >
           <template #body="{data}">
             <span>{{ data.pricelist.position + 1 }}</span>
@@ -25,6 +26,7 @@
         <column
             field="location.name"
             header="Ort"
+            sortable
         >
           <template #body="{data}">
             <span
