@@ -30,7 +30,7 @@
     </div>
     <div>
       <h3>Orte</h3>
-      <info-pricelist />
+      <info-pricelist @center-map="onCenterMap" />
     </div>
   </div>
 </template>
@@ -41,12 +41,18 @@ import Checkbox from 'primevue/checkbox';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import InfoPricelist from './InfoPricelist.vue';
 import {PROPERTY_FILTER_GROUP_NONE, PROPERTY_FILTER_UUID_NONE} from '../../../../lib/constants/propertyStoreFilters';
+import {defineEmits} from 'vue';
 
 const propertyStore = usePropertyStore();
+const emit          = defineEmits(['center-map']);
 
 function onFilterUpdate() {
   console.log('Filter updated', propertyStore.filter.propertyStatus);
   propertyStore.updateFilter();
+}
+
+function onCenterMap(info) {
+  emit('center-map', info);
 }
 
 function onClearFilters() {

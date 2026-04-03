@@ -66,7 +66,7 @@ import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import {formatPrice} from '../../../../common/lib/formatters';
-import {computed, ref, onMounted, onUnmounted} from 'vue';
+import {computed, ref, onMounted, onUnmounted, defineEmits} from 'vue';
 import ScrollPanel from 'primevue/scrollpanel';
 import {
   PROPERTY_FILTER_GROUP_NONE,
@@ -75,6 +75,7 @@ import {
 } from '../../../../lib/constants/propertyStoreFilters';
 
 const propertyStore = usePropertyStore();
+const emit          = defineEmits(['center-map']);
 
 const pricelist = computed(() => [...propertyStore.properties.values()]);
 
@@ -102,12 +103,45 @@ onUnmounted(() => {
   window.removeEventListener('resize', calculateHeight);
 });
 
+function emitBounds(props) {
+  if (props.length > 0) {
+    // Initialize with first property's coordinates
+    let north = -90, south = 90, east = -180, west = 180;
+
+    props.forEach(property => {
+      if (property?.location?.position) {
+        const lat = parseFloat(property.location.position.lat);
+        const lng = parseFloat(property.location.position.lng);
+
+        north = Math.max(north, lat);
+        south = Math.min(south, lat);
+        east  = Math.max(east, lng);
+        west  = Math.min(west, lng);
+      }
+    });
+
+    // Emit bounds to parent component
+    emit('center-map', {
+      bounds: {
+        north,
+        south,
+        east,
+        west
+      }
+    });
+  }
+}
+
 // Handler for property group selection
 const onPropertyGroupSelected = (propertyGroup) => {
   propertyStore.filter.propertyGroup = propertyGroup;
   propertyStore.filter.propertyUuid  = PROPERTY_FILTER_UUID_NONE;
   propertyStore.filter.price         = PROPERTY_FILTER_PRICE_NONE;
   propertyStore.updateFilter();
+
+  const props = propertyStore.propertiesByGroup(propertyGroup);
+
+  emitBounds(props);
 };
 
 // Handler for property selection
@@ -116,6 +150,18 @@ const onPropertySelected = (uuid) => {
   propertyStore.filter.propertyGroup = PROPERTY_FILTER_GROUP_NONE;
   propertyStore.filter.price         = PROPERTY_FILTER_PRICE_NONE;
   propertyStore.updateFilter();
+
+  // Center map on selected property
+  const property = propertyStore.properties.get(uuid);
+  if (property?.location?.position) {
+    // Emit event to parent component to center the map
+    emit('center-map', {
+      center: {
+        lat: parseFloat(property.location.position.lat),
+        lng: parseFloat(property.location.position.lng)
+      }
+    });
+  }
 };
 
 // Handler for price selection
@@ -124,6 +170,9 @@ const onPriceSelected = (price) => {
   propertyStore.filter.propertyUuid  = PROPERTY_FILTER_UUID_NONE;
   propertyStore.filter.propertyGroup = PROPERTY_FILTER_GROUP_NONE;
   propertyStore.updateFilter();
+
+  const props = propertyStore.propertiesByPrice(parseInt(price));
+  emitBounds(props);
 };
 
 </script>

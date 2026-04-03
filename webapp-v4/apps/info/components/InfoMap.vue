@@ -23,7 +23,7 @@
           />
         </div>
         <div class="w-128 flex-shrink-0">
-          <info-map-filter />
+          <info-map-filter @center-map="onCenterMap" />
         </div>
       </div>
     </div>
@@ -56,6 +56,14 @@ const mapOptions = ref({
 
 const pricelistAvailable = computed(() => propertyStore.properties.size > 0)
 
+function onCenterMap(info) {
+  if (info.center) {
+    mapRef.value.setCenter(info.center);
+  }
+  if (info.bounds) {
+    mapRef.value.fitBounds(info.bounds);
+  }
+}
 const onNewMap = async function (_map) {
   console.log('new map', _map);
   map = _map;

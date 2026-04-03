@@ -213,6 +213,56 @@ export const usePropertyStore = defineStore('Property', () => {
     };
   });
 
+  /**
+   * Retrieves a list of properties that belong to a specified group.
+   *
+   * This function filters properties based on the provided group and returns
+   * an array of matching properties. If no group is supplied, a warning is logged,
+   * and an empty array is returned.
+   *
+   * @param {string} group - The name of the group to filter properties by.
+   * @returns {Array} An array of properties belonging to the specified group.
+   */
+  const propertiesByGroup = function (group) {
+    if (!group) {
+      console.warn('No group supplied, no properties');
+      return [];
+    }
+
+    const result = [];
+    for (const prop of properties.value.values()) {
+      if (prop?.pricelist?.propertyGroup === group) {
+        result.push(prop);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Retrieves a list of property objects matching the specified price.
+   *
+   * This function filters the property objects available in the `properties` map
+   * and returns those where the `pricelist.price` matches the provided price.
+   * If no price is supplied, a warning is logged, and an empty array is returned.
+   *
+   * @param {number} price - The price used to filter properties.
+   * @returns {Array<Object>} An array of property objects with matching prices.
+   */
+  const propertiesByPrice = function (price) {
+    if (!price) {
+      console.warn('No price supplied, no properties');
+      return [];
+    }
+
+    const result = [];
+    for (const prop of properties.value.values()) {
+      if (prop?.pricelist?.price === price) {
+        result.push(prop);
+      }
+    }
+    return result;
+  }
+
 
   /**
    * Initializes the properties and sets up the required map markers.
@@ -481,7 +531,7 @@ export const usePropertyStore = defineStore('Property', () => {
   return {
     properties, ready, debugOutput, showMarkersAsCategory, markerGroupModus, markerMode, propertiesVersion, filter,
     pricelist, freePropertiesNb, boughtPropertiesNb, buildingNb, mostProfitableProperties, leastProfitableProperties,
-    propertiesByTeamId, teamId,
+    propertiesByTeamId, propertiesByGroup, propertiesByPrice, teamId,
     init, updateProperty, update, updateTransactions, resetProperty, updateFilter
   }
 
