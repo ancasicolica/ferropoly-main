@@ -179,7 +179,7 @@ const showBuildingEnabled = function (gamedata) {
 }
 
 const picturesAvailable = function (propertyId) {
-  return props.pictures.some(picture => picture.propertyId === propertyId);
+  return props.pictures.some(picture => (picture.propertyId === propertyId && picture.hidden === false));
 }
 
 /**

@@ -21,12 +21,14 @@
             :key="p.url"
             class="w-1/2"
         >
-          <Image
-              :src="p.url"
-              width="100%"
-              preview
-          />
-          <div>{{ p.filename }}</div>
+          <div v-if="!p.hidden">
+            <Image
+                :src="p.url"
+                width="100%"
+                preview
+            />
+            <div>{{ p.teamName }}, {{ formatGameTime(p.timestamp) }} </div>
+          </div>
         </div>
       </div>
     </div>
@@ -37,6 +39,7 @@
 
 import Image from 'primevue/image';
 import {computed} from 'vue';
+import {formatGameTime} from '../../../common/lib/formatters';
 
 const props = defineProps({
   pictures: {
@@ -47,7 +50,13 @@ const props = defineProps({
 })
 
 const picturesAvailable = computed(() => {
-  return (props.pictures && props.pictures.length > 0);
+  let picNb = 0;
+  for (const p of props.pictures) {
+    if (!p.hidden) {
+      picNb++;
+    }
+  }
+  return (props.pictures && props.pictures.length > 0 && picNb > 0);
 });
 
 </script>
