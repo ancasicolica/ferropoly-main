@@ -11,7 +11,7 @@
         condensed
     >
       <h1 style="text-align: center;">{{ currentTime }}</h1>
-      <div> Nächster Termin: {{ nextType }}
+      <div v-if="gameplayStore.gameActive"> Nächster Termin: {{ nextType }}
         <span v-if="nextTimeRelative"> {{ nextTimeRelative }}: {{ nextTime }}</span>
       </div>
     </FerroCard>
@@ -24,8 +24,10 @@ import {ref, onMounted, onBeforeUnmount, computed} from 'vue';
 import FerroCard from '../../../../common/components/FerroCard.vue';
 import {useCronJobStore} from '../../../../lib/store/CronJobStore';
 import {cronjobTypeToText} from '../../../../lib/cronJob';
+import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 
 const cronJobStore     = useCronJobStore();
+const gameplayStore    = useGameplayStore();
 const currentTime      = ref('');
 const nextTimeRelative = ref('');
 let intervalId         = null;

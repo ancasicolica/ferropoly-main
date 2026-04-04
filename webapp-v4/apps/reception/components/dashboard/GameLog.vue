@@ -6,18 +6,23 @@
 
 <template>
   <div>
-<DataTable
-    :value="gameLogStore.currentEntries"
-    :show-headers="false"
-    size="small"
->
-  <Column field="timestamp">
-    <template #body="{data}">
-      {{ formatTime(data.timestamp) }}
-    </template>
-  </Column>
-  <Column field="title"></Column>
-</DataTable>
+    <div v-if="gameLogStore.currentEntries && gameLogStore.currentEntries.length > 0">
+      <DataTable
+          :value="gameLogStore.currentEntries"
+          :show-headers="false"
+          size="small"
+      >
+        <Column field="timestamp">
+          <template #body="{data}">
+            {{ formatTime(data.timestamp) }}
+          </template>
+        </Column>
+        <Column field="title"></Column>
+      </DataTable>
+    </div>
+    <div v-else>
+      Es gibt keine aktuellen Einträge.
+    </div>
   </div>
 </template>
 

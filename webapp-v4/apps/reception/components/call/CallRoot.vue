@@ -6,18 +6,26 @@
 
 <template>
   <div>
-    <div v-if="!receptionStore.callActive">
-      <Message
-          v-if="!gameplayStore.gameActive"
-          severity="warn"
-      >
-        Anrufe können nur bei laufendem Spiel angenommen werden.
-      </Message>
-      <h1>Anrufendes Team auswählen</h1>
-      <team-selector @team-calling="onTeamCalling" />
+    <div v-if="gameplayStore.gameActive">
+      <div v-if="!receptionStore.callActive">
+        <Message
+            v-if="!gameplayStore.gameActive"
+            severity="warn"
+        >
+          Anrufe können nur bei laufendem Spiel angenommen werden.
+        </Message>
+        <h1>Anrufendes Team auswählen</h1>
+        <team-selector @team-calling="onTeamCalling" />
+      </div>
+      <div v-if="receptionStore.callActive">
+        <call-active />
+      </div>
     </div>
-    <div v-if="receptionStore.callActive">
-      <call-active />
+    <div v-else>
+      <ferro-jumbotron
+          title="Kein aktives Spiel"
+          info="Aktuell können keine Anrufe behandelt werden."
+      />
     </div>
     <Dialog
         :visible="dialogActive"
@@ -71,6 +79,7 @@ import {computed, ref} from 'vue';
 import CallActive from './CallActive.vue';
 import Message from 'primevue/message';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
+import FerroJumbotron from '../../../../lib/components/FerroJumbotron.vue';
 
 const activitySelected = ref(false);
 const dialogActive     = computed({
