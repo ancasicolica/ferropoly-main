@@ -134,7 +134,7 @@ describe('Testing the teamAccount', () => {
       console.log('xx', team1Booking);
       expect(team1Booking.transaction.origin.uuid).to.be(gameData.teams[2].uuid);
       expect(team1Booking.transaction.amount).to.be(-1000);
-      expect(team1Booking.transaction.info).to.be('test');
+      expect(team1Booking.transaction.info).to.be('test an Team 2');
 
       const team2Statement = await teamAccount.getAccountStatement(gameId, gameData.teams[2].uuid);
       const team2Booking   = team2Statement.slice(-1)[0];
@@ -142,7 +142,7 @@ describe('Testing the teamAccount', () => {
       console.log('yy', team2Booking);
       expect(team2Booking.transaction.origin.uuid).to.be(gameData.teams[1].uuid);
       expect(team2Booking.transaction.amount).to.be(1000);
-      expect(team2Booking.transaction.info).to.be('test');
+      expect(team2Booking.transaction.info).to.be('test von Team 1');
     })
 
     it('happens nothing with value 0', async () => {
