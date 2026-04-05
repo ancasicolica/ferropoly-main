@@ -1,24 +1,29 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.0 5.4.26 - Erste V4 Version für Tests
+
 * Grosser Umbau auf Vue 3, PrimeVue und Tailwind CSS.
-* Karten in Info: mehr Infos für Teams vor dem Spiel (Gruppen, Darstellung)
+* Karten in Info App: mehr Infos für Teams vor dem Spiel (Gruppen, Darstellung)
 * Reception
     * nur noch wesentliche Funktionen zur Bearbeitung eines Anrufs in Reception, den Rest in die allgemeinen Views
       ausgelagert (Feedback Silvan)
     * Neue Farben für Teams
     * Spielrunden werden nummeriert (kommt aus Editor, Wirkung in Spiel)
-    * Käufe von Orten können rückgängig gemacht werden
+    * Käufe von Orten können rückgängig gemacht werden (Diverses -> Kauf Ort stornieren)
+    * Info, wenn mit Bildschirmen < 1024 Pixel Auflösung gespielt werden will (weil das nicht so gut geht)
+    * Hochgeladene Bilder der Teams können ausgeblendet werden
 * Check-in
     * Der Preis eines von einer anderen Gruppe gekauften Ortes wird nicht mehr angezeigt, nur noch die Preiskategorie (
       2025 konnte eine Gruppe anhand des Preises die Liegenschaften der anderen Gruppen erraten)
     * Das nächste Ereignis wird angezeigt
+    * Bildupload verbessert, direkt ab Kamera
 * Summary: Angeglichen an Reception, deutlich mehr Infos (alle Statistiken, Buchungen)
-* Mehr Statistik: Erfolgsrechnung
-* Profit der Orte kann dargestellt werden
+* Mehr Statistik: Erfolgsrechnung (Reception und Summary App)
+* Profit der Orte kann dargestellt werden (alle Apps)
+* Darstellung der hochgeladenen Bilder verbesser (alle Apps)
+* Gründe für Chance / Kanzlei hinzugefügt (Wunsch Silvan)
+* Sentry Integration für node.js und Webapp
 * BREAKING: Team Members werden mit Name gespeichert -> Anpassung Teams Schema
-* Info in der Reception, wenn mit Bildschirmen < 1024 Pixel Auflösung gespielt werden will
-* Darstellung der hochgeladenen Bilder verbessert, mit Viewer
-    * Bilder können ausgeblendet werden (sind dann für andere Teams nicht sichtbar)
 
 ## v3.5.2 9.6.25
 

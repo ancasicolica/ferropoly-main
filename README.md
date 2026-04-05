@@ -7,10 +7,10 @@ languages).
 
 ## Software Repository and Bug tracking
 
-  * [Bitbucket Git-Repo](https://bitbucket.org/christian_kuster/ferropoly_main/src/master/)
-    * [Bugtracking](https://bitbucket.org/christian_kuster/ferropoly_main/issues?status=new&status=open) (public), report found bugs here
-  * [Atlassian Jira](https://christian-kuster.atlassian.net/jira/software/projects/FERS/boards/2) for mid and longterm planning (Login required)
-  
+  * [Github Source Repo](https://github.com/ancasicolica/ferropoly-main)
+  * [Github Issues](https://github.com/ancasicolica/ferropoly-main/issues), report found bugs here
+  * [Github Planning](https://github.com/users/ancasicolica/projects/3)
+
 ## Testing
 For the test management I use a sponsored licence of [Testiny](https://www.testiny.io/).
 
@@ -29,6 +29,10 @@ For the test management I use a sponsored licence of [Testiny](https://www.testi
  * ``FERROPOLY_DEBUG_SECRET``: Used only for debugging routes
  * ``FERROPOLY_GOOGLE_MAPS_API_KEY``: API Key for maps
  * ``FERROPOLY_GOOGLE_GEOCODING_API_KEY``: API Key for geocoding queries
+ * ``SENTRY_AUTH_TOKEN`` : Sentry Auth Token for error tracking
+ * ``FERROPOLY_SENTRY_VUE_DSN``: Sentry DSN for Vue error tracking
+ * ``FERROPOLY_SENTRY_NODE_DSN``: Sentry DSN for Node error tracking
+ * ``FERROPOLY_SENTRY_PROJECT``: Sentry environment (e.g. ferropoly-main-preview-vue)
 
 ### Credentials for Logins
 
