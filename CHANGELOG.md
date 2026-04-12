@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.1 12.4.26
+* Google Logs verbessert
+
 ## v4.0.0 5.4.26 - Erste V4 Version für Tests
 
 * Grosser Umbau auf Vue 3, PrimeVue und Tailwind CSS.
