@@ -263,6 +263,21 @@ export const usePropertyStore = defineStore('Property', () => {
     return result;
   }
 
+  /**
+   * Initializes and returns the property account data structure.
+   *
+   * @return {Object} An object containing:
+   * - `transactions`: A Map object storing all property account transactions.
+   * - `profit`: A number representing the sum of all transactions.
+   * - `lastValidTimestamp`: A DateTime object representing the last valid timestamp of the transactions.
+   */
+  function initPropertyAccountData() {
+    return {
+      transactions:       new Map(),  // all property account transactions
+      profit:             0,          // sum of all transactions
+      lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00') // last valid timestamp of the transactions
+    }
+  }
 
   /**
    * Initializes the properties and sets up the required map markers.
@@ -289,11 +304,7 @@ export const usePropertyStore = defineStore('Property', () => {
       if (prop.gamedata.owner) {
         prop.gamedata.ownerName = useTeamsStore().idToTeamName(prop.gamedata.owner);
       }
-      prop.account    = {
-        transactions:       new Map(),  // all property account transactions
-        profit:             0,  // sum of all transactions
-        lastValidTimestamp: DateTime.fromISO('2022-07-06T12:00') // last valid timestamp of the transactions
-      }
+      prop.account    = initPropertyAccountData();
       prop.searchText = createNormalizedString(prop.location.name);
       properties.value.set(prop.uuid, prop);
     }
@@ -319,7 +330,7 @@ export const usePropertyStore = defineStore('Property', () => {
    * @return {void} This method does not return a value.
    */
   function updateProperty(property) {
-    const p = this.properties.get(property.uuid);
+    const p = properties.value.get(property.uuid);
     if (p) {
       p.gamedata           = property.gamedata;
       p.gamedata.ownerName = useTeamsStore().idToTeamName(p.gamedata.owner);
@@ -451,6 +462,8 @@ export const usePropertyStore = defineStore('Property', () => {
       const authToken = await getAuthToken();
       const resp      = await axios.post(`/storno/${gameId}/${propertyId}`, {authToken, reason: 'Fehlbuchung'});
       console.log(resp, resp.data);
+      const property   = properties.value.get(propertyId);
+      property.account = initPropertyAccountData();
       return resp.data;
     }
     catch (err) {
