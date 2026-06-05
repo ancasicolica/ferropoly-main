@@ -1,5 +1,10 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.2 5.6.26
+* Bugfix: nicht finalisierte Spiele können nicht gespielt / angeschaut werden
+* Bugfix: Kontobuch Ort nach stornieren Kauf initialisiert
+* Dependency Updates
+
 ## v4.0.1 12.4.26
 * Google Logs verbessert
 
