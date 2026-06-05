@@ -53,7 +53,15 @@
           help-url="/about"
       />
       <div class="ferropoly-container">
-        <router-view />
+        <div v-if="gameplayStore.isFinalized">
+          <router-view />
+        </div>
+        <div v-else>
+          <ferro-jumbotron
+              title="Feckin Eejit!"
+              info="Keine Ahnung wie du hierhin kamst, aber hier solltest Du nicht sein und es gibt nichts zu sehen."
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -82,6 +90,7 @@ import ProgressSpinner from 'primevue/progressspinner';
 import {useCronJobStore} from '../../../lib/store/CronJobStore';
 import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
 import {useSocketStore} from '../../../lib/store/SocketStore';
+import FerroJumbotron from '../../../lib/components/FerroJumbotron.vue';
 
 const receptionStore   = useReceptionStore();
 const receptionSocket  = getReceptionSocket();

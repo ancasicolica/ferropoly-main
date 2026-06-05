@@ -29,7 +29,7 @@
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
       <Button
-          v-if="gameRunning"
+          v-if="gameRunning && finalized"
           class="mr-2 mb-2"
           label="Spielen"
           size="small"
@@ -38,7 +38,7 @@
           :href="receptionLink"
       />
       <Button
-          v-if="gameOver || gameInFuture"
+          v-if="finalized && (gameOver || gameInFuture)"
           class="mr-2 mb-2"
           label="Spiel ansehen"
           size="small"
@@ -47,6 +47,7 @@
           :href="receptionLink"
       />
       <Button
+          v-if="finalized"
           class="mr-2 mb-2"
           label="Preisliste"
           size="small"
@@ -55,7 +56,7 @@
           :href="pricelistLink"
       />
       <Button
-          v-if="gameOver"
+          v-if="gameOver && finalized"
           class="mr-2 mb-2"
           label="Zusammenfassung"
           size="small"
@@ -63,6 +64,12 @@
           as="a"
           :href="summaryLink"
       />
+      <Message
+        v-if="!finalized"
+        severity="warn"
+      >
+        Das Spiel ist noch nicht finalisiert und kann deshalb nicht gespielt werden.
+      </Message>
     </ferro-card>
   </div>
 </template>
@@ -74,6 +81,8 @@ import {formatGameDate, formatGameTime, formatMap} from '../../../common/lib/for
 import {computed} from 'vue';
 import Button from 'primevue/button';
 import {DateTime} from 'luxon';
+
+import Message from 'primevue/message';
 
 const props = defineProps({
   gameplay: {
@@ -87,6 +96,7 @@ const props = defineProps({
   }
 });
 
+const finalized     = computed(() => props.gameplay.internal.finalized);
 const gameDate      = computed(() => formatGameDate(props.gameplay.scheduling.gameDate));
 const gameStart     = computed(() => formatGameTime(props.gameplay.scheduling.gameStart));
 const gameEnd       = computed(() => formatGameTime(props.gameplay.scheduling.gameEnd));
@@ -94,8 +104,8 @@ const map           = computed(() => formatMap(props.gameplay.internal.map));
 const deleteTs      = computed(() => formatGameDate(props.gameplay.scheduling.deleteTs));
 const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`);
 const receptionLink = computed(() => `/reception/${props.gameplay.internal.gameId}`);
-const summaryLink = computed(() => `/summary/${props.gameplay.internal.gameId}`);
-const gameRunning = computed(() => {
+const summaryLink   = computed(() => `/summary/${props.gameplay.internal.gameId}`);
+const gameRunning   = computed(() => {
   if (!props.gameplay.internal.finalized) {
     return false;
   }
@@ -103,7 +113,7 @@ const gameRunning = computed(() => {
   const now      = DateTime.now();
   return gameDate.hasSame(now, 'day') && now <= DateTime.fromFormat(props.gameplay.scheduling.gameEnd, 'HH:mm');
 });
-const gameOver    = computed(() => {
+const gameOver      = computed(() => {
   if (!props.gameplay.internal.finalized) {
     return false;
   }

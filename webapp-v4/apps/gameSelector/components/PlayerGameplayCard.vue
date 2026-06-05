@@ -35,7 +35,7 @@
       </div>
       <div class="gameplay-id"> ID: {{ gameplay.internal.gameId }}</div>
       <Button
-          v-if="gameToday"
+          v-if="finalized && gameToday"
           class="mr-2 mb-2"
           label="Spielen"
           size="small"
@@ -62,7 +62,7 @@
           :href="pricelistLink"
       />
       <Button
-          v-if="gameOver"
+          v-if="finalized && gameOver"
           class="mr-2 mb-2"
           label="Zusammenfassung"
           size="small"
@@ -107,6 +107,7 @@ const teamEditLink  = computed(() => `/team/edit/${props.gameplay.internal.gameI
 const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`)
 const summaryLink   = computed(() => `/summary/${props.gameplay.internal.gameId}`);
 const playLink      = computed(() => `/checkin/${props.gameplay.internal.gameId}`);
+const finalized     = computed(() => props.gameplay.internal.finalized);
 
 const gameOver = computed(() => {
   if (!props.gameplay.internal.finalized) {

@@ -99,6 +99,9 @@ export const useGameplayStore = defineStore('Gameplay', {
     },
     summaryPublic(state) {
       return state.gameplay.internal.gameDataPublic;
+    },
+    isFinalized(state) {
+      return state.gameplay.internal.finalized;
     }
   },
   actions: {
