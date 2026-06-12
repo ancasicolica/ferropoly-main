@@ -162,10 +162,11 @@ import StepPanel from 'primevue/steppanel';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import {useTeamsStore} from '../../../../lib/store/TeamsStore';
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 import FerroJumbotron from '../../../../lib/components/FerroJumbotron.vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
 
 const teamsStore    = useTeamsStore();
 const propertyStore = usePropertyStore();
@@ -198,6 +199,11 @@ const runStorno = function () {
         stepperValue.value = '4';
       });
 }
+
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/storno/')
+});
 </script>
 
 <style scoped lang="scss">

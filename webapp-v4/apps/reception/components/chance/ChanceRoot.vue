@@ -15,7 +15,12 @@
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import ChanceInfo from '../../../../lib/components/chance/ChanceInfo.vue';
-
+import {useReceptionStore} from '../../store/ReceptionStore';
+import {onMounted} from 'vue';
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/chancellery/')
+});
 </script>
 
 <style scoped lang="scss">

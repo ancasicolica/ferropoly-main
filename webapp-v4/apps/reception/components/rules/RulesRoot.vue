@@ -19,8 +19,13 @@
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import {useRulesStore} from '../../../../lib/store/RulesStore';
+import {useReceptionStore} from '../../store/ReceptionStore';
+import {onMounted} from 'vue';
 const rulesStore = useRulesStore();
-
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/rules/')
+});
 </script>
 
 <style scoped lang="scss">

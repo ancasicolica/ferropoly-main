@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.3 12.6.26
+* Reception: Links auf Hilfe angepasst
+
 ## v4.0.2 5.6.26
 * Bugfix: nicht finalisierte Spiele können nicht gespielt / angeschaut werden
 * Bugfix: Kontobuch Ort nach stornieren Kauf initialisiert

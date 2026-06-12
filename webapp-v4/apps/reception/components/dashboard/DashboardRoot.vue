@@ -40,7 +40,7 @@ import FerroCard from '../../../../common/components/FerroCard.vue';
 import RankingList from '../../../../lib/components/RankingList.vue';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import {computed} from 'vue';
+import {computed, onMounted} from 'vue';
 import {useReceptionStore} from '../../store/ReceptionStore';
 import FerropolyClock from './FerropolyClock.vue';
 import GameLogCard from './GameLogCard.vue';
@@ -49,6 +49,10 @@ const receptionStore = useReceptionStore();
 const downloadUrl    = computed(() => {
   return `/download/rankinglist/${receptionStore.gameId}`;
 })
+
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/overview/')
+});
 
 </script>
 

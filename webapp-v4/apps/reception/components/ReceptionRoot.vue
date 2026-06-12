@@ -50,7 +50,7 @@
           :elements="receptionStore.menuBarElements"
           show-online-status
           :online="socketStore.connected"
-          help-url="/about"
+          :help-url="receptionStore.helpUrl"
       />
       <div class="ferropoly-container">
         <div v-if="gameplayStore.isFinalized">

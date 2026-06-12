@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import FerropolyMap from '../../../../common/components/FerropolyMap.vue';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {getMapMarkerInstance} from '../../../../lib/MapMarkers';
@@ -31,6 +31,7 @@ import {MARKER_MODE_RECEPTION} from '../../../../lib/constants/markerMode';
 import MapFilters from '../../../../lib/components/MapFilters.vue';
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import {getMapRoutesInstance} from '../../../../lib/MapRoutes';
+import {useReceptionStore} from '../../store/ReceptionStore';
 
 const propertyStore = usePropertyStore();
 const mapMarkers    = getMapMarkerInstance();
@@ -44,6 +45,10 @@ const mapOptions = {
 
 let map = null;
 
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/map/')
+});
 
 const onNewMap = async function (_map) {
   console.log('new map', _map);

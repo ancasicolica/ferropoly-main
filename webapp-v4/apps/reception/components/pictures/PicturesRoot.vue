@@ -12,9 +12,16 @@
 </template>
 
 <script setup>
+import {onMounted} from 'vue';
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import PictureGallery from '../../../../lib/components/pictures/PictureGallery.vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
+
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/pictures/')
+});
 </script>
 
 <style scoped lang="scss">

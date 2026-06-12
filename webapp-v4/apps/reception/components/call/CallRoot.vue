@@ -75,7 +75,7 @@ import {useReceptionStore} from '../../store/ReceptionStore';
 import TeamSelector from './TeamSelector.vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import CallActive from './CallActive.vue';
 import Message from 'primevue/message';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
@@ -101,7 +101,9 @@ const onTeamCalling = (team) => {
   activitySelected.value = false;
   callingTeam.value      = team;
 }
-
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/call/')
+});
 const onNormalCallConfirmed = () => {
   activitySelected.value = true;
   if (callingTeam.value) {

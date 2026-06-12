@@ -15,8 +15,13 @@
 
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import PropertyInfo from '../../../../lib/components/pricelist/propertyInfo.vue';
+import {useReceptionStore} from '../../store/ReceptionStore';
+import {onMounted} from 'vue';
 
-
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/pricelist/')
+});
 </script>
 
 <style scoped lang="scss">

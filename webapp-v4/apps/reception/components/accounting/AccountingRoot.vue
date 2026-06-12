@@ -14,7 +14,12 @@
 <script setup>
 import CallActiveWarningBanner from '../CallActiveWarningBanner.vue';
 import AccountingTabs from '../../../../lib/components/teamAccount/AccountingTabs.vue';
-
+import {useReceptionStore} from '../../store/ReceptionStore';
+import {onMounted} from 'vue';
+const receptionStore = useReceptionStore();
+onMounted(() => {
+  receptionStore.setHelpUrl('https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/reception/accounting/')
+});
 </script>
 
 <style scoped lang="scss">

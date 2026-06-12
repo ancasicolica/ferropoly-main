@@ -30,6 +30,7 @@ export const useReceptionStore = defineStore('Reception', {
         ]
       },
     ],
+    helpUrl: 'https://www.ferropoly.ch/hilfe/ferropoly-spiel/',
     activeCall:        {
       team:               null,
       chancelleryEnabled: true,
@@ -44,6 +45,9 @@ export const useReceptionStore = defineStore('Reception', {
     }
   },
   actions: {
+    setHelpUrl(helpUrl) {
+      this.helpUrl = helpUrl;
+    },
     /**
      * Fetches static data for a given game ID.
      *
