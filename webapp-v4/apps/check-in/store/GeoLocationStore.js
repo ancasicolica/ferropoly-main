@@ -16,16 +16,18 @@ export const useGeoLocationStore = defineStore('GeoLocation', () => {
     currentPosition.value = pos;
   });
   geograph.on('player-position-error', () => {
-    console.warn('Geograph error');
+    console.warn('Geograph error: no position available');
     currentPosition.value = null;
   })
 
   const init = function () {
-    geograph.localize();
-    geograph.startPeriodicScan(10000);
+    geograph.startTracking();
   };
 
   const positionIsValid = computed(() => {
+    if (!currentPosition.value) {
+      return false;
+    }
     return currentPosition.value.lat !== 0;
   })
 
