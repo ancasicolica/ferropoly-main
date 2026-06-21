@@ -59,12 +59,10 @@ router.get('/:gameId', async function (req, res) {
         version:   -1
       };
     }
-    const token           = await authTokenManager.getNewTokenAsync({
-      user:          user,
-      proposedToken: req?.session?.authToken
-    });
+    const token           = await authTokenManager.getToken(user);
+
     if (req.session) {
-      req.session.authToken = token;
+      req.session.authToken = token.id;
     }
 
     logger.debug(`Session saved for ${user} in ${gameId}`, req.session);

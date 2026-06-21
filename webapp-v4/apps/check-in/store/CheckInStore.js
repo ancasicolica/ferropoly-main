@@ -29,6 +29,7 @@ export const useCheckInStore = defineStore('CheckIn', () => {
 
   const fetchStaticData = async function (gameId) {
     this.gameId = gameId;
+    console.log(`fetching data for ${gameId}`);
     const resp  = await axios.get(`/static/${gameId}`);
     console.log('Static data fetched', resp.data);
     return resp.data;

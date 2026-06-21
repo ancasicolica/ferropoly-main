@@ -136,7 +136,7 @@ onMounted(() => {
         console.log('Init step 9');
         receptionSocket.initSocket({
           url:       staticData.socketUrl,
-          authToken: staticData.authToken,
+          authToken: staticData.authToken.id,
           user:      get(staticData, 'user', 'none'),
           gameId:    gameId
         });

@@ -1,5 +1,7 @@
 # Changelog Ferropoly Spiel
 
+* AuthTokens verbessert: mehrere Zugriffe mit gleichem Account sind möglich
+
 ## v4.0.3 12.6.26
 * Reception: Links auf Hilfe angepasst
 
