@@ -2,6 +2,7 @@
 
 * Geolocalization: nur auf Mobile Geräten, allgemeine Verbesserungen
 * AuthTokens verbessert: mehrere Zugriffe mit gleichem Account sind möglich
+* Hilfe aus Checkin: Link aktualisiert
 
 ## v4.0.3 12.6.26
 * Reception: Links auf Hilfe angepasst

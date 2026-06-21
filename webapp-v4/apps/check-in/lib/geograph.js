@@ -189,8 +189,9 @@ export function useGeograph() {
     startTracking,
     positionIsValid,
     getLastLocation,
-    on:           (event, handler) => emitter.on(event, handler),
-    off:          (event, handler) => emitter.off(event, handler)
+    on:             (event, handler) => emitter.on(event, handler),
+    off:            (event, handler) => emitter.off(event, handler),
+    removeListener: (event, handler) => emitter.removeListener(event, handler)
   };
 }
 

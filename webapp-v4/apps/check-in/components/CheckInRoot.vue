@@ -19,7 +19,7 @@
           :elements="checkInStore.menuBarElements"
           show-online-status
           :online="socketStore.connected"
-          help-url="/about"
+          help-url="https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/checkin/"
       />
       <div class="ferropoly-container">
         <router-view />
