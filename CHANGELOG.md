@@ -1,5 +1,6 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.4 21.6.26
 * Geolocalization: nur auf Mobile Geräten, allgemeine Verbesserungen
 * AuthTokens verbessert: mehrere Zugriffe mit gleichem Account sind möglich
 * Hilfe aus Checkin: Link aktualisiert
