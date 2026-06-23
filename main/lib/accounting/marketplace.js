@@ -585,6 +585,7 @@ class Marketplace extends EventEmitter {
     if (ferroSocket) {
       // Inform clients that they can build again
       ferroSocket.emitToGame(gameId, 'building-allowed', {});
+      ferroSocket.emitToAdmins(gameId, 'admin-rents-paid', {});
     }
     marketLog(gameId, 'Building allowed again for ' + nbAffected.toString() + ' buildings');
 

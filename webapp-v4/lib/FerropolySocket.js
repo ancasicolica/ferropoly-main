@@ -134,8 +134,8 @@ class FerropolySocket extends EventEmitter {
       'admin-marketplace':     msg => {
         console.warn('Message should be handled 3', msg);
       },
-      'admin-rents-paid':      msg => {
-        console.warn('Message should be handled 4', msg);
+      'admin-rents-paid': async () => {
+        await usePropertyStore().update();
       },
       'game-log':              msg => {
         useGameLogStore().addLogEntry(msg);

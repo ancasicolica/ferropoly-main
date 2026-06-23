@@ -83,6 +83,7 @@
       </Column>
       <Column
           field="gamedata.buildings"
+          :sort-field="(data) => buildingSortValue(data.gamedata)"
           :sortable="true"
           header="Status"
       >
@@ -177,6 +178,18 @@ const showHotel           = function (buildings) {
 const showBuildingEnabled = function (gamedata) {
   return (gamedata.buildingEnabled && (gamedata.buildings < 5) && (gamedata.buildings > -1));
 }
+
+/**
+ * Returns a numeric sort value for the buildings column:
+ * 0 = no house (unowned or 0 buildings), 1-4 = house count, 5 = hotel.
+ * +0.5 bonus if a building can currently be built.
+ */
+const buildingSortValue = (gamedata) => {
+  // Unsold properties (buildings === -1) rank below everything else
+  if (!gamedata.owner) return -1;
+  const bonus = showBuildingEnabled(gamedata) ? 0.5 : 0;
+  return gamedata.buildings + bonus;
+};
 
 const picturesAvailable = function (propertyId) {
   return props.pictures.some(picture => (picture.propertyId === propertyId && picture.hidden === false));
