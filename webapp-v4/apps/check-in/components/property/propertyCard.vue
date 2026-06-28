@@ -15,6 +15,10 @@
       <span class="label">Anzahl Häuser:</span>
       <span class="value">{{ buildingStatus(property.gamedata.buildings) }}</span>
     </div>
+    <div class="row">
+      <span class="label">Mietwert:</span>
+      <span class="value">{{ formatPrice(rent) }}</span>
+    </div>
     <div
          v-if="property.gamedata.buildings < 5"
          class="row"
@@ -31,6 +35,8 @@
 
 <script setup>
 import {booleanYesNo, buildingStatus, formatGameTime, formatPrice} from '../../../../common/lib/formatters';
+import {evaluatePropertyValue} from '../../../../lib/propertyLib';
+
 
 const props = defineProps({
   property: {
@@ -43,6 +49,10 @@ const props = defineProps({
     }
   }
 });
+
+// Aktueller Wert (basierend auf property.gamedata.buildings):
+const rent = evaluatePropertyValue(props.property);
+
 </script>
 
 <style scoped lang="scss">
