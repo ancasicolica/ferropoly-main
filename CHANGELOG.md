@@ -1,6 +1,7 @@
 # Changelog Ferropoly Spiel
 
 * Bugfix: Mietwert wird für Spieler wieder angezeigt
+* Ferropoly Sockets werden besser geloggt
 
 ## v4.0.5 28.6.26
 * Bugfix in Darstellung Preisliste (Updates, Sortierung), Issues #118 und #119
