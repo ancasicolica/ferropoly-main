@@ -160,9 +160,12 @@ class Marketplace extends EventEmitter {
    * @param additionalMinutes give a tolerance at the end of the game (as we have to pay final rents)
    */
   isOpen(gameplay, additionalMinutes = 0) {
+    const start = DateTime.fromJSDate(gameplay.scheduling.gameStartTs).minus({minutes: additionalMinutes}).set({
+      second:      0,
+      millisecond: 0
+    });
 
-    let start = DateTime.fromJSDate(gameplay.scheduling.gameStartTs).minus({minutes: additionalMinutes});
-    let end   = DateTime.fromJSDate(gameplay.scheduling.gameEndTs).plus({minutes: additionalMinutes});
+    const end = DateTime.fromJSDate(gameplay.scheduling.gameEndTs).plus({minutes: additionalMinutes});
     if (DateTime.now() > end) {
       marketLog(gameplay.internal.gameId, 'Game over', {
         start:             start.toJSDate(),
@@ -172,7 +175,11 @@ class Marketplace extends EventEmitter {
       return false;
     }
     if (DateTime.now() < start) {
-      marketLog(gameplay.internal.gameId, 'Game not started yet');
+      marketLog(gameplay.internal.gameId, 'Game not started yet', {
+        start:             start.toJSDate(),
+        end:               end.toJSDate(),
+        additionalMinutes: additionalMinutes
+      });
       return false;
     }
     return true;
