@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.7 5.8.2026
+* Bugfix: Erste Spielrunde konnte wegen wenigen Milisekunden teilweise nicht ausbezahlt werden
+
 ## v4.0.6 4.7.2026
 * Bugfix: Mietwert wird für Spieler wieder angezeigt
 * Ferropoly Sockets werden besser geloggt
