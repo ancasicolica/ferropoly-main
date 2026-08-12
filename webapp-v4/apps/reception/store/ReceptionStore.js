@@ -110,14 +110,26 @@ export const useReceptionStore = defineStore('Reception', {
     async gamble(amount) {
       const self = this;
       try {
-        const authToken = await getAuthToken()
+        const teamUuid = self.activeCall.team?.uuid;
+
+        if (!self.gameId || !teamUuid) {
+          self.addCallLog({
+            title:   'Gambling nicht möglich',
+            message: 'Es ist kein Team ausgewählt.',
+            type:    LOG_TYPE_FAIL
+          });
+          return;
+        }
+
+
+        const authToken = await getAuthToken();
         const resp      = await axios.post(`/chancellery/gamble/${self.gameId}/${self.activeCall.team.uuid}`, {
           authToken,
           amount
         });
         self.addCallLog({
-          message: resp.data?.result.infoText,
-          amount:  resp.data?.result.amount
+          message: resp.data?.result?.infoText,
+          amount:  resp.data?.result?.amount
         });
       }
       catch (err) {
