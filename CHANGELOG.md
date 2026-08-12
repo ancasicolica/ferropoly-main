@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## v4.0.8 12.8.26
+* Bugfix: Aufruf Gambling abgesichert (Sentry Report nach Test IKOKJ)
+
 ## v4.0.7 5.8.2026
 * Bugfix: Erste Spielrunde konnte wegen wenigen Milisekunden teilweise nicht ausbezahlt werden
 
