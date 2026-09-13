@@ -23,7 +23,13 @@ import GameLiveTicker from './GameLiveTicker.vue';
 
 const checkInStore = useCheckInStore();
 
-const teamName = computed(() => checkInStore.team.data.name);
+const teamName = computed(() => {
+  let name = checkInStore.team?.data?.name;
+  if (!name) {
+    console.warn('Invalid checkInStore value', checkInStore.team);
+  }
+  return name;
+});
 
 </script>
 
