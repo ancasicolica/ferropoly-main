@@ -27,6 +27,12 @@ class MapRoutes extends EventEmitter {
    */
   setMap(map) {
     this.map = map;
+    this.routes.forEach(polyline => {
+      polyline.setMap(map);
+    });
+    this.markers.forEach(marker => {
+      marker.map = map;
+    });
   }
 
   /**
@@ -49,10 +55,6 @@ class MapRoutes extends EventEmitter {
       return false;
     }
 
-    if (this.routes.get(teamId)) {
-      this.removeRoute(teamId);
-    }
-
     const travelLog = this.travelLogStore.getLogForTeam(teamId);
     const path      = [];
     for (const log of travelLog) {
@@ -68,31 +70,52 @@ class MapRoutes extends EventEmitter {
       map:           this.map,
     };
 
-    const polyline = new this.googleInstance.Polyline({
-      path: path,
-      ...defaultOptions,
-      ...options,
-    });
+    let polyline = this.routes.get(teamId);
+    if (polyline) {
+      polyline.setPath(path);
+      polyline.setOptions({
+        ...defaultOptions,
+        ...options
+      });
+      polyline.setMap(this.map);
+    } else {
+      polyline = new this.googleInstance.Polyline({
+        path: path,
+        ...defaultOptions,
+        ...options,
+      });
+      this.routes.set(teamId, polyline);
+    }
 
-    this.routes.set(teamId, polyline);
+    const lastElement    = travelLog.slice(-1);
+    const existingMarker = this.markers.get(teamId);
 
-    const lastElement = travelLog.slice(-1);
     if (lastElement.length > 0) {
       const position = lastElement[0].position;
-      let marker = createAdvancedFontAwesomeMarker({
-        AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
-        faIcon:                faLocationDot,
-        color:                 color,
-        stroke:                '#000000',
-        strokeWidth:           25,
-        size:                  24,
-        position:              {
-          lat: parseFloat(position.lat),
-          lng: parseFloat(position.lng)
-        },
-        map:                   this.map
-      });
-      this.markers.set(teamId, marker);
+      const targetPos = {
+        lat: parseFloat(position.lat),
+        lng: parseFloat(position.lng)
+      };
+
+      if (existingMarker) {
+        existingMarker.position = targetPos;
+        existingMarker.map      = this.map;
+      } else {
+        const marker = createAdvancedFontAwesomeMarker({
+          AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
+          faIcon:                faLocationDot,
+          color:                 color,
+          stroke:                '#000000',
+          strokeWidth:           25,
+          size:                  24,
+          position:              targetPos,
+          map:                   this.map
+        });
+        this.markers.set(teamId, marker);
+      }
+    } else if (existingMarker) {
+      existingMarker.map = null;
+      this.markers.delete(teamId);
     }
 
     return true;
