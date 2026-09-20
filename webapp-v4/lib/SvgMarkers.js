@@ -16,7 +16,7 @@ import {faTrain} from '@fortawesome/free-solid-svg-icons';
  * @param {number} [options.strokeWidth=25] - The stroke width in SVG coordinate units.
  * @return {HTMLElement} The generated custom marker element.
  */
-function createCustomMarkerElement(faIcon, options) {
+export function createCustomMarkerElement(faIcon, options = {}) {
   const {
           size        = 24,
           color       = 'red',
@@ -31,6 +31,12 @@ function createCustomMarkerElement(faIcon, options) {
   const viewBoxHeight = (iconData && iconData.icon && iconData.icon[1]) || 512;
   const pathData = (iconData && iconData.icon && iconData.icon[4]) || '';
 
+  const pad = stroke ? strokeWidth / 2 : 0;
+  const vbX = -pad;
+  const vbY = -pad;
+  const vbW = viewBoxWidth + (stroke ? strokeWidth : 0);
+  const vbH = viewBoxHeight + (stroke ? strokeWidth : 0);
+
   const strokeAttr = stroke ? `stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round" style="paint-order: stroke fill;"` : '';
 
   // SVG Icon
@@ -38,7 +44,7 @@ function createCustomMarkerElement(faIcon, options) {
     <svg xmlns="http://www.w3.org/2000/svg" 
          width="${size}" 
          height="${size}" 
-         viewBox="0 0 ${viewBoxWidth} ${viewBoxHeight}"
+         viewBox="${vbX} ${vbY} ${vbW} ${vbH}"
          fill="${color}"
          style="cursor: pointer; overflow: visible;">
       <path d="${pathData}" ${strokeAttr}/>
@@ -61,6 +67,7 @@ function createCustomMarkerElement(faIcon, options) {
  * @param {number} [options.strokeWidth=25] - Optional stroke width.
  * @param {number} [options.size=24] - The size of the icon in pixels. Defaults to 24.
  * @param {string} [options.title=''] - The title of the marker, displayed as a tooltip on hover. Defaults to an empty string.
+ * @param {boolean} [options.gmpClickable=false] - If true, marker is clickable.
  * @param {Object} options.AdvancedMarkerElement - The constructor for creating advanced marker elements.
  *
  * @return {Object} An instance of the advanced marker element customized with a FontAwesome icon.
@@ -69,10 +76,11 @@ export function createAdvancedFontAwesomeMarker(options) {
   const {
           position,
           map,
-          faIcon = faTrain,
-          color  = '#d32f2f',
-          size   = 24,
-          title  = ''
+          faIcon       = faTrain,
+          color        = '#d32f2f',
+          size         = 24,
+          title        = '',
+          gmpClickable = false
         } = options;
 
 
@@ -80,7 +88,8 @@ export function createAdvancedFontAwesomeMarker(options) {
   return new options.AdvancedMarkerElement({
     map,
     position,
-    content: createCustomMarkerElement(options.faIcon, options),
-    title
+    content: createCustomMarkerElement(faIcon, options),
+    title,
+    gmpClickable
   });
 }

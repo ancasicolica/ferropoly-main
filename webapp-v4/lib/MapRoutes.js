@@ -105,8 +105,8 @@ class MapRoutes extends EventEmitter {
           AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
           faIcon:                faLocationDot,
           color:                 color,
-          stroke:                '#000000',
-          strokeWidth:           25,
+          stroke:                '#ffffff',
+          strokeWidth:           120,
           size:                  24,
           position:              targetPos,
           map:                   this.map
