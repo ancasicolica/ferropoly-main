@@ -6,13 +6,15 @@
 import EventEmitter from '../common/lib/eventEmitter';
 import {useTravelLogStore} from './store/TravelLogStore';
 import {useTeamsStore} from './store/TeamsStore';
-
+import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
+import {faLocationDot} from '@fortawesome/free-solid-svg-icons';
 
 class MapRoutes extends EventEmitter {
   constructor() {
     super();
     this.map            = null;
     this.routes         = new Map(); // Stores routes by a unique ID
+    this.markers        = new Map(); // Stores position markers by teamId
     this.googleInstance = null;
     this.travelLogStore = useTravelLogStore();
     this.teamsToShow    = []; // Team Ids to filter on
@@ -25,6 +27,12 @@ class MapRoutes extends EventEmitter {
    */
   setMap(map) {
     this.map = map;
+    this.routes.forEach(polyline => {
+      polyline.setMap(map);
+    });
+    this.markers.forEach(marker => {
+      marker.map = map;
+    });
   }
 
   /**
@@ -47,30 +55,70 @@ class MapRoutes extends EventEmitter {
       return false;
     }
 
-    if (this.routes.get(teamId)) {
-      this.removeRoute(teamId);
-    }
-
     const travelLog = this.travelLogStore.getLogForTeam(teamId);
     const path      = [];
     for (const log of travelLog) {
       path.push(log.position);
     }
 
+    const color = this.teamsStore.idToColor(teamId);
+
     const defaultOptions = {
-      strokeColor:   this.teamsStore.idToColor(teamId),
+      strokeColor:   color,
       strokeOpacity: 0.8,
       strokeWeight:  4,
       map:           this.map,
     };
 
-    const polyline = new this.googleInstance.Polyline({
-      path: path,
-      ...defaultOptions,
-      ...options,
-    });
+    let polyline = this.routes.get(teamId);
+    if (polyline) {
+      polyline.setPath(path);
+      polyline.setOptions({
+        ...defaultOptions,
+        ...options
+      });
+      polyline.setMap(this.map);
+    } else {
+      polyline = new this.googleInstance.Polyline({
+        path: path,
+        ...defaultOptions,
+        ...options,
+      });
+      this.routes.set(teamId, polyline);
+    }
 
-    this.routes.set(teamId, polyline);
+    const lastElement    = travelLog.slice(-1);
+    const existingMarker = this.markers.get(teamId);
+
+    if (lastElement.length > 0) {
+      const position = lastElement[0].position;
+      const targetPos = {
+        lat: parseFloat(position.lat),
+        lng: parseFloat(position.lng)
+      };
+
+      if (existingMarker) {
+        existingMarker.position = targetPos;
+        existingMarker.map      = this.map;
+        existingMarker.zIndex   = 1000;
+      } else {
+        const marker = createAdvancedFontAwesomeMarker({
+          AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
+          faIcon:                faLocationDot,
+          color:                 color,
+          stroke:                '#ffffff',
+          strokeWidth:           120,
+          size:                  24,
+          position:              targetPos,
+          map:                   this.map,
+          zIndex:                1000
+        });
+        this.markers.set(teamId, marker);
+      }
+    } else if (existingMarker) {
+      existingMarker.map = null;
+      this.markers.delete(teamId);
+    }
 
     return true;
   }
@@ -86,6 +134,11 @@ class MapRoutes extends EventEmitter {
       polyline.setMap(null);
       this.routes.delete(id);
     }
+    const marker = this.markers.get(id);
+    if (marker) {
+      marker.map = null;
+      this.markers.delete(id);
+    }
   }
 
   /**
@@ -96,6 +149,10 @@ class MapRoutes extends EventEmitter {
       polyline.setMap(null);
     });
     this.routes.clear();
+    this.markers.forEach(marker => {
+      marker.map = null;
+    });
+    this.markers.clear();
   }
 
   refreshRoutes() {

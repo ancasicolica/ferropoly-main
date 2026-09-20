@@ -47,7 +47,7 @@ import {useCronJobStore} from '../../../lib/store/CronJobStore';
 import {useTravelLogStore} from '../../../lib/store/TravelLogStore';
 import {useSocketStore} from '../../../lib/store/SocketStore';
 import {useGeoLocationStore} from '../store/GeoLocationStore';
-
+import geograph from '../lib/geograph';
 import Toast from 'primevue/toast';
 import {useToast} from 'primevue/usetoast';
 
@@ -69,6 +69,19 @@ const travelLogStore   = useTravelLogStore();
 const socketStore      = useSocketStore();
 const geoLocationStore = useGeoLocationStore();
 
+function onPlayerPositionUpdateHandler(staticData) {
+
+  console.log('XXXX', staticData);
+  return function(position) {
+    receptionSocket.emit('player-position', {
+      cmd:'positionUpdate',
+      gameId: staticData.currentGameId,
+      teamId: staticData?.team?.uuid,
+      user:staticData.user,
+      position
+    })
+  }
+}
 
 onMounted(() => {
   checkInStore.fetchStaticData(gameId)
@@ -93,6 +106,7 @@ onMounted(() => {
         await cronJobStore.fetch(gameId);
         console.log('Init step 8');
         await travelLogStore.fetchLog(gameId, staticData?.team?.uuid);
+        geograph.on('player-position-update', onPlayerPositionUpdateHandler(staticData));
         console.log('Init step 9');
         checkInStore.team = staticData.team;
         console.log('Init step 10');

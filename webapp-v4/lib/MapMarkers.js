@@ -335,7 +335,8 @@ class MapMarkers extends EventEmitter {
       position: {
         lat: position.lat,
         lng: position.lng
-      }
+      },
+      zIndex: 1000
     });
     this.teamMarker.map = toRaw(this.map);
   }

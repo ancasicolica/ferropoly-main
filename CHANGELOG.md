@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## 4.0.10 20.9.26
+* Bugfix: GPS Koordinaten der Teams werden wieder gespeichert (Issue #123)
+
 ## 4.0.9 16.9.26
 * Dependency Updates
 * Bugfixes aus Sentry Meldungen
