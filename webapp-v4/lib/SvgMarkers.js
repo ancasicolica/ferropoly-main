@@ -68,6 +68,7 @@ export function createCustomMarkerElement(faIcon, options = {}) {
  * @param {number} [options.size=24] - The size of the icon in pixels. Defaults to 24.
  * @param {string} [options.title=''] - The title of the marker, displayed as a tooltip on hover. Defaults to an empty string.
  * @param {boolean} [options.gmpClickable=false] - If true, marker is clickable.
+ * @param {number} [options.zIndex] - The zIndex of the marker.
  * @param {Object} options.AdvancedMarkerElement - The constructor for creating advanced marker elements.
  *
  * @return {Object} An instance of the advanced marker element customized with a FontAwesome icon.
@@ -80,7 +81,8 @@ export function createAdvancedFontAwesomeMarker(options) {
           color        = '#d32f2f',
           size         = 24,
           title        = '',
-          gmpClickable = false
+          gmpClickable = false,
+          zIndex
         } = options;
 
 
@@ -90,6 +92,7 @@ export function createAdvancedFontAwesomeMarker(options) {
     position,
     content: createCustomMarkerElement(faIcon, options),
     title,
-    gmpClickable
+    gmpClickable,
+    ...(zIndex !== undefined ? { zIndex } : {})
   });
 }

@@ -100,6 +100,7 @@ class MapRoutes extends EventEmitter {
       if (existingMarker) {
         existingMarker.position = targetPos;
         existingMarker.map      = this.map;
+        existingMarker.zIndex   = 1000;
       } else {
         const marker = createAdvancedFontAwesomeMarker({
           AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
@@ -109,7 +110,8 @@ class MapRoutes extends EventEmitter {
           strokeWidth:           120,
           size:                  24,
           position:              targetPos,
-          map:                   this.map
+          map:                   this.map,
+          zIndex:                1000
         });
         this.markers.set(teamId, marker);
       }
