@@ -12,27 +12,37 @@ import {faTrain} from '@fortawesome/free-solid-svg-icons';
  * @param {Object} options - The customization options for the marker.
  * @param {number} [options.size=24] - The size of the marker icon.
  * @param {string} [options.color='red'] - The color of the marker icon.
+ * @param {string} [options.stroke] - The stroke/border color of the icon.
+ * @param {number} [options.strokeWidth=25] - The stroke width in SVG coordinate units.
  * @return {HTMLElement} The generated custom marker element.
  */
 function createCustomMarkerElement(faIcon, options) {
   const {
-          size  = 24,
-          color = 'red'
+          size        = 24,
+          color       = 'red',
+          stroke      = null,
+          strokeWidth = 25
         } = options;
 
   const markerElement = document.createElement('div');
 
   const iconData = icon(faIcon);
+  const viewBoxWidth = (iconData && iconData.icon && iconData.icon[0]) || 448;
+  const viewBoxHeight = (iconData && iconData.icon && iconData.icon[1]) || 512;
+  const pathData = (iconData && iconData.icon && iconData.icon[4]) || '';
 
-  // Train SVG Icon (von Font Awesome kopiert)
+  const strokeAttr = stroke ? `stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round" style="paint-order: stroke fill;"` : '';
+
+  // SVG Icon
   markerElement.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" 
          width="${size}" 
          height="${size}" 
-         viewBox="0 0 448 512"
+         viewBox="0 0 ${viewBoxWidth} ${viewBoxHeight}"
          fill="${color}"
-         style="cursor: pointer;">
-      <path d="${iconData.icon[4]}"/>
+         style="cursor: pointer; overflow: visible;">
+      <path d="${pathData}" ${strokeAttr}/>
+    </svg>
   `;
   return markerElement;
 }
@@ -47,6 +57,8 @@ function createCustomMarkerElement(faIcon, options) {
  * @param {google.maps.Map} options.map - The Google Maps instance to place the marker on.
  * @param {Object} [options.faIcon=faTrain] - The FontAwesome icon to use for the marker. Defaults to `faTrain`.
  * @param {string} [options.color='#d32f2f'] - The color of the icon. Defaults to `#d32f2f`.
+ * @param {string} [options.stroke] - Optional stroke/border color of the icon.
+ * @param {number} [options.strokeWidth=25] - Optional stroke width.
  * @param {number} [options.size=24] - The size of the icon in pixels. Defaults to 24.
  * @param {string} [options.title=''] - The title of the marker, displayed as a tooltip on hover. Defaults to an empty string.
  * @param {Object} options.AdvancedMarkerElement - The constructor for creating advanced marker elements.

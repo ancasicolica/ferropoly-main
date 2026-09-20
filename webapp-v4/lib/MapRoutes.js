@@ -6,13 +6,15 @@
 import EventEmitter from '../common/lib/eventEmitter';
 import {useTravelLogStore} from './store/TravelLogStore';
 import {useTeamsStore} from './store/TeamsStore';
-
+import {createAdvancedFontAwesomeMarker} from './SvgMarkers.js';
+import {faLocationDot} from '@fortawesome/free-solid-svg-icons';
 
 class MapRoutes extends EventEmitter {
   constructor() {
     super();
     this.map            = null;
     this.routes         = new Map(); // Stores routes by a unique ID
+    this.markers        = new Map(); // Stores position markers by teamId
     this.googleInstance = null;
     this.travelLogStore = useTravelLogStore();
     this.teamsToShow    = []; // Team Ids to filter on
@@ -57,8 +59,10 @@ class MapRoutes extends EventEmitter {
       path.push(log.position);
     }
 
+    const color = this.teamsStore.idToColor(teamId);
+
     const defaultOptions = {
-      strokeColor:   this.teamsStore.idToColor(teamId),
+      strokeColor:   color,
       strokeOpacity: 0.8,
       strokeWeight:  4,
       map:           this.map,
@@ -71,6 +75,25 @@ class MapRoutes extends EventEmitter {
     });
 
     this.routes.set(teamId, polyline);
+
+    const lastElement = travelLog.slice(-1);
+    if (lastElement.length > 0) {
+      const position = lastElement[0].position;
+      let marker = createAdvancedFontAwesomeMarker({
+        AdvancedMarkerElement: this.googleInstance.AdvancedMarkerElement,
+        faIcon:                faLocationDot,
+        color:                 color,
+        stroke:                '#000000',
+        strokeWidth:           25,
+        size:                  24,
+        position:              {
+          lat: parseFloat(position.lat),
+          lng: parseFloat(position.lng)
+        },
+        map:                   this.map
+      });
+      this.markers.set(teamId, marker);
+    }
 
     return true;
   }
@@ -86,6 +109,11 @@ class MapRoutes extends EventEmitter {
       polyline.setMap(null);
       this.routes.delete(id);
     }
+    const marker = this.markers.get(id);
+    if (marker) {
+      marker.map = null;
+      this.markers.delete(id);
+    }
   }
 
   /**
@@ -96,6 +124,10 @@ class MapRoutes extends EventEmitter {
       polyline.setMap(null);
     });
     this.routes.clear();
+    this.markers.forEach(marker => {
+      marker.map = null;
+    });
+    this.markers.clear();
   }
 
   refreshRoutes() {
