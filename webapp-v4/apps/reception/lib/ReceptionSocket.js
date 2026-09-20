@@ -26,6 +26,15 @@ class ReceptionSocket {
       console.log('disconnected');
     })
   }
+
+  emit(channel, data) {
+    if (this.socket) {
+      this.socket.emitToGame(channel, data);
+    }
+    else {
+      console.warn('No socket available in ReceptionSocket');
+    }
+  }
 }
 
 function getReceptionSocket() {
