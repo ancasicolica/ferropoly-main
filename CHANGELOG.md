@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+* Neues Feature: Preiskategorie kann in Preisliste dargestellt werden (Wunsch Pfadi Paprika, #124)
+* Bugfix: Filter in info-App Karte kann immer zurückgesetzt werden (#125)
+
 ## 4.0.10 20.9.26
 * Bugfix: GPS Koordinaten der Teams werden wieder gespeichert (Issue #123)
 

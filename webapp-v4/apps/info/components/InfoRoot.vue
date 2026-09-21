@@ -11,6 +11,7 @@
       show-user-box
       help-url="https://www.ferropoly.ch"
       help-text="Infos zum Ferropoly"
+      class="no-print"
   />
     <div class="ferropoly-container">
       <FatalApiError :error="infoStore.apiError" />
@@ -43,5 +44,9 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
 </style>
