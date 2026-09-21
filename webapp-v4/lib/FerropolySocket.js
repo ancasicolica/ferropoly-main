@@ -127,6 +127,7 @@ class FerropolySocket extends EventEmitter {
       'chancellery-balance':   msg => {
         // Info about
         useChancelleryStore().setBalance(msg.balance);
+        this.emit('chancellery-update');
       },
       'admin-properties':      msg => {
         console.warn('Message should be handled 2', msg);

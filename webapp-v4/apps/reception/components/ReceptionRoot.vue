@@ -128,7 +128,8 @@ onMounted(() => {
         console.log('Init step 5');
         await picBucketStore.fetchPictures({gameId});
         console.log('Init step 6');
-        await chancelleryStore.loadChancelleryEntries(gameId);
+        //Is loaded when switching to chancellery
+        //await chancelleryStore.loadChancelleryEntries(gameId);
         console.log('Init step 7');
         await cronJobStore.fetch(gameId);
         console.log('Init step 8');
