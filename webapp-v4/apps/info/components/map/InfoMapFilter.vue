@@ -24,6 +24,7 @@
             label="Alle Orte auf Karte anzeigen"
             variant="outlined"
             size="small"
+            :disabled="filterButtonDisabled"
             @click="onClearFilters"
         />
       </div>
@@ -40,8 +41,12 @@ import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import InfoPricelist from './InfoPricelist.vue';
-import {PROPERTY_FILTER_GROUP_NONE, PROPERTY_FILTER_UUID_NONE} from '../../../../lib/constants/propertyStoreFilters';
-import {defineEmits} from 'vue';
+import {
+  PROPERTY_FILTER_GROUP_NONE,
+  PROPERTY_FILTER_PRICE_NONE,
+  PROPERTY_FILTER_UUID_NONE
+} from '../../../../lib/constants/propertyStoreFilters';
+import {defineEmits, ref} from 'vue';
 
 const propertyStore = usePropertyStore();
 const emit          = defineEmits(['center-map']);
@@ -55,10 +60,14 @@ function onCenterMap(info) {
   emit('center-map', info);
 }
 
-function onClearFilters() {
+const filterButtonDisabled=ref(false);
+async function onClearFilters() {
+  filterButtonDisabled.value = true;
   propertyStore.filter.propertyUuid  = PROPERTY_FILTER_UUID_NONE;
   propertyStore.filter.propertyGroup = PROPERTY_FILTER_GROUP_NONE;
-  propertyStore.updateFilter();
+  propertyStore.filter.price         = PROPERTY_FILTER_PRICE_NONE;
+  await propertyStore.updateFilter();
+  filterButtonDisabled.value = false;
 }
 </script>
 

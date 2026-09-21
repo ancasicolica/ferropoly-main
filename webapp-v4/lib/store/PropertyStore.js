@@ -482,7 +482,7 @@ export const usePropertyStore = defineStore('Property', () => {
    *
    * @return {void} This method does not return a value.
    */
-  function updateFilter() {
+  async function updateFilter() {
     console.log('update filter', filter.value);
 
     /**
@@ -539,6 +539,7 @@ export const usePropertyStore = defineStore('Property', () => {
 
     getMapMarkerInstance().applyFilter();
     getMapRoutesInstance().applyTeamFilter(filter.value.teams);
+    console.log('Filter applied');
   }
 
   return {
