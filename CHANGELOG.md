@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## 4.1.1 25.10.26
+* Dependency updates
+
 ## 4.1.0 21.9.26
 * Neues Feature: Preiskategorie kann in Preisliste dargestellt werden (Wunsch Pfadi Paprika, #124)
 * Bugfix: Filter in info-App Karte kann immer zurückgesetzt werden (#125)
