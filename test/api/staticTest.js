@@ -37,7 +37,7 @@ describe('Testing the /static route', () => {
       const res = await api.get(`/static/${gameId}`);
       console.log(res.data);
       expect(res.status).to.be(200);
-      expect(res.data.authToken).to.be.a('string');
+      expect(res.data.authToken.id).to.be.a('string');
       expect(res.data.user).to.be.a('string');
       expect(res.data.socketUrl).to.be.a('string');
       expect(res.data.gameplay.internal.gameId).to.be(gameId);
