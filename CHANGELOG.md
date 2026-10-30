@@ -1,5 +1,8 @@
 # Changelog Ferropoly Spiel
 
+## 4.1.2 30.10.26
+* Bugfix Karte: Darstellung wurde nach Tab-Wechsel nicht aktualisiert
+
 ## 4.1.1 25.10.26
 * Dependency updates
 

@@ -93,6 +93,13 @@ class MapMarkers extends EventEmitter {
 
   setMap(map) {
     this.map = map;
+    const rawMap = toRaw(map);
+    this.markers.forEach((marker, uuid) => {
+      marker.map = this.propertyStore?.properties.get(uuid)?.visibleOnMap ? rawMap : null;
+    });
+    if (this.teamMarker) {
+      this.teamMarker.map = rawMap;
+    }
   }
 
   /**

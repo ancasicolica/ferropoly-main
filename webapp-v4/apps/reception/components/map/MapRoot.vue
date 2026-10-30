@@ -69,6 +69,7 @@ const onNewMap = async function (_map) {
     mapRef.value.setCenter(mapMarkers.getCenter());
     getMapMarkerInstance().setMap(map);
     getMapRoutesInstance().setMap(map);
+    propertyStore.updateFilter();
 
     await propertyStore.update();
     // mapMarkers.applyFilter(map);
