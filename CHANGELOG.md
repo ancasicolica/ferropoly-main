@@ -1,6 +1,7 @@
 # Changelog Ferropoly Spiel
 
 * Summary: Bessere Fehlermeldung, falls Spiel nicht geladen werden konnte
+* Dependency Updates, inkl. Anpassung Google Log Credentials API
 
 ## 4.1.2 30.10.26
 * Bugfix Karte: Darstellung wurde nach Tab-Wechsel nicht aktualisiert
