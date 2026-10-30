@@ -8,7 +8,14 @@
   <div>
     <!-- here starts the app -->
     <div
-        v-if="isInitialLoading"
+        v-if="initialLoadingError"
+        class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
+    >
+      <span class="font-medium text-lg">Die Spieldaten konnten nicht geladen werden. Bitte versuche es später erneut.</span>
+      <p class="font-medium text-lg">Falls das Problem auch einen Tag nach Spielende besteht, bitte eine Nachricht an <a href="mailto:info@ferropoly.ch">info@ferropoly.ch</a> senden, Danke!</p>
+    </div>
+    <div
+        v-else-if="isInitialLoading"
         class="flex flex-col items-center justify-center h-screen bg-surface-50 dark:bg-surface-950"
     >
       <ProgressSpinner />
@@ -53,6 +60,7 @@ let gameId     = last(elements);
 
 const summaryStore     = useSummaryStore();
 const isInitialLoading = ref(true);
+const initialLoadingError = ref(false);
 
 const chancelleryStore = useChancelleryStore();
 const teamsStore       = useTeamsStore();
@@ -86,7 +94,9 @@ summaryStore.fetchData(gameId)
 
     })
     .catch(err => {
-      console.error('Oh no...', err);
+      console.error('Oh no, there is a problem with loading the summary!', err);
+      initialLoadingError.value = true;
+      isInitialLoading.value = false;
     })
 </script>
 
