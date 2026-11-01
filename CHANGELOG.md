@@ -1,22 +1,24 @@
 # Changelog Ferropoly Spiel
 
+## v4.1.3 1.11.26
 * Summary: Bessere Fehlermeldung, falls Spiel nicht geladen werden konnte
+* Dependency Updates, inkl. Anpassung Google Log Credentials API
 
-## 4.1.2 30.10.26
+## v4.1.2 30.10.26
 * Bugfix Karte: Darstellung wurde nach Tab-Wechsel nicht aktualisiert
 
-## 4.1.1 25.10.26
+## v4.1.1 25.10.26
 * Dependency updates
 
-## 4.1.0 21.9.26
+## v4.1.0 21.9.26
 * Neues Feature: Preiskategorie kann in Preisliste dargestellt werden (Wunsch Pfadi Paprika, #124)
 * Bugfix: Filter in info-App Karte kann immer zurückgesetzt werden (#125)
 * Bugfix: Update Chance/Kanzlei in Reception verbessert (#122)
 
-## 4.0.10 20.9.26
+## v4.0.10 20.9.26
 * Bugfix: GPS Koordinaten der Teams werden wieder gespeichert (Issue #123)
 
-## 4.0.9 16.9.26
+## v4.0.9 16.9.26
 * Dependency Updates
 * Bugfixes aus Sentry Meldungen
 
