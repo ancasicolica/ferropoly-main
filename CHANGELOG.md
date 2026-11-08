@@ -1,5 +1,7 @@
 # Changelog Ferropoly Spiel
 
+* Neues Feature während Spiel PZO: Teams können Bilder vom Handyspeicher hochladen
+
 ## v4.1.3 1.11.26
 * Summary: Bessere Fehlermeldung, falls Spiel nicht geladen werden konnte
 * Dependency Updates, inkl. Anpassung Google Log Credentials API

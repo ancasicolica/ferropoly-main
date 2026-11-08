@@ -53,6 +53,7 @@
           mode="basic"
           name="demo[]"
           accept="image/*"
+          :pt="{input: {capture: 'environment'}}"
           :max-file-size="10000000"
           :disabled="isUploading"
           auto
@@ -63,6 +64,23 @@
       >
         <template #chooseicon>
           <FontAwesomeIcon :icon="faCamera" />
+        </template>
+      </FileUpload>
+
+      <FileUpload
+          mode="basic"
+          name="demo[]"
+          accept="image/*"
+          :max-file-size="10000000"
+          :disabled="isUploading"
+          auto
+          custom-upload
+          choose-label="Bild auswählen"
+          class="w-full"
+          @select="onFileSelect"
+      >
+        <template #chooseicon>
+          <FontAwesomeIcon :icon="faImage" />
         </template>
       </FileUpload>
 
@@ -107,7 +125,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
+import {ref, onMounted, onUnmounted, computed} from 'vue';
 import FileUpload from 'primevue/fileupload';
 import Select from 'primevue/select';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
@@ -119,7 +137,7 @@ import {announcePicture, uploadPicture, confirmPicture} from '../../lib/picUploa
 import geograph from '../../lib/geograph';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import {faCamera} from '@fortawesome/free-solid-svg-icons';
+import {faCamera, faImage} from '@fortawesome/free-solid-svg-icons';
 
 const gameplayStore  = useGameplayStore();
 const checkInStore   = useCheckInStore();
@@ -186,14 +204,6 @@ const handlePositionUpdate = () => {
 };
 
 onMounted(() => {
-  // Ensure the input element has capture="environment" for mobile camera access
-  nextTick(() => {
-    const input = document.querySelector('input[type="file"]');
-    if (input) {
-      input.setAttribute('capture', 'environment');
-    }
-  });
-
   // Listen for position updates
   geograph.on('player-position-update', handlePositionUpdate);
 });
