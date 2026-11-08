@@ -1,5 +1,6 @@
 # Changelog Ferropoly Spiel
 
+## v4.2.0 8.11.26
 * Neues Feature während Spiel PZO: Teams können Bilder vom Handyspeicher hochladen
 
 ## v4.1.3 1.11.26
