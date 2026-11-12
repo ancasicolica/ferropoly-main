@@ -16,7 +16,7 @@ function announcePicture(gameId, teamId, options, callback) {
   const authToken        = get(options, 'authToken', 'nada');
   console.log(`Announcing pic with authtoken ${authToken}`);
   axios.post(`/picbucket/announce/${gameId}/${teamId}`, {
-    position: geograph.getLastLocation(),
+    position: get(options, 'position', geograph.getLastLocation()),
     message,
     propertyId,
     authToken,
@@ -60,7 +60,7 @@ function uploadPicture(uploadUrl, imageData, callback) {
 function confirmPicture(id, options, callback) {
 
   axios.post(`/picbucket/confirm/${id}`, {
-    position: geograph.getLastLocation(),
+    position: get(options, 'position', geograph.getLastLocation()),
   }).then(resp => {
     console.log('confirmed', resp.data);
     return callback(null, resp.data);

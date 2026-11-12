@@ -120,6 +120,15 @@
       <p>Bilder können nur während dem Spiel hochgeladen werden.</p>
     </div>
 
+    <div v-if="pendingPictures.length" class="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex flex-col gap-2" role="status">
+      <p>{{ pendingPictures.length }} Bild(er) auf diesem Gerät für dieses Team gespeichert und noch nicht bestätigt.</p>
+      <p class="text-sm">Die Bilder bleiben nur in diesem Browser erhalten. Bei geöffneter App und aktivem Spiel werden sie automatisch hochgeladen, sobald die Verbindung wieder besteht. Bitte Browserdaten nicht löschen.</p>
+      <button type="button" class="font-medium text-primary underline" :disabled="isUploading || !gameplayStore.gameActive" @click="uploadPendingPictures">
+        Gespeicherte Bilder jetzt hochladen
+      </button>
+      <p v-if="!gameplayStore.gameActive" class="text-sm">Ein Upload ist erst während eines aktiven Spiels möglich.</p>
+    </div>
+
     <!-- Hidden canvas for resizing -->
     <canvas
         ref="canvasRef"
@@ -138,6 +147,7 @@ import {usePicBucketStore} from '../../../../lib/store/PicBucketStore';
 import {useToast} from 'primevue/usetoast';
 import {getAuthToken} from '../../../../common/adapters/authToken';
 import {announcePicture, uploadPicture, confirmPicture} from '../../lib/picUploader';
+import {savePendingPicture, listPendingPictures, removePendingPicture} from '../../lib/pendingPictures';
 import geograph from '../../lib/geograph';
 import {usePropertyStore} from '../../../../lib/store/PropertyStore';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
@@ -156,6 +166,7 @@ const retryStatus           = ref('');
 const canvasRef             = ref(null);
 const selectedProperty      = ref(null);
 const positionUpdateTrigger = ref(0);
+const pendingPictures       = ref([]);
 
 const nearestProperties = computed(() => {
   // Depend on trigger to recalculate when position updates
@@ -211,15 +222,78 @@ const handlePositionUpdate = () => {
 onMounted(() => {
   // Listen for position updates
   geograph.on('player-position-update', handlePositionUpdate);
+  window.addEventListener('online', uploadPendingPictures);
+  loadPendingPictures().then(() => uploadPendingPictures());
 });
 
 onUnmounted(() => {
   geograph.removeListener('player-position-update', handlePositionUpdate);
+  window.removeEventListener('online', uploadPendingPictures);
 });
+
+const loadPendingPictures = async () => {
+  try {
+    pendingPictures.value = (await listPendingPictures()).filter(picture =>
+      picture.gameId === checkInStore.gameId && picture.teamId === checkInStore.team?.uuid);
+  }
+  catch (err) {
+    console.error('Could not read locally saved pictures', err);
+    toast.add({severity: 'error', summary: 'Lokaler Speicher', detail: 'Gespeicherte Bilder konnten nicht gelesen werden.', life: 5000});
+  }
+};
+
+const readImage = file => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = () => reject(reader.error);
+  reader.readAsDataURL(file);
+});
+
+const uploadPendingPictures = async () => {
+  if (isUploading.value || !gameplayStore.gameActive || !navigator.onLine || !checkInStore.gameId || !checkInStore.team?.uuid) {
+    return;
+  }
+  isUploading.value = true;
+  try {
+    await loadPendingPictures();
+    for (const picture of pendingPictures.value) {
+      if (!gameplayStore.gameActive || !navigator.onLine) {
+        break;
+      }
+      await uploadPendingPicture(picture);
+    }
+  }
+  catch (err) {
+    handleError('Gespeicherte Bilder konnten nicht hochgeladen werden', err);
+  }
+  finally {
+    isUploading.value = false;
+    retryStatus.value = '';
+  }
+};
+
+const uploadPendingPicture = async picture => {
+  try {
+    const dataURL = await readImage(picture.file);
+    const largeBlob = await processImage(dataURL, {thumbnail: false});
+    const thumbBlob = await processImage(dataURL, {thumbnail: true});
+    const success = await performUpload(largeBlob, thumbBlob, picture.lastModifiedDate, picture);
+    if (success) {
+      await removePendingPicture(picture.id);
+      await loadPendingPictures();
+      return true;
+    }
+    return false;
+  }
+  catch (err) {
+    handleError('Gespeichertes Bild konnte nicht verarbeitet oder entfernt werden', err);
+    return false;
+  }
+};
 
 const onFileSelect = async (event) => {
   const file = event.files[0];
-  if (!file) {
+  if (!file || isUploading.value) {
     return;
   }
 
@@ -227,25 +301,31 @@ const onFileSelect = async (event) => {
   uploadSuccess.value = false;
   retryStatus.value   = '';
 
+  let saved = false;
   try {
-    const reader  = new FileReader();
-    reader.onload = async (e) => {
-      const dataURL = e.target.result;
-
-      // 1. Process Large Image
-      const largeBlob = await processImage(dataURL, {thumbnail: false});
-
-      // 2. Process Thumbnail
-      const thumbBlob = await processImage(dataURL, {thumbnail: true});
-
-      // 3. Announce, Upload and Confirm
-      await performUpload(largeBlob, thumbBlob, file.lastModifiedDate);
+    const position = geograph.getLastLocation();
+    const picture = {
+      file,
+      gameId: checkInStore.gameId,
+      teamId: checkInStore.team.uuid,
+      propertyId: selectedProperty.value,
+      lastModifiedDate: new Date(file.lastModified || Date.now()).toISOString(),
+      position: position ? {lat: position.lat, lng: position.lng, accuracy: position.accuracy} : null
     };
-    reader.readAsDataURL(file);
+    picture.id = await savePendingPicture(picture);
+    saved = true;
+    await loadPendingPictures();
+    if (navigator.onLine) {
+      await uploadPendingPicture(picture);
+    }
+    else {
+      toast.add({severity: 'info', summary: 'Bild gespeichert', detail: 'Das Bild wird bei der nächsten Verbindung hochgeladen.', life: 5000});
+    }
   }
   catch (error) {
-    console.error('Error during file processing:', error);
-    toast.add({severity: 'error', summary: 'Fehler', detail: 'Bild konnte nicht verarbeitet werden.', life: 5000});
+    handleError(saved ? 'Bild bleibt lokal gespeichert' : 'Bild konnte nicht lokal gespeichert werden', error, saved);
+  }
+  finally {
     isUploading.value = false;
   }
 };
@@ -254,7 +334,7 @@ const onFileSelect = async (event) => {
  * Resizes and crops image using canvas
  */
 const processImage = (dataURL, options) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const thumbnail = options.thumbnail;
     const maxWidth  = thumbnail ? 480 : 2800;
     const maxHeight = thumbnail ? 320 : 2800;
@@ -301,8 +381,9 @@ const processImage = (dataURL, options) => {
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
       }
 
-      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Bild konnte nicht verarbeitet werden')), 'image/jpeg', 0.8);
     };
+    img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
   });
 };
 
@@ -334,9 +415,10 @@ const retryStep = async (step, operation) => {
   }
 };
 
-const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
-  const gameId  = checkInStore.gameId;
-  const teamId  = checkInStore.team.uuid;
+const performUpload = async (largeBlob, thumbBlob, lastModifiedDate, picture = {}) => {
+  const gameId  = picture.gameId || checkInStore.gameId;
+  const teamId  = picture.teamId || checkInStore.team.uuid;
+  uploadSuccess.value = false;
 
   let step = 'Bild-Ankündigung';
   try {
@@ -345,7 +427,8 @@ const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
       announcePicture(gameId, teamId, {
         authToken,
         lastModifiedDate,
-        propertyId: selectedProperty.value
+        propertyId: picture.propertyId !== undefined ? picture.propertyId : selectedProperty.value,
+        position: picture.position
       }, callback);
     });
 
@@ -356,29 +439,29 @@ const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
     await retryStep(step, callback => uploadPicture(info.thumbnailUrl, thumbBlob, callback));
 
     step = 'Abschluss des Uploads';
-    const data = await retryStep(step, callback => confirmPicture(info.id, {}, callback));
+    const data = await retryStep(step, callback => confirmPicture(info.id, {position: picture.position}, callback));
 
     console.log('Upload complete', data);
-    isUploading.value          = false;
     uploadSuccess.value        = true;
     uploadedThumbnailUrl.value = data.thumbnail;
     toast.add({severity: 'success', summary: 'Erfolg', detail: 'Bild erfolgreich hochgeladen', life: 5000});
 
     // Refresh pictures in store
     picBucketStore.fetchPictures({gameId, teamId});
+    return true;
   }
   catch (err) {
     handleError(`Problem beim Schritt „${step}“`, err);
+    return false;
   }
 };
 
-const handleError = (infoText, err) => {
+const handleError = (infoText, err, saved = true) => {
   console.error(infoText, err);
-  isUploading.value = false;
   toast.add({
     severity: 'error',
     summary:  'Upload fehlgeschlagen',
-    detail:   `${infoText}: ${err.message || err}`,
+    detail:   `${infoText}: ${err.message || err}.${saved ? ' Das Bild bleibt lokal gespeichert und kann später erneut hochgeladen werden.' : ' Bitte versuche es erneut oder sichere das Foto auf Deinem Gerät.'}`,
     life:     5000
   });
 };

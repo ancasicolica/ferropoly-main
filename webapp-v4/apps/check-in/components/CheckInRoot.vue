@@ -22,7 +22,8 @@
           help-url="https://www.ferropoly.ch/hilfe/ferropoly-spiel/3-0/checkin/"
       />
       <div class="ferropoly-container">
-        <router-view />
+        <CheckInUpload v-show="$route.name === 'upload'" />
+        <router-view v-if="$route.name !== 'upload'" />
       </div>
     </div>
   </div>
@@ -32,6 +33,7 @@
 
 import MenuBar from '../../../common/components/MenuBar.vue';
 import ProgressSpinner from 'primevue/progressspinner';
+import CheckInUpload from './upload/CheckInUpload.vue';
 import {onMounted, ref} from 'vue';
 import {useCheckInStore} from '../store/CheckInStore';
 import {get, last, split} from 'lodash';
