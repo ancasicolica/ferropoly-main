@@ -92,6 +92,10 @@
         <span>Bild wird verarbeitet und hochgeladen...</span>
       </div>
 
+      <p v-if="isUploading && retryStatus" role="status" class="text-sm text-primary">
+        {{ retryStatus }}
+      </p>
+
       <div
           v-if="uploadSuccess"
           class="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg flex flex-col gap-2"
@@ -148,6 +152,7 @@ const toast          = useToast();
 const isUploading           = ref(false);
 const uploadSuccess         = ref(false);
 const uploadedThumbnailUrl = ref(null);
+const retryStatus           = ref('');
 const canvasRef             = ref(null);
 const selectedProperty      = ref(null);
 const positionUpdateTrigger = ref(0);
@@ -220,6 +225,7 @@ const onFileSelect = async (event) => {
 
   isUploading.value   = true;
   uploadSuccess.value = false;
+  retryStatus.value   = '';
 
   try {
     const reader  = new FileReader();
@@ -303,60 +309,67 @@ const processImage = (dataURL, options) => {
 /**
  * Handles the multi-step upload process
  */
+const retryStep = async (step, operation) => {
+  const delays = [1000, 2000, 6000, 8000, 12000];
+
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      const result = await new Promise((resolve, reject) => {
+        Promise.resolve(operation((err, data) => err ? reject(err) : resolve(data))).catch(reject);
+      });
+      retryStatus.value = '';
+      return result;
+    }
+    catch (err) {
+      if (attempt === delays.length) {
+        retryStatus.value = '';
+        throw err;
+      }
+
+      const seconds = delays[attempt] / 1000;
+      retryStatus.value = `Problem beim Schritt „${step}“. Wiederholung ${attempt + 1} von ${delays.length} in ${seconds} s.`;
+      await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+      retryStatus.value = `Wiederhole Schritt „${step}“ (${attempt + 1} von ${delays.length})...`;
+    }
+  }
+};
+
 const performUpload = async (largeBlob, thumbBlob, lastModifiedDate) => {
   const gameId  = checkInStore.gameId;
   const teamId  = checkInStore.team.uuid;
-  let authToken = 'none';
+
+  let step = 'Bild-Ankündigung';
   try {
-    authToken = await getAuthToken();
-  }
-  catch (e) {
-    console.warn('Could not retrieve authToken', e);
-  }
-
-  announcePicture(gameId, teamId, {
-    authToken,
-    lastModifiedDate,
-    propertyId: selectedProperty.value
-  }, (err, info) => {
-    if (err) {
-      handleError('Problem bei der Bild-Ankündigung', err);
-      return;
-    }
-
-    // Upload Large
-    uploadPicture(info.uploadUrl, largeBlob, (err) => {
-      if (err) {
-        handleError('Fehler beim Upload des Hauptbildes', err);
-        return;
-      }
-
-      // Upload Thumbnail
-      uploadPicture(info.thumbnailUrl, thumbBlob, (err) => {
-        if (err) {
-          handleError('Fehler beim Upload des Thumbnails', err);
-          return;
-        }
-
-        // Confirm
-        confirmPicture(info.id, {}, (err, data) => {
-          if (err) {
-            handleError('Fehler beim Abschluss des Uploads', err);
-            return;
-          }
-
-          console.log('Upload complete', data);
-          isUploading.value          = false;
-          uploadSuccess.value        = true;
-          uploadedThumbnailUrl.value = data.thumbnail;
-          toast.add({severity: 'success', summary: 'Erfolg', detail: 'Bild erfolgreich hochgeladen', life: 5000});
-
-          // Refresh pictures in store
-          picBucketStore.fetchPictures({gameId, teamId});
-        });
-      });
+    const info = await retryStep(step, async callback => {
+      const authToken = await getAuthToken();
+      announcePicture(gameId, teamId, {
+        authToken,
+        lastModifiedDate,
+        propertyId: selectedProperty.value
+      }, callback);
     });
-  });
+
+    step = 'Upload des Hauptbildes';
+    await retryStep(step, callback => uploadPicture(info.uploadUrl, largeBlob, callback));
+
+    step = 'Upload des Thumbnails';
+    await retryStep(step, callback => uploadPicture(info.thumbnailUrl, thumbBlob, callback));
+
+    step = 'Abschluss des Uploads';
+    const data = await retryStep(step, callback => confirmPicture(info.id, {}, callback));
+
+    console.log('Upload complete', data);
+    isUploading.value          = false;
+    uploadSuccess.value        = true;
+    uploadedThumbnailUrl.value = data.thumbnail;
+    toast.add({severity: 'success', summary: 'Erfolg', detail: 'Bild erfolgreich hochgeladen', life: 5000});
+
+    // Refresh pictures in store
+    picBucketStore.fetchPictures({gameId, teamId});
+  }
+  catch (err) {
+    handleError(`Problem beim Schritt „${step}“`, err);
+  }
 };
 
 const handleError = (infoText, err) => {
