@@ -115,7 +115,8 @@
 
     <div
         v-else
-        class="p-4 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-lg"
+        class="p-4 bg-yellow-100 dark:bg-yellow-900/30 text-black dark:text-yellow-300 rounded-lg"
+
     >
       <p>Bilder können nur während dem Spiel hochgeladen werden.</p>
     </div>
