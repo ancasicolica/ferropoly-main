@@ -121,12 +121,12 @@
     </div>
 
     <div v-if="pendingPictures.length" class="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex flex-col gap-2" role="status">
-      <p>{{ pendingPictures.length }} Bild(er) auf diesem Gerät für dieses Team gespeichert und noch nicht bestätigt.</p>
+      <p>{{ pendingPictures.length }} Bild(er) auf diesem Gerät für dieses Team gespeichert und noch nicht hochgeladen.</p>
       <p class="text-sm">Die Bilder bleiben nur in diesem Browser erhalten. Bei geöffneter App und aktivem Spiel werden sie automatisch hochgeladen, sobald die Verbindung wieder besteht. Bitte Browserdaten nicht löschen.</p>
-      <button type="button" class="font-medium text-primary underline" :disabled="isUploading || !gameplayStore.gameActive" @click="uploadPendingPictures">
+      <Button type="button" :disabled="isUploading || !gameplayStore.gameActive" @click="uploadPendingPictures">
         Gespeicherte Bilder jetzt hochladen
-      </button>
-      <p v-if="!gameplayStore.gameActive" class="text-sm">Ein Upload ist erst während eines aktiven Spiels möglich.</p>
+      </Button>
+      <p v-if="!gameplayStore.gameActive" class="text-sm">Ein Upload ist nur während eines aktiven Spiels möglich.</p>
     </div>
 
     <!-- Hidden canvas for resizing -->
@@ -141,6 +141,7 @@
 import {ref, onMounted, onUnmounted, computed} from 'vue';
 import FileUpload from 'primevue/fileupload';
 import Select from 'primevue/select';
+import Button from 'primevue/button';
 import {useGameplayStore} from '../../../../lib/store/GameplayStore';
 import {useCheckInStore} from '../../store/CheckInStore';
 import {usePicBucketStore} from '../../../../lib/store/PicBucketStore';
@@ -391,7 +392,7 @@ const processImage = (dataURL, options) => {
  * Handles the multi-step upload process
  */
 const retryStep = async (step, operation) => {
-  const delays = [1000, 2000, 6000, 8000, 12000];
+  const delays = [500, 1000, 2000, 4000];
 
   for (let attempt = 0; attempt <= delays.length; attempt++) {
     try {
