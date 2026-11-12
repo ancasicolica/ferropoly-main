@@ -110,19 +110,20 @@ const pictures = computed(() => {
     filtered = filtered.filter(p => !p.hidden)
   }
 
+  console.log('FILTERED', filtered);
+
   return filtered;
 })
 
 
-const picturesAvailable = computed(() => {
-  return picBucketStore.pictures && picBucketStore.pictures.length > 0;
-})
+const picturesAvailable = computed(() => pictures.value.length > 0);
 
-const selectedPicture = ref(null);
+const activePicture = ref(null);
+const selectedPicture = computed(() => pictures.value.includes(activePicture.value) ? activePicture.value : null);
 
 const onPictureSelected = (pic) => {
   console.log('pic selected', pic);
-  selectedPicture.value                  = pic;
+  activePicture.value                    = pic;
   picBucketStore.activePicturePropertyId = pic.propertyId;
   picBucketStore.activePictureHidden     = !!pic.hidden;  // cool, didn't know this before: make value to bool even when it's undefined
 }

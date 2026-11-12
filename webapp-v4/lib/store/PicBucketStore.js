@@ -147,6 +147,14 @@ export const usePicBucketStore = defineStore('PicBucket', {
      */
     addPicture(pic) {
       //console.log('Adding picture into PicBucket Store', pic);
+      if (pic.uploaded === false) {
+        const index = this.pictures.findIndex(e => e._id === pic._id);
+        if (index !== -1) {
+          this.pictures.splice(index, 1);
+        }
+        return;
+      }
+
       const teamsStore    = useTeamsStore();
       const propertyStore = usePropertyStore();
 
