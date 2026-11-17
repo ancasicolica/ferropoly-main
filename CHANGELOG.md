@@ -1,5 +1,6 @@
 # Changelog Ferropoly Spiel
 
+## v4.2.1 17.11.26
 * Check-In: Bild-Upload mit Wiederholungen um es robuster zu machen, Offline Betrieb ist möglich
 
 ## v4.2.0 8.11.26
