@@ -18,6 +18,7 @@
           severity="info"
           aria-label="End call"
           class="end-call-button"
+          size="small"
           @click="handleEndCall"
       />
     </h1>
