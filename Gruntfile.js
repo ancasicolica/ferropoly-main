@@ -55,14 +55,11 @@ module.exports          = function (grunt) {
     },
 
     eslint: {
-      src    : [
+      src: [
         'server.js',
         'main/lib/**/*.js',
         'main/routes/**/*.js'
-      ],
-      options: {
-        config: './.eslintrc'
-      }
+      ]
     },
 
     bump: {

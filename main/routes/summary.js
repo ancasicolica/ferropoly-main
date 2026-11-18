@@ -24,12 +24,6 @@ const {DateTime}                  = require('luxon');
 const picBucket                   = require('../lib/picBucket')(settings.picBucket);
 const propertyAccount             = require('../lib/accounting/propertyAccount');
 
-let ngFile = '/js/summaryctrl.js';
-if (settings.minifiedjs) {
-  ngFile = '/js/min/summaryctrl.min.js';
-}
-
-
 /**
  * Send HTML Page
  */

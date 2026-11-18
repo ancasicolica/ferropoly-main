@@ -40,7 +40,7 @@ module.exports = {
         return null;
       }
     }
-    catch (ex) {
+    catch {
       return null;
     }
 

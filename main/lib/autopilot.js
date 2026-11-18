@@ -16,7 +16,6 @@ const {v4: uuid}     = require('uuid');
 const {DateTime}     = require('luxon');
 let picBucket        = undefined;
 let autoPilotGames   = [];
-let settings;
 
 /**
  * Autoplay: called by the timer
@@ -243,8 +242,6 @@ module.exports = {
       logger.info('autopilot NOT ENABLED');
       return;
     }
-    settings = options.autopilot;
-
     logger.info('autopilot ACTIVE');
     refreshActiveGames();
   },
