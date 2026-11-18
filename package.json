@@ -1,7 +1,7 @@
 {
   "name": "ferropoly-game",
-  "title": "Ferropoly Spielauswertung",
   "version": "4.2.1",
+  "private": true,
   "description": "Ferropoly Spiel",
   "keywords": [
     "Ferropoly",
@@ -9,25 +9,29 @@
     "application",
     "Kuster"
   ],
-  "author": {
-    "name": "Christian Kuster, CH-8342 Wernetshausen",
-    "email": "info@ferropoly.ch",
-    "url": "https://www.ferropoly.ch/"
-  },
   "homepage": "https://www.ferropoly.ch/",
   "repository": {
     "type": "git",
     "url": "https://github.com/ancasicolica/ferropoly-main"
   },
-  "engines": {
-    "node": ">= 24.0.0",
-    "npm": ">= 11.6.0"
+  "author": {
+    "name": "Christian Kuster, CH-8342 Wernetshausen",
+    "email": "info@ferropoly.ch",
+    "url": "https://www.ferropoly.ch/"
   },
-  "private": true,
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "main": "server.js",
+  "allowScripts": {
+    "@parcel/watcher@2.5.1": true,
+    "@parcel/watcher@2.5.6": true,
+    "@parcel/watcher@2.6.0": true,
+    "@sentry/cli@2.58.6": true,
+    "protobufjs@7.5.4": true,
+    "protobufjs@7.6.6": true,
+    "sharp@0.34.5": true
+  },
   "dependencies": {
     "@google-cloud/logging-winston": "7.3.0",
     "@google-cloud/storage": "9.0.0",
@@ -101,13 +105,13 @@
     "expect.js": "0.3.1",
     "favicons": "7.3.1",
     "favicons-webpack-plugin": "6.0.1",
+    "globals": "17.14.0",
     "grunt": "1.6.3",
     "grunt-bump": "0.8.0",
     "grunt-eslint": "27.0.0",
     "grunt-mocha-test": "0.13.3",
     "grunt-shell": "4.0.0",
     "grunt-webpack": "8.0.0",
-    "globals": "17.14.0",
     "html-webpack-plugin": "5.6.8",
     "jquery": "4.1.0",
     "load-grunt-tasks": "5.1.0",
@@ -135,13 +139,9 @@
     "webpack-merge": "6.0.1"
   },
   "bundleDependencies": [],
-  "allowScripts": {
-    "@parcel/watcher@2.5.1": true,
-    "@parcel/watcher@2.5.6": true,
-    "@parcel/watcher@2.6.0": true,
-    "@sentry/cli@2.58.6": true,
-    "sharp@0.34.5": true,
-    "protobufjs@7.5.4": true,
-    "protobufjs@7.6.6": true
-  }
+  "engines": {
+    "node": ">= 24.0.0",
+    "npm": ">= 11.6.0"
+  },
+  "title": "Ferropoly Spielauswertung"
 }

@@ -1,8 +1,9 @@
 # Changelog Ferropoly Spiel
 
 * Info Text wird neu bei Login-Screen angezeigt
-
 * Weg von PrimeVue Charts, hin zu Apache ECharts
+* Neuer Bild-Viewer
+* Dependencies auf aktuellstem Stand
 
 ## v4.2.1 17.11.26
 * Check-In: Bild-Upload mit Wiederholungen um es robuster zu machen, Offline Betrieb ist möglich
