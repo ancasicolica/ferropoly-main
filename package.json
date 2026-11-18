@@ -17,7 +17,7 @@
   "homepage": "https://www.ferropoly.ch/",
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/christian_kuster/ferropoly_main"
+    "url": "https://github.com/ancasicolica/ferropoly-main"
   },
   "engines": {
     "node": ">= 24.0.0",
@@ -43,6 +43,7 @@
     "connect-mongo": "6.0.0",
     "cookie-parser": "1.4.7",
     "cors": "2.8.6",
+    "echarts": "6.1.0",
     "express": "5.3.0",
     "express-session": "1.19.0",
     "express-winston": "4.2.0",
@@ -124,6 +125,7 @@
     "tailwindcss": "4.3.3",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "3.5.44",
+    "vue-echarts": "^8.3.2",
     "vue-loader": "17.4.2",
     "vue-router": "5.4.0",
     "webpack": "5.112.2",

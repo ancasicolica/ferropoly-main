@@ -15,27 +15,25 @@
     >
       <FontAwesomeIcon :icon="faDownload" />
     </button>
-    <Chart
+    <VChart
         v-if="containerHeight > 0"
         :key="containerKey"
         ref="chartRef"
-        type="line"
-        :data="chartData"
-        :options="chartOptions"
-        :height="containerHeight"
-        :width="containerWidth"
-        :plugins="[zoomPlugin]"
+        :option="chartOptions"
+        :style="{height: `${containerHeight}px`, width: `${containerWidth}px`}"
     />
   </div>
 </template>
 
 <script setup>
-import Chart from 'primevue/chart';
+import VChart from 'vue-echarts';
+import {use} from 'echarts/core';
+import {CanvasRenderer} from 'echarts/renderers';
+import {LineChart} from 'echarts/charts';
+import {DataZoomComponent, GridComponent, LegendComponent, TitleComponent, TooltipComponent} from 'echarts/components';
 import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../store/TeamsStore';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
-import 'chartjs-adapter-luxon';
-import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../composables/useContainerResize';
 import {useStatisticStore} from '../../store/StatisticStore';
 import {DateTime} from 'luxon';
@@ -43,13 +41,14 @@ import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {useExportChart} from '../../composables/useExportChart';
 
+use([CanvasRenderer, LineChart, DataZoomComponent, GridComponent, LegendComponent, TitleComponent, TooltipComponent]);
+
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
 const statisticStore   = useStatisticStore();
 
 const chartRef      = ref(null);
 const {exportChart} = useExportChart(chartRef, {title: 'Rundenstatistik'});
-
 
 
 const calculateIncome = function (record) {
@@ -67,14 +66,10 @@ const calculateIncome = function (record) {
   return income;
 }
 
-const chartData = computed(() => {
-  const teams = teamsStore.teams;
-  if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return {labels: [], datasets: []};
-  }
-
-  const datasets = [];
-  for (const team of teams) {
+const chartOptions = computed(() => {
+  const teams  = teamsStore.teams;
+  const series = [];
+  for (const team of teams || []) {
     const records = teamAccountStore.incomePerRoundForTeam(team.uuid);
 
     const teamEntry = [];
@@ -83,85 +78,29 @@ const chartData = computed(() => {
       for (const record of records) {
         const income = calculateIncome(record);
         if (record.endTimestamp <= now || income > 0) {
-          teamEntry.push({x: record.endTimestamp.toISO(), y: income});
+          teamEntry.push([record.endTimestamp.toMillis(), income]);
         }
       }
-      datasets.push({data: teamEntry, label: team.name, backgroundColor: team.color, borderColor: team.color});
-    } else {
-      datasets.push({data: [], label: team.name, backgroundColor: team.color, borderColor: team.color});
     }
+    series.push({
+      name:      team.name,
+      type:      'line',
+      data:      teamEntry,
+      itemStyle: {color: team.color},
+      lineStyle: {color: team.color}
+    });
   }
 
   return {
-    label:    'Einkommensverlauf',
-    datasets: datasets
-  };
-});
-
-const chartOptions = computed(() => {
-  return {
-    maintainAspectRatio: true,
-    responsive:          false,
-    plugins:             {
-      legend: {
-        display: true,
-        labels:  {
-          color: 'black'
-        }
-      },
-      title:  {
-        display: true,
-        text:    'Einkommen pro Runde',
-        color:   'black',
-        font:    {size: 18}
-      },
-      zoom:   {
-        zoom: {
-          wheel: {
-            enabled: true,
-          },
-          pinch: {
-            enabled: true
-          },
-          //mode: 'xy',
-          scaleMode: 'xy'
-        },
-        pan:  {
-          enabled: true,
-          mode:    'xy'
-        }
-      }
-    },
-    scales:              {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'minute'
-        }
-      },
-      y: {
-        ticks: {
-          stepSize: 10000,
-        },
-        grid:  {
-          // Callback to determine the line width for each tick
-          lineWidth: (context) => {
-            // Check if the tick value is a multiple of 50,000
-            if (context.tick && context.tick.value % 50000 === 0) {
-              return 2; // Thicker line for 100k steps
-            }
-            return 1; // Default line width
-          },
-          // Optional: You could also change the color for these ticks
-          color: (context) => {
-            if (context.tick && context.tick.value % 10000 === 0) {
-              return 'rgba(0, 0, 0, 0.3)'; // Darker color for 100k steps
-            }
-            return 'rgba(0, 0, 0, 0.1)'; // Fainter color
-          }
-        }
-      }
-    }
+    backgroundColor: '#fff',
+    title:           {text: 'Einkommen pro Runde', textStyle: {color: 'black', fontSize: 18}},
+    legend:          {bottom: 0, textStyle: {color: 'black'}},
+    tooltip:         {trigger: 'axis'},
+    grid:            {top: 55, left: 10, right: 20, bottom: 55, containLabel: true},
+    xAxis:           {type: 'time'},
+    yAxis:           {type: 'value', interval: 10000, splitLine: {lineStyle: {color: 'rgba(0, 0, 0, 0.1)'}}},
+    dataZoom:        [{type: 'inside', xAxisIndex: 0}, {type: 'inside', yAxisIndex: 0}],
+    series
   };
 });
 

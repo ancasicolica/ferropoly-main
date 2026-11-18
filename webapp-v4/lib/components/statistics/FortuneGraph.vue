@@ -19,14 +19,11 @@
         v-if="containerHeight > 0"
         class="chart-wrapper"
     >
-      <Chart
+      <VChart
           :key="containerKey"
           ref="chartRef"
-          type="bar"
-          :data="chartData"
-          :options="chartOptions"
-          :height="containerHeight"
-          :width="containerWidth"
+          :option="chartOptions"
+          :style="{height: `${containerHeight}px`, width: `${containerWidth}px`}"
       />
     </div>
   </div>
@@ -34,7 +31,11 @@
 
 <script setup>
 
-import Chart from 'primevue/chart';
+import VChart from 'vue-echarts';
+import {use} from 'echarts/core';
+import {CanvasRenderer} from 'echarts/renderers';
+import {BarChart} from 'echarts/charts';
+import {GridComponent, TitleComponent, TooltipComponent} from 'echarts/components';
 import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../store/TeamsStore';
 import {useTeamAccountStore} from '../../store/TeamAccountStore';
@@ -42,6 +43,8 @@ import {useContainerResize} from '../../composables/useContainerResize';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {useExportChart} from '../../composables/useExportChart';
+
+use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent]);
 
 const teamsStore       = useTeamsStore();
 const teamAccountStore = useTeamAccountStore();
@@ -55,89 +58,39 @@ const chartRef      = ref(null);
 const {exportChart} = useExportChart(chartRef, {title: 'Vermögen'});
 
 
-const chartData = computed(() => {
-  const teams = teamsStore.teams;
-  if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return {labels: [], datasets: []};
-  }
-  // Map store data to Chart.js structure
-  const labels           = [];
-  const backgroundColors = teams.map(team => teamsStore.idToColor(team.uuid));
-
-  // Note: Replace the static [2, 4, 5, 2] with real data from your store/team objects if available
+const chartOptions = computed(() => {
+  const teams      = teamsStore.teams;
+  const labels     = [];
   const dataValues = [];
-  for (const team of teams) {
+  for (const team of teams || []) {
     const info = teamAccountStore.balances.get(team.uuid);
     if (info) {
       labels.push(info.teamName);
-      dataValues.push(info.balance);
+      dataValues.push({value: info.balance, itemStyle: {color: teamsStore.idToColor(team.uuid)}});
     }
   }
 
   return {
-    labels:   labels,
-    datasets: [
-      {
-        label:           'Vermögen',
-        data:            dataValues,
-        backgroundColor: backgroundColors
-      }
-    ]
-  };
-});
-
-const chartOptions = computed(() => {
-  return {
-    maintainAspectRatio: false,
-    responsive:          true,
-    plugins:             {
-      title:  {
-        display: true,
-        text:    'Vermögen',
-        color:   'black',
-        font:    {size: 18}
-      },
-      legend: {
-        display: false,
-        labels:  {
-          color: 'black'
-        }
-      }
+    backgroundColor: '#fff',
+    title:           {
+      text:      'Vermögen',
+      textStyle: {color: 'black', fontSize: 18}
     },
-    scales:              {
-      x: {
-        ticks: {
-          color: 'black'
-        },
-        grid:  {
-          color: 'darkgrey'
-        }
-      },
-      y: {
-        beginAtZero: true,
-        ticks:       {
-          color:    'black',
-          stepSize: 50000,
-        },
-        grid:        {
-          // Callback to determine the line width for each tick
-          lineWidth: (context) => {
-            // Check if the tick value is a multiple of 100,000
-            if (context.tick && (context.tick.value % 100000 === 0 || context.tick.value % 100000 === 0)) {
-              return 2; // Thicker line for 100k steps
-            }
-            return 1; // Default line width
-          },
-          // Optional: You could also change the color for these ticks
-          color: (context) => {
-            if (context.tick && context.tick.value % 100000 === 0) {
-              return 'rgba(0, 0, 0, 0.3)'; // Darker color for 100k steps
-            }
-            return 'rgba(0, 0, 0, 0.1)'; // Fainter color
-          }
-        }
-      }
-    }
+    tooltip:         {trigger: 'axis', axisPointer: {type: 'shadow'}},
+    grid:            {top: 55, left: 10, right: 20, bottom: 20, containLabel: true},
+    xAxis:           {
+      type:      'category',
+      data:      labels,
+      axisLabel: {color: 'black'},
+      splitLine: {lineStyle: {color: 'darkgrey'}}
+    },
+    yAxis:           {
+      type:      'value',
+      interval:  50000,
+      axisLabel: {color: 'black'},
+      splitLine: {lineStyle: {color: 'rgba(0, 0, 0, 0.1)'}}
+    },
+    series:          [{name: 'Vermögen', type: 'bar', data: dataValues}]
   };
 });
 

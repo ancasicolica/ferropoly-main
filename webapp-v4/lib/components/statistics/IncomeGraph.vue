@@ -15,107 +15,78 @@
     >
       <FontAwesomeIcon :icon="faDownload" />
     </button>
-    <Chart
+    <VChart
         v-if="containerHeight > 0"
         :key="containerKey"
         ref="chartRef"
-        type="bar"
-        :data="chartData"
-        :options="chartOptions"
-        :height="containerHeight"
-        :width="containerWidth"
-        :plugins="[zoomPlugin]"
+        :option="chartOptions"
+        :style="{height: `${containerHeight}px`, width: `${containerWidth}px`}"
     />
   </div>
 </template>
 
 <script setup>
-import Chart from 'primevue/chart';
+import VChart from 'vue-echarts';
+import {use} from 'echarts/core';
+import {CanvasRenderer} from 'echarts/renderers';
+import {BarChart} from 'echarts/charts';
+import {GridComponent, LegendComponent, TitleComponent, TooltipComponent} from 'echarts/components';
 import {computed, ref} from 'vue';
 import {useTeamsStore} from '../../store/TeamsStore';
-import 'chartjs-adapter-luxon';
-import zoomPlugin from 'chartjs-plugin-zoom';
 import {useContainerResize} from '../../composables/useContainerResize';
 import {evaluatePropertyValueForTeam} from '../../propertyLib';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {useExportChart} from '../../composables/useExportChart';
 
+use([CanvasRenderer, BarChart, GridComponent, LegendComponent, TitleComponent, TooltipComponent]);
+
 const teamsStore    = useTeamsStore();
 const chartRef      = ref(null);
 const {exportChart} = useExportChart(chartRef, {title: 'Einkommen'});
 
 
-const chartData = computed(() => {
-  const teams = teamsStore.teams;
-  if (!teams || teams.length === 0 || containerHeight.value === 0) {
-    return {labels: [], datasets: []};
-  }
-
-  const datasets = [{label: 'Aktueller Wert Liegenschaften', data: [], backgroundColor: '#34A6F4'},
-                    {label: 'Zusätzlicher Wert Liegenschaften mit Hotels', data: [], backgroundColor: '#96F7E4'}];
-  const labels   = [];
-  for (const team of teams) {
+const chartOptions = computed(() => {
+  const teams            = teamsStore.teams;
+  const labels           = [];
+  const currentValues    = [];
+  const additionalValues = [];
+  for (const team of teams || []) {
     labels.push(team.name);
     const info = evaluatePropertyValueForTeam(team.uuid);
-    datasets[0].data.push(info.sum);
-    datasets[1].data.push(info.max - info.sum);
+    currentValues.push(info.sum);
+    additionalValues.push(info.max - info.sum);
   }
 
-  console.log('incoming dataset', datasets)
   return {
-    labels:   labels,
-    datasets: datasets
-  };
-});
-
-const chartOptions = computed(() => {
-  return {
-    maintainAspectRatio: true,
-    responsive:          false,
-    plugins:             {
-      title:  {
-        display: true,
-        text:    'Einkommen',
-        color:   'black',
-        font:    {size: 18}
-      },
-      legend: {
-        display: true,
-        labels:  {
-          color: 'black'
-        }
-      },
-
+    backgroundColor: '#fff',
+    title:           {
+      text:      'Einkommen',
+      textStyle: {color: 'black', fontSize: 18}
     },
-    scales:              {
-      x: {
-        stacked: true
+    legend:          {bottom: 0, textStyle: {color: 'black'}},
+    tooltip:         {trigger: 'axis', axisPointer: {type: 'shadow'}},
+    grid:            {top: 55, left: 10, right: 20, bottom: 75, containLabel: true},
+    xAxis:           {type: 'category', data: labels},
+    yAxis:           {
+      type:      'value',
+      interval:  10000,
+      splitLine: {lineStyle: {color: 'rgba(0, 0, 0, 0.1)'}}
+    },
+    series:          [
+      {name:       'Aktueller Wert Liegenschaften',
+        type:      'bar',
+        stack:     'income',
+        data:      currentValues,
+        itemStyle: {color: '#34A6F4'}
       },
-      y: {
-        stacked: true,
-        ticks:   {
-          stepSize: 10000,
-        },
-        grid:    {
-          // Callback to determine the line width for each tick
-          lineWidth: (context) => {
-            // Check if the tick value is a multiple of 100,000
-            if (context.tick && (context.tick.value % 100000 === 0 || context.tick.value % 100000 === 0)) {
-              return 2; // Thicker line for 100k steps
-            }
-            return 1; // Default line width
-          },
-          // Optional: You could also change the color for these ticks
-          color: (context) => {
-            if (context.tick && context.tick.value % 100000 === 0) {
-              return 'rgba(0, 0, 0, 0.3)'; // Darker color for 100k steps
-            }
-            return 'rgba(0, 0, 0, 0.1)'; // Fainter color
-          }
-        }
+      {name:       'Zusätzlicher Wert Liegenschaften mit Hotels',
+        type:      'bar',
+        stack:     'income',
+        data:      additionalValues,
+        itemStyle: {color: '#96F7E4'}
       }
-    }
+    ]
   };
 });
 
