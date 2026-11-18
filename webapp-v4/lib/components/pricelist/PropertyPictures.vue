@@ -17,29 +17,35 @@
     >
       <div class="flex flex-wrap">
         <div
-            v-for="p in pictures"
+            v-for="p in visiblePictures"
             :key="p.url"
             class="w-1/2"
         >
-          <div v-if="!p.hidden">
-            <Image
+          <button type="button" class="picture-thumbnail" :aria-label="`Bild von ${p.teamName} vergrössern`" @click="openPreview(p)">
+            <img
                 :src="p.url"
-                width="100%"
-                preview
+                :alt="`Bild von ${p.teamName}`"
+                class="w-full"
             />
-            <div>{{ p.teamName }}, {{ formatGameTime(p.timestamp) }} </div>
-          </div>
+          </button>
+          <div>{{ p.teamName }}, {{ formatGameTime(p.timestamp) }} </div>
         </div>
       </div>
+      <PicturePreview
+          v-if="previewPicture"
+          v-model:visible="previewVisible"
+          :src="previewPicture.url"
+          :alt="`Bild von ${previewPicture.teamName}`"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 
-import Image from 'primevue/image';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {formatGameTime} from '../../../common/lib/formatters';
+import PicturePreview from '../pictures/PicturePreview.vue';
 
 const props = defineProps({
   pictures: {
@@ -49,18 +55,26 @@ const props = defineProps({
   }
 })
 
-const picturesAvailable = computed(() => {
-  let picNb = 0;
-  for (const p of props.pictures) {
-    if (!p.hidden) {
-      picNb++;
-    }
-  }
-  return (props.pictures && props.pictures.length > 0 && picNb > 0);
-});
+const visiblePictures   = computed(() => props.pictures.filter(p => !p.hidden));
+const picturesAvailable = computed(() => visiblePictures.value.length > 0);
+const previewVisible    = ref(false);
+const previewPicture    = ref(null);
+
+const openPreview = picture => {
+  previewPicture.value = picture;
+  previewVisible.value = true;
+};
 
 </script>
 
 <style scoped lang="scss">
+.picture-thumbnail {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
 
 </style>
