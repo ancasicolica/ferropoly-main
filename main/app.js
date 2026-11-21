@@ -7,7 +7,7 @@
 
 // IMPORTANT: Make sure to import `instrument.js` at the top of your file.
 // If you're using ECMAScript Modules (ESM) syntax, use `import "./instrument.js";`
-require("./instrument.js");
+require('./instrument.js');
 
 // Logging has highest prio
 const settings = require('./settings');
@@ -24,8 +24,8 @@ const passport     = require('passport');
 const flash        = require('connect-flash');
 const session      = require('express-session');
 const compression  = require('compression');
-const {MongoStore}   = require('connect-mongo');
-const {DateTime} = require('luxon');
+const {MongoStore} = require('connect-mongo');
+const {DateTime}   = require('luxon');
 const {v4: uuid}   = require('uuid');
 
 // Model includes
@@ -34,21 +34,25 @@ const ferropolyDb  = require('../common/lib/ferropolyDb');
 const teamPosition = require('./lib/teams/teamPosition');
 
 // Routes includes
-const login          = require('./routes/login');
-const joinRoute      = require('./routes/join');
-const authtoken      = require('./routes/authtoken');
-const ferroSocket    = require('./lib/ferroSocket');
-const autopilot      = require('./lib/autopilot');
-const authStrategy   = require('../common/lib/authStrategy')(settings, users);
-const infoRoute      = require('../common/routes/info');
-const aboutRoute     = require('../common/routes/about');
-const picBucketRoute = require('./routes/picBucketRoute');
+const login                     = require('./routes/login');
+const joinRoute                 = require('./routes/join');
+const authtoken                 = require('./routes/authtoken');
+const ferroSocket               = require('./lib/ferroSocket');
+const autopilot                 = require('./lib/autopilot');
+const authStrategy              = require('../common/lib/authStrategy')(settings, users);
+const infoRoute                 = require('../common/routes/info');
+const aboutRoute                = require('../common/routes/about');
+const challengeRoute            = require('../common/routes/challenges');
+const picBucketRoute            = require('./routes/picBucketRoute');
+const gameplay                  = require('./routes/gameplay');
+const {chromeDevtoolsWorkspace} = require('../common/lib/devtoolsWorkspace');
+
 
 require('./lib/mainCronjobs').init();
 require('../common/lib/mailer').init(settings);
 
 logger.warn('**** FERROPOLY MAIN START DETECTED ****');
-logger.info('Ferropoly Copyright (C) 2015-2024 Christian Kuster, CH-8342 Wernetshausen');
+logger.info('Ferropoly Copyright (C) 2015-2026 Christian Kuster, CH-8342 Wernetshausen');
 logger.info('This program comes with ABSOLUTELY NO WARRANTY;');
 logger.info('This is free software, and you are welcome to redistribute it');
 logger.info('under certain conditions; see www.ferropoly.ch for details.');
@@ -74,6 +78,9 @@ async function initMain() {
 
   // Using compression speeds up the connection (and uses much less data for mobile)
   app.use(compression());
+
+  // Chrome tools
+  app.use(chromeDevtoolsWorkspace());
 
   // Non authenticated pages
   app.use('/info', require('./routes/info'));
@@ -123,6 +130,7 @@ async function initMain() {
   app.use('/appinfo', require('../common/routes/info'));
   app.use('/images', require('../common/routes/images'));
   login.init(app, settings);
+  gameplay.init(app);
   app.use('/', require('./routes/index'));
   app.use('/test', require('./routes/test'));
   app.use('/cron', require('./routes/cron'));
@@ -150,6 +158,7 @@ async function initMain() {
   app.use('/anmelden', joinRoute);
 
   aboutRoute.init(app, settings);
+  challengeRoute.init(app, settings);
   authtoken.init(app);
 
   app.set('port', settings.server.port);
@@ -240,6 +249,6 @@ async function initMain() {
   });
 }
 
-initMain().catch(err=> {
+initMain().catch(err => {
   console.error('Serious problem in initMain', err);
 });

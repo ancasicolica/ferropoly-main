@@ -64,9 +64,20 @@
           as="a"
           :href="summaryLink"
       />
+      <Button
+          v-if="finalized && !gameOver"
+          class="mr-2 mb-2"
+          label="Challenges"
+          icon="pi pi-trophy"
+          :disabled="gameOver"
+          size="small"
+          as="a"
+          :href="challengeLink"
+          severity="secondary"
+      />
       <Message
-        v-if="!finalized"
-        severity="warn"
+          v-if="!finalized"
+          severity="warn"
       >
         Das Spiel ist noch nicht finalisiert und kann deshalb nicht gespielt werden.
       </Message>
@@ -83,6 +94,8 @@ import Button from 'primevue/button';
 import {DateTime} from 'luxon';
 
 import Message from 'primevue/message';
+import {get} from 'lodash';
+
 
 const props = defineProps({
   gameplay: {
@@ -105,6 +118,7 @@ const deleteTs      = computed(() => formatGameDate(props.gameplay.scheduling.de
 const pricelistLink = computed(() => `/info/${props.gameplay.internal.gameId}`);
 const receptionLink = computed(() => `/reception/${props.gameplay.internal.gameId}`);
 const summaryLink   = computed(() => `/summary/${props.gameplay.internal.gameId}`);
+const challengeLink = computed(() => `/challenges/${props.gameplay.internal.gameId}`);
 const gameRunning   = computed(() => {
   if (!props.gameplay.internal.finalized) {
     return false;
@@ -120,6 +134,7 @@ const gameOver      = computed(() => {
   const gameDate        = DateTime.fromJSDate(props.gameplay.scheduling.gameDate);
   const endTime         = DateTime.fromFormat(props.gameplay.scheduling.gameEnd, 'HH:mm');
   const gameEndDateTime = gameDate.set({hour: endTime.hour, minute: endTime.minute});
+  console.log('gameOver', DateTime.now, gameEndDateTime, DateTime.now() > gameEndDateTime)
   return DateTime.now() > gameEndDateTime;
 });
 
@@ -128,6 +143,7 @@ const gameInFuture = computed(() => {
   const now      = DateTime.now();
   return gameDate.startOf('day') > now.startOf('day');
 });
+
 
 </script>
 
