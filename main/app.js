@@ -169,6 +169,7 @@ async function initMain() {
   const gameScheduler = require('./lib/gameScheduler');
   require('./lib/accounting/marketplace').createMarketplace(gameScheduler);
   require('./lib/summaryMailer').createMailer(gameScheduler);
+  require('./lib/accounting/challengeHandler').init(gameScheduler);
 
   gameScheduler.update(err => {
     if (err) {

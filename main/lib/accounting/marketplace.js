@@ -20,6 +20,13 @@ const {
         TEAM_TRANSACTION_PURCHASE_PROPERTY,
         TEAM_TRANSACTION_MANUAL, TEAM_TRANSACTION_START_FEE, TEAM_TRANSACTION_INTEREST, TEAM_TRANSACTION_PENALTY_RATE
       }                  = require('../../../common/models/accounting/teamAccountTransactionTypes');
+const {
+        PRESTART,
+        START,
+        INTEREST,
+        END
+      }                  = require('../../../common/lib/schedulerEventTypes');
+
 let marketplace;
 let ferroSocket;
 
@@ -86,7 +93,7 @@ class Marketplace extends EventEmitter {
       /**
        * This is the 'interest' event launched by the gameScheduler
        */
-      this.scheduler.on('interest', async function (event) {
+      this.scheduler.on(INTEREST, async function (event) {
         try {
           marketLog(event.gameId, 'Marketplace: onInterest');
           await self.payRents({gameId: event.gameId, message: event.message});
@@ -101,7 +108,7 @@ class Marketplace extends EventEmitter {
        * This is the 'prestart' event launched by the gameScheduler. Game is going to start soon, refresh cache
        * Pay start capital
        */
-      this.scheduler.on('prestart', async function (event) {
+      this.scheduler.on(PRESTART, async function (event) {
         try {
           marketLog(event.gameId, 'Marketplace: onPrestart');
           await gameCache.refreshCache()
@@ -118,7 +125,7 @@ class Marketplace extends EventEmitter {
       /**
        * This is the 'start' event launched by the gameScheduler. Nothing is done currently.
        */
-      this.scheduler.on('start', async function (event) {
+      this.scheduler.on(START, async function (event) {
         try {
           marketLog(event.gameId, 'Marketplace: onStart');
           await gameLog.addEntry({
@@ -135,7 +142,7 @@ class Marketplace extends EventEmitter {
       /**
        * This is the 'end' event launched by the gameScheduler. Pay the final rents & interests
        */
-      this.scheduler.on('end', async function (event) {
+      this.scheduler.on(END, async function (event) {
         try {
           marketLog(event.gameId, 'Marketplace: onEnd');
           await self.payFinalRents(event.gameId);
