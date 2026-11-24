@@ -9,6 +9,7 @@
     <h1> {{ teamName }}</h1>
     <team-overview class="mb-2" />
     <current-gps class="mb-2" />
+    <challenge-on-dashboard class="mb-2" />
     <game-live-ticker />
   </div>
 </template>
@@ -20,6 +21,7 @@ import {computed} from 'vue';
 import TeamOverview from './TeamOverview.vue';
 import CurrentGps from './CurrentGps.vue';
 import GameLiveTicker from './GameLiveTicker.vue';
+import ChallengeOnDashboard from './ChallengeOnDashboard.vue';
 
 const checkInStore = useCheckInStore();
 

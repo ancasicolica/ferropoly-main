@@ -14,6 +14,7 @@ import CheckInProperty from './components/property/CheckInProperty.vue';
 import CheckInAccount from './components/account/CheckInAccount.vue';
 import CheckInPricelist from './components/pricelist/CheckInPricelist.vue';
 import CheckInRules from './components/rules/CheckInRules.vue';
+import CheckInChallenges from './components/challenges/CheckInChallenges.vue';
 
 createWebApp( {
   routes: [
@@ -25,6 +26,7 @@ createWebApp( {
     {path: '/account', name: 'account', component: CheckInAccount },
     {path: '/pricelist', name: 'pricelist', component: CheckInPricelist },
     {path: '/rules', name: 'rules', component: CheckInRules },
+    {path: '/challenges', name: 'challenges', component: CheckInChallenges },
   ],
   components: [
     {name: 'check-in-root', component: CheckInRoot},

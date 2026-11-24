@@ -52,8 +52,9 @@ import {useGeoLocationStore} from '../store/GeoLocationStore';
 import geograph from '../lib/geograph';
 import Toast from 'primevue/toast';
 import {useToast} from 'primevue/usetoast';
+import {useChallengesStore} from '../../../common/store/challengesStore';
 
-const toast = useToast();
+const toast            = useToast();
 const isInitialLoading = ref(true);
 const elements         = split(window.location.pathname, '/');
 let gameId             = last(elements);
@@ -70,16 +71,17 @@ const cronJobStore     = useCronJobStore();
 const travelLogStore   = useTravelLogStore();
 const socketStore      = useSocketStore();
 const geoLocationStore = useGeoLocationStore();
+const challengesStore  = useChallengesStore();
 
 function onPlayerPositionUpdateHandler(staticData) {
 
   console.log('XXXX', staticData);
-  return function(position) {
+  return function (position) {
     receptionSocket.emit('player-position', {
-      cmd:'positionUpdate',
+      cmd:    'positionUpdate',
       gameId: staticData.currentGameId,
       teamId: staticData?.team?.uuid,
-      user:staticData.user,
+      user:   staticData.user,
       position
     })
   }
@@ -111,6 +113,7 @@ onMounted(() => {
         geograph.on('player-position-update', onPlayerPositionUpdateHandler(staticData));
         console.log('Init step 9');
         checkInStore.team = staticData.team;
+        await challengesStore.fetchCurrentChallenges(gameId);
         console.log('Init step 10');
         receptionSocket.initSocket({
           url:       staticData.socketUrl,
@@ -132,7 +135,12 @@ onMounted(() => {
 })
 
 function onBuildingAllowed() {
-  toast.add({severity: 'info', summary: 'Spielrunde abgeschlossen', detail: 'Die Mieten wurden ausbezahlt, es kann wieder gebaut werden!', life: 5000})
+  toast.add({
+    severity: 'info',
+    summary:  'Spielrunde abgeschlossen',
+    detail:   'Die Mieten wurden ausbezahlt, es kann wieder gebaut werden!',
+    life:     5000
+  })
 }
 
 </script>
